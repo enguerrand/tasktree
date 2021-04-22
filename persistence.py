@@ -114,34 +114,35 @@ class Persistence:
             session.commit()
 
     def get_users(self):
-        users = []
         with Session(self.engine) as session:
-            for row in session.execute(select(User)):
-                if len(row) >= 1:
-                    users.append(row[0])
-        return users
+            return session.query(User).all()
 
     def get_user(self, username: str) -> User:
-        stmt = select(User).where(User.username == username)
         with Session(self.engine) as session:
-            row = session.execute(stmt).first()
-            if row is None or len(row) < 1:
-                return None
-            return row[0]
+            return session.query(User).filter(User.username == username).one()
 
-    def create_task_list(self, title: str, creating_user_id: int):
-        # FIXME impl
-        pass
+    def create_task_list(self, title: str, requesting_user_id: int):
+        with Session(self.engine) as session:
+            user = session.query(User).filter(User.id == requesting_user_id).one()
+            task_list = TaskList(title=title, users=[user])
+            session.add(task_list)
+            session.commit()
+
+    def get_task_lists(self, requesting_user_id: int):
+        with Session(self.engine) as session:
+            return session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id).all()
 
     def change_task_list_title(self, task_list_id: int, prev_title: str, next_title: str, creating_user_id: int):
         # FIXME impl
         # FIXME access control
         pass
 
-    def share_task_list_with(self, task_list_id: int, user_id: int):
-        # FIXME impl
-        # FIXME access control
-        pass
+    def share_task_list_with(self, task_list_id: int, user_to_add_id: int, requesting_user_id: int):
+        with Session(self.engine) as session:
+            user_to_add = session.query(User).filter(User.id == user_to_add_id).one()
+            task_list = session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id).filter(TaskList.id == task_list_id).one()
+            task_list.users.append(user_to_add)
+            session.commit()
 
     def remove_task_list(self, task_list_id: int):
         # FIXME impl
