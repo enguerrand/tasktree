@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, relationship
 Base = declarative_base()
 
 DB_URL_DEV = "sqlite+pysqlite:///:memory:"
+DB_URL_PROD = "sqlite+pysqlite:///tasktree.db"
 
 
 association_table_user_x_task_list = Table(
@@ -123,3 +124,9 @@ class Persistence:
             if row is None or len(row) < 1:
                 return None
             return row[0]
+
+
+if __name__ == '__main__':
+    persistence = Persistence(DB_URL_PROD)
+    persistence.create()
+    persistence.create_user("edr", "foobar")
