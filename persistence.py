@@ -1,11 +1,16 @@
-from sqlalchemy import ForeignKey, create_engine, Table, Column, Integer, String, select
+import os
+from datetime import datetime
+
+from sqlalchemy import DateTime, ForeignKey, create_engine, Table, Column, Integer, String, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, relationship
 
+
 Base = declarative_base()
 
+DB_NAME = "tasktree.db"
 DB_URL_DEV = "sqlite+pysqlite:///:memory:"
-DB_URL_PROD = "sqlite+pysqlite:///tasktree.db"
+DB_URL_PROD = "sqlite+pysqlite:///%s" % DB_NAME
 
 
 association_table_user_x_task_list = Table(
@@ -60,8 +65,8 @@ class Task(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
-    # Column('created', Date?) # FIXME
-    # Column('reminder', Date?) # FIXME
+    created = Column('created', DateTime, nullable=False, default=datetime.utcnow)
+    due = Column('due', DateTime, nullable=True)
     description = Column(String)
     task_list_id = Column(Integer, ForeignKey("task_list.id"))
     tags = relationship("Tag", secondary=association_table_task_x_tag, back_populates="tasks")
@@ -127,6 +132,7 @@ class Persistence:
 
 
 if __name__ == '__main__':
+    os.remove(DB_NAME)
     persistence = Persistence(DB_URL_PROD)
     persistence.create()
     persistence.create_user("edr", "foobar")
