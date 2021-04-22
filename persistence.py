@@ -1,6 +1,6 @@
-from sqlalchemy import ForeignKey, create_engine, Table, Column, Integer, String
+from sqlalchemy import ForeignKey, create_engine, Table, Column, Integer, String, select
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session, relationship
 
 Base = declarative_base()
 
@@ -33,7 +33,7 @@ association_table_task_x_task = Table(
 class User(Base):
     __tablename__ = "user"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(30), unique=True, nullable=False)
     password = Column(String, nullable=False)
     task_lists = relationship("TaskList", secondary=association_table_user_x_task_list, back_populates="users")
@@ -45,37 +45,47 @@ class User(Base):
 class TaskList(Base):
     __tablename__ = "task_list"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     users = relationship("User", secondary=association_table_user_x_task_list, back_populates="task_lists")
-    tasks = relationship("Task", back_populates="task_list")
+    tasks = relationship("Task", backref="task_list")
 
     def __repr__(self):
         return f"TaskList(id={self.id!r}, title={self.title!r})"
 
 
 class Task(Base):
-    __tablename__ = 'task'
+    __tablename__ = "task"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     # Column('created', Date?) # FIXME
     # Column('reminder', Date?) # FIXME
     description = Column(String)
-    task_list = relationship("TaskList", back_populates="tasks")
+    task_list_id = Column(Integer, ForeignKey("task_list.id"))
     tags = relationship("Tag", secondary=association_table_task_x_tag, back_populates="tasks")
-    prerequisites = relationship("Task", secondary=association_table_task_x_task, back_populates="depending_tasks")
-    depending_tasks = relationship("Task", secondary=association_table_task_x_task, back_populates="prerequisites")
+    prerequisites = relationship(
+        "Task",
+        secondary=association_table_task_x_task,
+        back_populates="depending_tasks",
+        foreign_keys=[association_table_task_x_task.c.prereq_id],
+    )
+    depending_tasks = relationship(
+        "Task",
+        secondary=association_table_task_x_task,
+        back_populates="prerequisites",
+        foreign_keys=[association_table_task_x_task.c.dependent_id],
+    )
 
     def __repr__(self):
         return f"Task(id={self.id!r}, title={self.title!r})"
 
 
 class Tag(Base):
-    __tablename__ = 'tag'
+    __tablename__ = "tag"
 
     id = Column(
-        Integer, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )  # do not expose id over web api. OR: add column for list id to prevent tags leaking to other lists?
     title = Column(String, nullable=False)
     tasks = relationship("Task", secondary=association_table_task_x_tag, back_populates="tags")
@@ -86,9 +96,21 @@ class Tag(Base):
 
 class Persistence:
     def __init__(self, db_url: str):
-        self.engine = create_engine(DB_URL_DEV, echo=True, future=True)
+        self.engine = create_engine(db_url, echo=True, future=True)
+
+    def create(self):
         Base.metadata.create_all(self.engine)
 
-    def hello(self, name: str):
-        with self.engine.begin() as conn:
-            pass
+    def create_user(self, username: str, password: str):
+        with Session(self.engine) as session:
+            user = User(username=username, password=password)
+            session.add(user)
+            session.commit()
+
+    def get_user(self, username: str) -> User:
+        stmt = select(User).where(User.username == username)
+        with Session(self.engine) as session:
+            row = session.execute(stmt).first()
+            if row is None or len(row) < 1:
+                return None
+            return row[0]
