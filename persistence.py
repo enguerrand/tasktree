@@ -107,6 +107,15 @@ class Persistence:
             session.add(user)
             session.commit()
 
+    def get_users(self):
+        stmt = select(User)
+        users = []
+        with Session(self.engine) as session:
+            for row in session.execute(stmt):
+                if len(row) >= 1:
+                    users.append(row[0])
+        return users
+
     def get_user(self, username: str) -> User:
         stmt = select(User).where(User.username == username)
         with Session(self.engine) as session:
