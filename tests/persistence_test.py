@@ -13,6 +13,6 @@ class TestPersistence(TestCase):
         self.persistence.create()
         self.persistence.create_user(USER_A_NAME, USER_A_PSWD)
 
-    def test_get_users(self):
+    def test_get_user(self):
         user = self.persistence.get_user(USER_A_NAME)
         self.assertEqual(USER_A_PSWD, user.password)
