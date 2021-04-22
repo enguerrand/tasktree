@@ -65,8 +65,8 @@ class Task(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
-    created = Column('created', DateTime, nullable=False, default=datetime.utcnow)
-    due = Column('due', DateTime, nullable=True)
+    created = Column("created", DateTime, nullable=False, default=datetime.utcnow)
+    due = Column("due", DateTime, nullable=True)
     description = Column(String)
     task_list_id = Column(Integer, ForeignKey("task_list.id"))
     tags = relationship("Tag", secondary=association_table_task_x_tag, back_populates="tasks")
@@ -114,10 +114,9 @@ class Persistence:
             session.commit()
 
     def get_users(self):
-        stmt = select(User)
         users = []
         with Session(self.engine) as session:
-            for row in session.execute(stmt):
+            for row in session.execute(select(User)):
                 if len(row) >= 1:
                     users.append(row[0])
         return users
@@ -130,9 +129,104 @@ class Persistence:
                 return None
             return row[0]
 
+    def create_task_list(self, title: str, creating_user_id: int):
+        # FIXME impl
+        pass
 
-if __name__ == '__main__':
+    def change_task_list_title(self, task_list_id: int, prev_title: str, next_title: str, creating_user_id: int):
+        # FIXME impl
+        # FIXME access control
+        pass
+
+    def share_task_list_with(self, task_list_id: int, user_id: int):
+        # FIXME impl
+        # FIXME access control
+        pass
+
+    def remove_task_list(self, task_list_id: int):
+        # FIXME impl
+        # FIXME delete contained tasks
+        # FIXME potentially also delete orphaned tags
+        # FIXME access control
+        pass
+
+    def create_task(
+        self,
+        task_list_id: int,
+        title: str,
+        due=None,
+        description=None,
+        prereq_task_ids=[],
+        depending_task_ids=[],
+        tags=[],
+    ):
+        # FIXME impl
+        # FIXME Access control for task_list_ids and task_ids for prereq and depending tasks
+        pass
+
+    def move_task_to_list(self, task_list_id: int, from_task_list_id: int, to_task_list_id: int):
+        # FIXME impl
+        # FIXME Access control for task_list_ids and task_ids for prereq and depending tasks
+        pass
+
+    def update_task(
+        self,
+        task_id: int,
+        prev_title: str,
+        prev_due: DateTime,
+        prev_description: str,
+        next_title: str,
+        next_due: DateTime,
+        next_description: str,
+    ):
+        # FIXME impl
+        # FIXME Access control for task_ids for prereq and depending tasks
+        pass
+
+    def remove_task(self, task_id):
+        # FIXME impl
+        # FIXME Access control for task_ids for prereq and depending tasks
+        # FIXME delete orphaned tasks
+        pass
+
+    def get_visible_tags(self, user_id: int):
+        # FIXME query: user_id -> lists -> tasks -> tags
+        pass
+
+    def add_tag(self, task_id: int, tag: str):
+        # FIXME impl
+        # FIXME Access control for task_ids
+        pass
+
+    def remove_tag(self, task_id: int, tag: str):
+        # FIXME impl
+        # FIXME Access control for task_ids
+        # FIXME delete tag if no references to it are left
+        pass
+
+    def add_prerequisite(self, task_id: int, prerequisite_task_id: int):
+        # FIXME impl
+        # FIXME Access control for task_ids
+        pass
+
+    def remove_prerequisite(self, task_id: int, prerequisite_task_id: int):
+        # FIXME impl
+        # FIXME Access control for task_ids
+        pass
+
+    def add_dependent(self, task_id: int, dependent_id: int):
+        # FIXME impl
+        # FIXME Access control for task_ids
+        pass
+
+    def remove_dependent(self, task_id: int, dependent_id: int):
+        # FIXME impl
+        # FIXME Access control for task_ids
+        pass
+
+
+if __name__ == "__main__":
     os.remove(DB_NAME)
     persistence = Persistence(DB_URL_PROD)
     persistence.create()
-    persistence.create_user("edr", "foobar")
+    persistence.create_user("edr", "foobar")  # FIXME remove test code
