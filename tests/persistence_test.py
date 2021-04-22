@@ -16,18 +16,17 @@ NON_EXISTANT_USER_ID = 42
 
 
 class TestPersistence(TestCase):
-
     def setUp(self):
         self.persistence = persistence.Persistence(persistence.DB_URL_DEV)
         self.persistence.create()
         self.persistence.create_user(USER_A_NAME, USER_A_PSWD)
         self.persistence.create_user(USER_B_NAME, USER_B_PSWD)
-        user_a_id = self.persistence.get_user(USER_A_NAME).id
-        user_b_id = self.persistence.get_user(USER_B_NAME).id
-        self.persistence.create_task_list(TASK_LIST_1_TITLE, user_a_id)
-        self.persistence.create_task_list(TASK_LIST_2_TITLE, user_b_id)
-        self.persistence.create_task_list(TASK_LIST_3_TITLE, user_b_id)
-        self.persistence.share_task_list_with(3, user_a_id, user_b_id)
+        self.user_a = self.persistence.get_user(USER_A_NAME)
+        self.user_b = self.persistence.get_user(USER_B_NAME)
+        self.persistence.create_task_list(TASK_LIST_1_TITLE, self.user_a.id)
+        self.persistence.create_task_list(TASK_LIST_2_TITLE, self.user_b.id)
+        self.persistence.create_task_list(TASK_LIST_3_TITLE, self.user_b.id)
+        self.persistence.share_task_list_with(3, self.user_a.id, self.user_b.id)
 
     def test_get_user(self):
         user = self.persistence.get_user(USER_A_NAME)
@@ -35,11 +34,10 @@ class TestPersistence(TestCase):
         self.assertEqual(USER_A_PSWD, user.password)
 
     def test_get_users(self):
-        users = self.persistence.get_users()
-        self.assertEqual(USER_A_NAME, users[0].username)
-        self.assertEqual(USER_A_PSWD, users[0].password)
-        self.assertEqual(USER_B_NAME, users[1].username)
-        self.assertEqual(USER_B_PSWD, users[1].password)
+        self.assertEqual(USER_A_NAME, self.user_a.username)
+        self.assertEqual(USER_A_PSWD, self.user_a.password)
+        self.assertEqual(USER_B_NAME, self.user_b.username)
+        self.assertEqual(USER_B_PSWD, self.user_b.password)
 
     def test_no_duplicate_users(self):
         self.assertRaises(IntegrityError, lambda: self.persistence.create_user(USER_A_NAME, "whatever"))
@@ -48,15 +46,34 @@ class TestPersistence(TestCase):
         self.assertRaises(NoResultFound, lambda: self.persistence.create_task_list("whatever", NON_EXISTANT_USER_ID))
 
     def test_get_task_lists_user_a(self):
-        user_a = self.persistence.get_user(USER_A_NAME)
-        tl = self.persistence.get_task_lists(user_a.id)
+        tl = self.persistence.get_task_lists(self.user_a.id)
         self.assertEqual(2, len(tl))
         self.assertEqual(TASK_LIST_1_TITLE, tl[0].title)
         self.assertEqual(TASK_LIST_3_TITLE, tl[1].title)
 
     def test_get_task_lists_user_b(self):
-        user_b = self.persistence.get_user(USER_B_NAME)
-        tl = self.persistence.get_task_lists(user_b.id)
+        tl = self.persistence.get_task_lists(self.user_b.id)
         self.assertEqual(2, len(tl))
         self.assertEqual(TASK_LIST_2_TITLE, tl[0].title)
         self.assertEqual(TASK_LIST_3_TITLE, tl[1].title)
+
+    def test_change_task_list_title_success(self):
+        next_title = "something"
+        self.persistence.change_task_list_title(3, TASK_LIST_3_TITLE, next_title, self.user_a.id)
+        self.assertEqual(next_title, self.persistence.get_task_lists(self.user_b.id)[1].title)
+
+    def test_change_task_list_title_conflict(self):
+        next_title = "something"
+        self.assertRaises(
+            persistence.EditConflictException,
+            lambda: self.persistence.change_task_list_title(3, "wrong previous title", next_title, self.user_a.id),
+        )
+        self.assertEqual(TASK_LIST_3_TITLE, self.persistence.get_task_lists(self.user_b.id)[1].title)
+
+    def test_change_task_list_title_no_permission(self):
+        next_title = "something"
+        self.assertRaises(
+            NoResultFound,
+            lambda: self.persistence.change_task_list_title(2, TASK_LIST_2_TITLE, next_title, self.user_a.id),
+        )
+        self.assertEqual(TASK_LIST_2_TITLE, self.persistence.get_task_lists(self.user_b.id)[0].title)

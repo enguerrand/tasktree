@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, create_engine, Table, Column, Integer, String, select
+from sqlalchemy import DateTime, ForeignKey, create_engine, Table, Column, Integer, String, select, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, relationship
 
@@ -34,6 +34,11 @@ association_table_task_x_task = Table(
     Column("prereq_id", Integer, ForeignKey("task.id")),
     Column("dependent_id", Integer, ForeignKey("task.id")),
 )
+
+
+class EditConflictException(Exception):
+    def __init__(self, current_server_value):
+        self.current_server_value = current_server_value
 
 
 class User(Base):
@@ -100,6 +105,7 @@ class Tag(Base):
         return f"Tag(id={self.id!r}, title={self.title!r})"
 
 
+# FIXME add try / except / rollback blocks
 class Persistence:
     def __init__(self, db_url: str):
         self.engine = create_engine(db_url, echo=True, future=True)
@@ -132,15 +138,31 @@ class Persistence:
         with Session(self.engine) as session:
             return session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id).all()
 
-    def change_task_list_title(self, task_list_id: int, prev_title: str, next_title: str, creating_user_id: int):
-        # FIXME impl
-        # FIXME access control
-        pass
+    def change_task_list_title(self, task_list_id: int, prev_title: str, next_title: str, requesting_user_id: int):
+        with Session(self.engine) as session:
+            task_list = (
+                session.query(TaskList)
+                .join(TaskList.users)
+                .filter(User.id == requesting_user_id)
+                .filter(TaskList.id == task_list_id)
+                .one()
+            )
+            if task_list.title != prev_title:
+                raise EditConflictException(task_list)
+
+            task_list.title = next_title
+            session.commit()
 
     def share_task_list_with(self, task_list_id: int, user_to_add_id: int, requesting_user_id: int):
         with Session(self.engine) as session:
             user_to_add = session.query(User).filter(User.id == user_to_add_id).one()
-            task_list = session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id).filter(TaskList.id == task_list_id).one()
+            task_list = (
+                session.query(TaskList)
+                .join(TaskList.users)
+                .filter(User.id == requesting_user_id)
+                .filter(TaskList.id == task_list_id)
+                .one()
+            )
             task_list.users.append(user_to_add)
             session.commit()
 
