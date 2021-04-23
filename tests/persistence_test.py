@@ -21,23 +21,28 @@ class TestPersistence(TestCase):
         self.persistence.create()
         self.persistence.create_user(USER_A_NAME, USER_A_PSWD)
         self.persistence.create_user(USER_B_NAME, USER_B_PSWD)
-        self.user_a = self.persistence.get_user(USER_A_NAME)
-        self.user_b = self.persistence.get_user(USER_B_NAME)
+        self.user_a = self.persistence.get_user_by_name(USER_A_NAME)
+        self.user_b = self.persistence.get_user_by_name(USER_B_NAME)
         self.persistence.create_task_list(TASK_LIST_1_TITLE, self.user_a.id)
         self.persistence.create_task_list(TASK_LIST_2_TITLE, self.user_b.id)
         self.persistence.create_task_list(TASK_LIST_3_TITLE, self.user_b.id)
         self.persistence.share_task_list_with(3, self.user_a.id, self.user_b.id)
 
     def test_get_user(self):
-        user = self.persistence.get_user(USER_A_NAME)
+        user = self.persistence.get_user(1)
+        self.assertEqual(USER_A_NAME, user.username)
+        self.assertEqual(USER_A_PSWD, user.password)
+
+    def test_get_user_by_name(self):
+        user = self.persistence.get_user_by_name(USER_A_NAME)
         self.assertEqual(USER_A_NAME, user.username)
         self.assertEqual(USER_A_PSWD, user.password)
 
     def test_get_users(self):
-        self.assertEqual(USER_A_NAME, self.user_a.username)
-        self.assertEqual(USER_A_PSWD, self.user_a.password)
-        self.assertEqual(USER_B_NAME, self.user_b.username)
-        self.assertEqual(USER_B_PSWD, self.user_b.password)
+        self.assertEqual(USER_A_NAME, self.persistence.get_users()[0].username)
+        self.assertEqual(USER_A_PSWD, self.persistence.get_users()[0].password)
+        self.assertEqual(USER_B_NAME, self.persistence.get_users()[1].username)
+        self.assertEqual(USER_B_PSWD, self.persistence.get_users()[1].password)
 
     def test_no_duplicate_users(self):
         self.assertRaises(IntegrityError, lambda: self.persistence.create_user(USER_A_NAME, "whatever"))

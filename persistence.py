@@ -120,7 +120,10 @@ class Persistence:
     def get_users(self):
         return self.session.query(User).all()
 
-    def get_user(self, username: str) -> User:
+    def get_user(self, user_id: int) -> User:
+        return self.session.query(User).filter(User.id == user_id).one()
+
+    def get_user_by_name(self, username: str) -> User:
         return self.session.query(User).filter(User.username == username).one()
 
     def create_task_list(self, title: str, requesting_user_id: int):
