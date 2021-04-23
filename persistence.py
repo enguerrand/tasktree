@@ -136,13 +136,7 @@ class Persistence:
         return self.session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id).all()
 
     def change_task_list_title(self, task_list_id: int, prev_title: str, next_title: str, requesting_user_id: int):
-        task_list = (
-            self.session.query(TaskList)
-                .join(TaskList.users)
-                .filter(User.id == requesting_user_id)
-                .filter(TaskList.id == task_list_id)
-                .one()
-        )
+        task_list = self.get_task_list(requesting_user_id, task_list_id)
         if task_list.title != prev_title:
             raise EditConflictException(task_list)
 
@@ -151,15 +145,16 @@ class Persistence:
 
     def share_task_list_with(self, task_list_id: int, user_to_add_id: int, requesting_user_id: int):
         user_to_add = self.session.query(User).filter(User.id == user_to_add_id).one()
-        task_list = (
-            self.session.query(TaskList)
-                .join(TaskList.users)
-                .filter(User.id == requesting_user_id)
-                .filter(TaskList.id == task_list_id)
-                .one()
-        )
+        task_list = self.get_task_list(requesting_user_id, task_list_id)
         task_list.users.append(user_to_add)
         self.session.commit()
+
+    def query_task_lists(self, requesting_user_id: int):
+        return self.session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id)
+
+    def get_task_list(self, requesting_user_id: int, task_list_id: int):
+        task_list = self.query_task_lists(requesting_user_id).filter(TaskList.id == task_list_id).one()
+        return task_list
 
     def remove_task_list(self, task_list_id: int):
         # FIXME impl
@@ -170,6 +165,7 @@ class Persistence:
 
     def create_task(
         self,
+        requesting_user_id: int,
         task_list_id: int,
         title: str,
         due=None,
@@ -178,9 +174,26 @@ class Persistence:
         depending_task_ids=[],
         tags=[],
     ):
-        # FIXME impl
-        # FIXME Access control for task_list_ids and task_ids for prereq and depending tasks
-        pass
+        task_list = self.get_task_list(requesting_user_id, task_list_id)
+        prereq = self.query_tasks(requesting_user_id).filter(Task.id.in_(prereq_task_ids)).all()
+        dependents = self.query_tasks(requesting_user_id).filter(Task.id.in_(depending_task_ids)).all()
+        task = Task(title=title, due=due, description=description, task_list=task_list)
+        task.prerequisites.extend(prereq)
+        task.depending_tasks.extend(dependents)
+        self.session.add(task)
+        self.session.commit()
+        # FIXME Tags
+
+    def query_tasks(self, requesting_user_id: int):
+        return self.session.query(Task) \
+            .join(Task.task_list) \
+            .join(TaskList.users) \
+            .filter(User.id == requesting_user_id)
+
+    def get_task(self, task_id: int, requesting_user_id: int):
+        return self.query_tasks(requesting_user_id)\
+            .filter(Task.id == task_id)\
+            .one()
 
     def move_task_to_list(self, task_list_id: int, from_task_list_id: int, to_task_list_id: int):
         # FIXME impl

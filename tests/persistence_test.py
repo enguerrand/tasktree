@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 import persistence
 
+TASK_ID_1 = 1
 
 USER_A_NAME = "Luke"
 USER_A_PSWD = "aiv2Iihe8&ie6oözahx2Lig"
@@ -27,6 +28,7 @@ class TestPersistence(TestCase):
         self.persistence.create_task_list(TASK_LIST_2_TITLE, self.user_b.id)
         self.persistence.create_task_list(TASK_LIST_3_TITLE, self.user_b.id)
         self.persistence.share_task_list_with(3, self.user_a.id, self.user_b.id)
+        self.persistence.create_task(1, 1, "task 1", description="desc task 1")
 
     def test_get_user(self):
         user = self.persistence.get_user(1)
@@ -49,6 +51,12 @@ class TestPersistence(TestCase):
 
     def test_no_insert_task_list_for_non_existant_user(self):
         self.assertRaises(NoResultFound, lambda: self.persistence.create_task_list("whatever", NON_EXISTANT_USER_ID))
+
+    def test_get_task_list(self):
+        self.assertEqual(TASK_LIST_1_TITLE, self.persistence.get_task_list(requesting_user_id=1, task_list_id=1).title)
+
+    def test_get_task_list(self):
+        self.assertRaises(NoResultFound, lambda: self.persistence.get_task_list(requesting_user_id=2, task_list_id=1))
 
     def test_get_task_lists_user_a(self):
         tl = self.persistence.get_task_lists(self.user_a.id)
@@ -82,3 +90,9 @@ class TestPersistence(TestCase):
             lambda: self.persistence.change_task_list_title(2, TASK_LIST_2_TITLE, next_title, self.user_a.id),
         )
         self.assertEqual(TASK_LIST_2_TITLE, self.persistence.get_task_lists(self.user_b.id)[0].title)
+
+    def test_get_task(self):
+        self.assertEqual("task 1", self.persistence.get_task(TASK_ID_1, self.user_a.id).title)
+
+    def test_get_task(self):
+        self.assertRaises(NoResultFound, lambda: self.persistence.get_task(TASK_ID_1, self.user_b.id))
