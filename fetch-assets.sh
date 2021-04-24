@@ -34,3 +34,5 @@ elif [ "$mode" == "dev" ]; then
     wget "${reactjs_baseurl}react@${reactjs_version}/umd/react.development.js" -N -O assets/js/react.js
     wget "${reactjs_baseurl}react-dom@${reactjs_version}/umd/react-dom.development.js" -N -O assets/js/react-dom.js
 fi
+
+wget https://raw.githubusercontent.com/enguerrand/reactjs-helpers/master/reactjs-helpers.js -P assets/js/
