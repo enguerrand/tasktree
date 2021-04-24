@@ -20,13 +20,6 @@ association_table_user_x_task_list = Table(
 )
 
 
-association_table_task_x_tag = Table(
-    "association_task_x_tag",
-    Base.metadata,
-    Column("task_id", Integer, ForeignKey("task.id")),
-    Column("tag_id", Integer, ForeignKey("tag.id")),
-)
-
 association_table_task_x_task = Table(
     "association_task_x_task",
     Base.metadata,
@@ -73,7 +66,7 @@ class Task(Base):
     due = Column("due", DateTime, nullable=True)
     description = Column(String)
     task_list_id = Column(Integer, ForeignKey("task_list.id"))
-    tags = relationship("Tag", secondary=association_table_task_x_tag, back_populates="tasks")
+    tags = relationship("Tag", backref="task")
     prerequisites = relationship(
         "Task",
         secondary=association_table_task_x_task,
@@ -98,7 +91,7 @@ class Tag(Base):
         Integer, primary_key=True, autoincrement=True
     )  # do not expose id over web api. OR: add column for list id to prevent tags leaking to other lists?
     title = Column(String, nullable=False)
-    tasks = relationship("Task", secondary=association_table_task_x_tag, back_populates="tags")
+    task_id = Column(Integer, ForeignKey("task.id"))
 
     def __repr__(self):
         return f"Tag(id={self.id!r}, title={self.title!r})"
