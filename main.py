@@ -5,8 +5,9 @@ from flask_login import LoginManager, current_user, login_required, login_user, 
 from sqlalchemy.exc import NoResultFound
 
 from data_view import DataView, UserView
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, Response, jsonify, render_template, request, send_from_directory
 from persistence import DB_URL_PROD, Persistence
+import themes
 
 load_dotenv()
 API_BASE_URL = "/api/"
@@ -20,6 +21,9 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+theme = themes.solarized_dark
 
 
 @login_manager.user_loader
@@ -68,9 +72,14 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/css/style.css")
+def css():
+    return Response(render_template("css/style.css", theme=theme), mimetype="text/css")
+
+
 @app.route("/js/<path:path>")
 def serve_js(path):
-    return send_from_directory("frontend/js", path)
+    return send_from_directory("js", path)
 
 
 @app.route("/assets/<path:path>")

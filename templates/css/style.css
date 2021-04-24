@@ -1,0 +1,17 @@
+body {
+    margin: 1em 0;
+    color: {{ theme.bodyText}};
+    background-color: {{ theme.background }};
+}
+
+#content {
+    margin-top: 2em;
+}
+
+a, a:hover {
+    color: {{ theme.links }};
+}
+
+a:visited, a:visited:hover {
+    color: {{ theme.linksVisited }};
+}
