@@ -5,7 +5,7 @@ from flask_login import LoginManager, current_user, login_required, login_user, 
 from sqlalchemy.exc import NoResultFound
 
 from data_view import DataView, UserView
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from persistence import DB_URL_PROD, Persistence
 
 load_dotenv()
@@ -61,6 +61,11 @@ def get_users():
 def get_user(user_id: int):
     data_view = DataView(persistence, current_user)
     return jsonify(data_view.get_user(API_BASE_USERS, user_id))
+
+
+@app.route("/assets/<path:path>")
+def serve_assets(path):
+    return send_from_directory("assets", path)
 
 
 @app.errorhandler(NoResultFound)
