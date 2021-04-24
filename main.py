@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 from sqlalchemy.exc import NoResultFound
 
@@ -8,9 +10,12 @@ from persistence import DB_URL_PROD, Persistence
 load_dotenv()
 API_BASE_URL = "/api/"
 API_BASE_USERS = API_BASE_URL + "users/"
+
 persistence = Persistence(DB_URL_PROD)
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
+app.config['SECURITY_PASSWORD_SALT'] = os.environ.get("SECURITY_PASSWORD_SALT")
 
 
 # FIXME implement login / session handling
