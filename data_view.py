@@ -1,21 +1,19 @@
 import json
 from typing import List
 
+from flask_login import UserMixin
+
 from persistence import Persistence, User
 
 
-class UserView:
-    def __init__(self, user: User, api_base_url: str):
+class UserView(UserMixin):
+    def __init__(self, user: User, api_base_url_users: str):
         self.id = user.id
         self.username = user.username
-        self.api_base_url = api_base_url
+        self.api_base_url = api_base_url_users
 
     def as_dict(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "url": self.api_base_url + str(self.id)
-        }
+        return {"id": self.id, "username": self.username, "url": self.api_base_url + str(self.id)}
 
 
 class DataView:

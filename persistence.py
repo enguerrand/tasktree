@@ -1,7 +1,9 @@
 import os
 from datetime import datetime
 
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy import DateTime, ForeignKey, create_engine, Table, Column, Integer, String
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
@@ -106,7 +108,8 @@ class Persistence:
         Base.metadata.create_all(self.engine)
 
     def create_user(self, username: str, password: str):
-        user = User(username=username, password=password)
+        password_hash = pbkdf2_sha256.hash(password)
+        user = User(username=username, password=password_hash)
         self.session.add(user)
         self.session.commit()
 
@@ -118,6 +121,15 @@ class Persistence:
 
     def get_user_by_name(self, username: str) -> User:
         return self.session.query(User).filter(User.username == username).one()
+
+    def get_authenticated_user_by_name(self, username: str, password: str) -> User:
+        try:
+            user = self.get_user_by_name(username)
+        except NoResultFound:
+            return None
+        if not pbkdf2_sha256.verify(password, user.password):
+            return None
+        return user
 
     def create_task_list(self, title: str, requesting_user_id: int):
         user = self.session.query(User).filter(User.id == requesting_user_id).one()
