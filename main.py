@@ -1,9 +1,11 @@
+from dotenv import load_dotenv
 from sqlalchemy.exc import NoResultFound
 
 from data_view import DataView
 from flask import Flask, jsonify
 from persistence import DB_URL_PROD, Persistence
 
+load_dotenv()
 API_BASE_URL = "/api/"
 API_BASE_USERS = API_BASE_URL + "users/"
 persistence = Persistence(DB_URL_PROD)

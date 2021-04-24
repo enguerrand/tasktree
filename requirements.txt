@@ -17,6 +17,7 @@ Jinja2==2.11.3
 MarkupSafe==1.1.1
 passlib==1.7.4
 pycparser==2.20
+python-dotenv==0.17.0
 six==1.15.0
 SQLAlchemy==1.4.11
 Werkzeug==1.0.1
