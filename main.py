@@ -36,8 +36,8 @@ def load_user(user_id):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    username = request.args.get("username")
-    password = request.args.get("password")
+    username = request.form["username"]
+    password = request.form["password"]
     authenticated_user = persistence.get_authenticated_user_by_name(username, password)
     if authenticated_user is not None:
         me = UserView(authenticated_user, API_BASE_USERS)

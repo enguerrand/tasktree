@@ -6,10 +6,7 @@ class TaskTreeApp extends React.Component {
     }
 
     render() {
-        return div(
-            null,
-            "Hi!"
-        )
+        return e(LoginForm);
     }
 }
 
