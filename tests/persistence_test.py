@@ -72,22 +72,14 @@ class TestPersistence(TestCase):
 
     def test_change_task_list_title_success(self):
         next_title = "something"
-        self.persistence.change_task_list_title(3, TASK_LIST_3_TITLE, next_title, self.user_a.id)
+        self.persistence.set_task_list_title(3, next_title, self.user_a.id)
         self.assertEqual(next_title, self.persistence.get_task_lists(self.user_b.id)[1].title)
-
-    def test_change_task_list_title_conflict(self):
-        next_title = "something"
-        self.assertRaises(
-            persistence.EditConflictException,
-            lambda: self.persistence.change_task_list_title(3, "wrong previous title", next_title, self.user_a.id),
-        )
-        self.assertEqual(TASK_LIST_3_TITLE, self.persistence.get_task_lists(self.user_b.id)[1].title)
 
     def test_change_task_list_title_no_permission(self):
         next_title = "something"
         self.assertRaises(
             NoResultFound,
-            lambda: self.persistence.change_task_list_title(2, TASK_LIST_2_TITLE, next_title, self.user_a.id),
+            lambda: self.persistence.set_task_list_title(2, next_title, self.user_a.id),
         )
         self.assertEqual(TASK_LIST_2_TITLE, self.persistence.get_task_lists(self.user_b.id)[0].title)
 
