@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import List, Optional
 
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy import DateTime, ForeignKey, and_, create_engine, Table, Column, Integer, String, delete
@@ -130,7 +131,7 @@ class Persistence:
     def get_user_by_name(self, username: str) -> User:
         return self.session.query(User).filter(User.username == username).one()
 
-    def get_authenticated_user_by_name(self, username: str, password: str) -> User:
+    def get_authenticated_user_by_name(self, username: str, password: str) -> Optional[User]:
         try:
             user = self.get_user_by_name(username)
         except NoResultFound:
@@ -206,8 +207,11 @@ class Persistence:
     def get_task(self, task_id: int, requesting_user_id: int):
         return self.query_tasks(requesting_user_id).filter(Task.id == task_id).one()
 
-    def get_task_conflict(self, requesting_user_id: int, task_id: int) -> TaskConflict:
+    def get_task_conflict(self, requesting_user_id: int, task_id: int) -> Optional[TaskConflict]:
         return self.query_task_conflicts(requesting_user_id, task_id).limit(1).one_or_none()
+
+    def get_task_conflicts(self, requesting_user_id: int) -> List[TaskConflict]:
+        return self.query_task_conflicts(requesting_user_id).all()
 
     def move_task_to_list(self, task_list_id: int, from_task_list_id: int, to_task_list_id: int):
         # FIXME impl
@@ -226,7 +230,6 @@ class Persistence:
         requesting_user_id: int,
     ):
         task = self.get_task(task_id, requesting_user_id)
-        conflict = None
         task.due = self.merge_date(task.due, prev_due, next_due)
         self.session.execute(
             delete(TaskConflict)
