@@ -235,6 +235,10 @@ class TestPersistence(TestCase):
         self.assertTrue(TASK_1_TAG_1 in [t.title for t in task1.tags])  # just to assert proper test setup
         self.persistence.remove_tag(self.user_a.id, task1.id, TASK_1_TAG_1)
         self.assertFalse(TASK_1_TAG_1 in [t.title for t in task1.tags])
+        self.assertEqual(1, len(task1.tags))
+        self.persistence.remove_tag(self.user_a.id, task1.id, TASK_1_TAG_2)
+        self.assertEqual(0, len(task1.tags))
+        self.assertIsNotNone(self.persistence.get_task(self.user_a.id, TASK_ID_1))
 
     def test_delete_fails_permission(self):
         task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
@@ -242,5 +246,10 @@ class TestPersistence(TestCase):
         self.assertRaises(NoResultFound, lambda: self.persistence.remove_tag(self.user_b.id, task1.id, TASK_1_TAG_1))
         self.assertTrue(TASK_1_TAG_1 in [t.title for t in task1.tags])
 
-
-
+    def test_delete_task_list(self):
+        task_list_id = 1
+        self.persistence.remove_task_list(self.user_a.id, task_list_id)
+        self.assertRaises(NoResultFound, lambda: self.persistence.get_task_list(self.user_a.id, task_list_id))
+        self.assertRaises(NoResultFound, lambda: self.persistence.get_task(self.user_a.id, TASK_ID_1))
+        task_1_tags = self.persistence.session.query(persistence.Tag).filter(persistence.Tag.task_id == TASK_ID_1).all()
+        self.assertEqual(0, len(task_1_tags))

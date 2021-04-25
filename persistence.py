@@ -49,7 +49,7 @@ class TaskList(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     users = relationship("User", secondary=association_table_user_x_task_list, back_populates="task_lists")
-    tasks = relationship("Task", backref="task_list")
+    tasks = relationship("Task", backref="task_list", cascade="all, delete")
 
     def __repr__(self):
         return f"TaskList(id={self.id!r}, title={self.title!r})"
@@ -65,7 +65,7 @@ class Task(Base):
     completed = Column("completed", DateTime, nullable=True)
     description = Column(String, nullable=False, default="")
     task_list_id = Column(Integer, ForeignKey("task_list.id"))
-    tags = relationship("Tag", backref="task")
+    tags = relationship("Tag", backref="task", cascade="all, delete")
     prerequisites = relationship(
         "Task",
         secondary=association_table_task_x_task,
@@ -90,9 +90,9 @@ class TaskConflict(Base):
     title = Column(String, nullable=True)
     description = Column(String, nullable=True)
     task_id = Column(Integer, ForeignKey("task.id"))
-    task = relationship("Task", backref="conflicts")
+    task = relationship("Task", backref="conflicts", cascade="all, delete")
     user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", backref="conflicts")
+    user = relationship("User", backref="conflicts", cascade="all, delete")
 
 
 class Tag(Base):
@@ -167,12 +167,10 @@ class Persistence:
         task_list = self.query_task_lists(requesting_user_id).filter(TaskList.id == task_list_id).one()
         return task_list
 
-    def remove_task_list(self, task_list_id: int):
-        # FIXME impl
-        # FIXME delete contained tasks
-        # FIXME potentially also delete orphaned tags
-        # FIXME access control
-        pass
+    def remove_task_list(self, requesting_user_id: int, task_list_id: int):
+        task_list = self.get_task_list(requesting_user_id, task_list_id)
+        self.session.delete(task_list)
+        self.session.commit()
 
     def create_task(
         self,
@@ -259,8 +257,6 @@ class Persistence:
             )
         self.session.commit()
 
-    # FIXME implement dependency edit
-
     def complete_task(self, requesting_user_id: int, task_id: int):
         to_complete = self.get_task(requesting_user_id, task_id)
         if to_complete.due is None:
@@ -287,24 +283,20 @@ class Persistence:
                 self.session.delete(t)
         self.session.commit()
 
-    def add_prerequisite(self, task_id: int, prerequisite_task_id: int):
+    def add_prerequisite(self, requesting_user_id: int, task_id: int, prerequisite_task_id: int):
         # FIXME impl
-        # FIXME Access control for task_ids
         pass
 
-    def remove_prerequisite(self, task_id: int, prerequisite_task_id: int):
+    def remove_prerequisite(self, requesting_user_id: int, task_id: int, prerequisite_task_id: int):
         # FIXME impl
-        # FIXME Access control for task_ids
         pass
 
-    def add_dependent(self, task_id: int, dependent_id: int):
+    def add_dependent(self, requesting_user_id: int, task_id: int, dependent_id: int):
         # FIXME impl
-        # FIXME Access control for task_ids
         pass
 
-    def remove_dependent(self, task_id: int, dependent_id: int):
+    def remove_dependent(self, requesting_user_id: int, task_id: int, dependent_id: int):
         # FIXME impl
-        # FIXME Access control for task_ids
         pass
 
     def merge_date(self, old: DateTime, expected_old: DateTime, wanted_new: DateTime):
