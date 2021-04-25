@@ -122,7 +122,7 @@ class Persistence:
         self.session.add(user)
         self.session.commit()
 
-    def get_users(self):
+    def get_users(self) -> List[User]:
         return self.session.query(User).all()
 
     def get_user(self, user_id: int) -> User:
@@ -146,7 +146,7 @@ class Persistence:
         self.session.add(task_list)
         self.session.commit()
 
-    def get_task_lists(self, requesting_user_id: int):
+    def get_task_lists(self, requesting_user_id: int) -> List[TaskList]:
         return self.session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id).all()
 
     def set_task_list_title(self, task_list_id: int, title: str, requesting_user_id: int):
@@ -163,7 +163,7 @@ class Persistence:
     def query_task_lists(self, requesting_user_id: int):
         return self.session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id)
 
-    def get_task_list(self, requesting_user_id: int, task_list_id: int):
+    def get_task_list(self, requesting_user_id: int, task_list_id: int) -> TaskList:
         task_list = self.query_task_lists(requesting_user_id).filter(TaskList.id == task_list_id).one()
         return task_list
 
@@ -204,7 +204,7 @@ class Persistence:
             return conflicts_query
         return conflicts_query.filter(TaskConflict.task_id == task_id)
 
-    def get_task(self, task_id: int, requesting_user_id: int):
+    def get_task(self, task_id: int, requesting_user_id: int) -> Task:
         return self.query_tasks(requesting_user_id).filter(Task.id == task_id).one()
 
     def get_task_conflict(self, requesting_user_id: int, task_id: int) -> Optional[TaskConflict]:
