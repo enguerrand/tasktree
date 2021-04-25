@@ -33,18 +33,14 @@ class TestPersistence(TestCase):
     def test_get_user(self):
         user = self.persistence.get_user(1)
         self.assertEqual(USER_A_NAME, user.username)
-        self.assertEqual(USER_A_PSWD, user.password)
 
     def test_get_user_by_name(self):
         user = self.persistence.get_user_by_name(USER_A_NAME)
         self.assertEqual(USER_A_NAME, user.username)
-        self.assertEqual(USER_A_PSWD, user.password)
 
     def test_get_users(self):
         self.assertEqual(USER_A_NAME, self.persistence.get_users()[0].username)
-        self.assertEqual(USER_A_PSWD, self.persistence.get_users()[0].password)
         self.assertEqual(USER_B_NAME, self.persistence.get_users()[1].username)
-        self.assertEqual(USER_B_PSWD, self.persistence.get_users()[1].password)
 
     def test_no_duplicate_users(self):
         self.assertRaises(IntegrityError, lambda: self.persistence.create_user(USER_A_NAME, "whatever"))
