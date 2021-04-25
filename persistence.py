@@ -205,7 +205,7 @@ class Persistence:
             return conflicts_query
         return conflicts_query.filter(TaskConflict.task_id == task_id)
 
-    def get_task(self, task_id: int, requesting_user_id: int) -> Task:
+    def get_task(self, requesting_user_id: int, task_id: int) -> Task:
         return self.query_tasks(requesting_user_id).filter(Task.id == task_id).one()
 
     def get_task_conflict(self, requesting_user_id: int, task_id: int) -> Optional[TaskConflict]:
@@ -230,7 +230,7 @@ class Persistence:
         next_description: str,
         requesting_user_id: int,
     ):
-        task = self.get_task(task_id, requesting_user_id)
+        task = self.get_task(requesting_user_id, task_id)
         task.due = self.merge_date(task.due, prev_due, next_due)
         self.session.execute(
             delete(TaskConflict)
@@ -268,18 +268,19 @@ class Persistence:
         pass
 
     def get_tags(self, requesting_user_id: int, task_id: int) -> List[str]:
-        return self.get_task(task_id, requesting_user_id).tags
+        return self.get_task(requesting_user_id, task_id).tags
 
     def add_tag(self, requesting_user_id: int, task_id: int, tag: str):
-        to_edit = self.get_task(task_id, requesting_user_id)
+        to_edit = self.get_task(requesting_user_id, task_id)
         to_edit.tags.append(Tag(title=tag))
         self.session.commit()
 
-    def remove_tag(self, task_id: int, tag: str):
-        # FIXME impl
-        # FIXME Access control for task_ids
-        # FIXME delete tag if no references to it are left
-        pass
+    def remove_tag(self, requesting_user_id: int, task_id: int, tag: str):
+        task = self.get_task(requesting_user_id, task_id)
+        for t in task.tags:
+            if t.title == tag:
+                self.session.delete(t)
+        self.session.commit()
 
     def add_prerequisite(self, task_id: int, prerequisite_task_id: int):
         # FIXME impl

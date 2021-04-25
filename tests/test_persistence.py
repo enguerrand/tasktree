@@ -113,10 +113,10 @@ class TestPersistence(TestCase):
         self.assertEqual(TASK_LIST_2_TITLE, self.persistence.get_task_lists(self.user_b.id)[0].title)
 
     def test_get_task(self):
-        self.assertEqual("task 1", self.persistence.get_task(TASK_ID_1, self.user_a.id).title)
+        self.assertEqual("task 1", self.persistence.get_task(self.user_a.id, TASK_ID_1).title)
 
     def test_get_task_not_found(self):
-        self.assertRaises(NoResultFound, lambda: self.persistence.get_task(TASK_ID_1, self.user_b.id))
+        self.assertRaises(NoResultFound, lambda: self.persistence.get_task(self.user_b.id, TASK_ID_1))
 
     def test_update_task_success(self):
         new_title = "new title"
@@ -124,7 +124,7 @@ class TestPersistence(TestCase):
         self.persistence.update_task(
             TASK_ID_1, TASK_1_TITLE, None, TASK_1_DESCRIPTION, new_title, None, new_description, self.user_a.id
         )
-        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(new_title, updated.title)
         self.assertEqual(new_description, updated.description)
         self.assertIsNone(self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1))
@@ -135,7 +135,7 @@ class TestPersistence(TestCase):
         self.persistence.update_task(
             TASK_ID_1, "out of sync", None, TASK_1_DESCRIPTION, new_title, None, new_description, self.user_a.id
         )
-        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
         self.assertEqual(new_description, updated.description)
         conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
@@ -148,7 +148,7 @@ class TestPersistence(TestCase):
         self.persistence.update_task(
             TASK_ID_1, TASK_1_TITLE, None, "out of sync", new_title, None, new_description, self.user_a.id
         )
-        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(new_title, updated.title)
         self.assertEqual(TASK_1_DESCRIPTION, updated.description)
         conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
@@ -161,7 +161,7 @@ class TestPersistence(TestCase):
         self.persistence.update_task(
             TASK_ID_1, "out of sync", None, "out of sync", new_title, None, new_description, self.user_a.id
         )
-        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
         self.assertEqual(TASK_1_DESCRIPTION, updated.description)
         conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
@@ -174,7 +174,7 @@ class TestPersistence(TestCase):
         self.persistence.update_task(
             TASK_ID_1, "out of sync", None, "out of sync", new_title, None, new_description, self.user_a.id
         )
-        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
         self.assertEqual(TASK_1_DESCRIPTION, updated.description)
         conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
@@ -182,7 +182,7 @@ class TestPersistence(TestCase):
         self.assertEqual(new_description, conflict.description)
 
     def test_update_task_due_conflict_present_is_none(self):
-        task1 = self.persistence.get_task(1, self.user_a.id)
+        task1 = self.persistence.get_task(self.user_a.id, 1)
         self.date_conflicts(task=task1, prev=DATE_TIME_09, req=DATE_TIME_11, expect=DATE_TIME_11)
 
     def test_update_task_due_conflict_request_is_older(self):
@@ -203,7 +203,7 @@ class TestPersistence(TestCase):
         self.persistence.update_task(
             task.id, task.title, prev, task.description, new_title, req, new_description, self.user_a.id
         )
-        updated = self.persistence.get_task(task.id, self.user_a.id)
+        updated = self.persistence.get_task(self.user_a.id, task.id)
         self.assertEqual(expect, updated.due)
         self.assertEqual([], self.persistence.get_task_conflicts(self.user_a.id))
 
@@ -212,9 +212,24 @@ class TestPersistence(TestCase):
         self.assertEqual([TASK_1_TAG_1, TASK_1_TAG_2], [t.title for t in tags])
 
     def test_add_tag(self):
-        task1 = self.persistence.get_task(TASK_ID_1, self.user_a.id)
-        task2 = self.persistence.get_task(TASK_ID_2, self.user_a.id)
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        task2 = self.persistence.get_task(self.user_a.id, TASK_ID_2)
         self.persistence.add_tag(self.user_a.id, TASK_ID_1, "whatever")
         self.persistence.add_tag(self.user_a.id, TASK_ID_2, "whatelse")
         self.assertTrue("whatever" in [t.title for t in task1.tags])
         self.assertTrue("whatelse" in [t.title for t in task2.tags])
+
+    def test_delete_tag(self):
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertTrue(TASK_1_TAG_1 in [t.title for t in task1.tags])  # just to assert proper test setup
+        self.persistence.remove_tag(self.user_a.id, task1.id, TASK_1_TAG_1)
+        self.assertFalse(TASK_1_TAG_1 in [t.title for t in task1.tags])
+
+    def test_delete_fails_permission(self):
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertTrue(TASK_1_TAG_1 in [t.title for t in task1.tags])  # just to assert proper test setup
+        self.assertRaises(NoResultFound, lambda: self.persistence.remove_tag(self.user_b.id, task1.id, TASK_1_TAG_1))
+        self.assertTrue(TASK_1_TAG_1 in [t.title for t in task1.tags])
+
+
+
