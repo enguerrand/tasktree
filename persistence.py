@@ -261,11 +261,16 @@ class Persistence:
 
     # FIXME implement dependency edit
 
-    def remove_task(self, task_id):
-        # FIXME impl
-        # FIXME Access control for task_ids for prereq and depending tasks
-        # FIXME delete orphaned tasks
-        pass
+    def complete_task(self, requesting_user_id: int, task_id: int):
+        to_complete = self.get_task(requesting_user_id, task_id)
+        if to_complete.due is None:
+            to_complete.due = datetime.utcnow()
+        self.session.commit()
+
+    def un_complete_task(self, requesting_user_id: int, task_id: int):
+        to_un_complete = self.get_task(requesting_user_id, task_id)
+        to_un_complete.due = None
+        self.session.commit()
 
     def get_tags(self, requesting_user_id: int, task_id: int) -> List[str]:
         return self.get_task(requesting_user_id, task_id).tags

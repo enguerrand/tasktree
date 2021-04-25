@@ -197,6 +197,17 @@ class TestPersistence(TestCase):
     def test_update_task_due_conflict_none_requested(self):
         self.date_conflicts(task=self.task_due_at_ten, prev=DATE_TIME_09, req=None, expect=DATE_TIME_10)
 
+    def test_task_completion(self):
+        self.assertIsNone(self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
+        self.persistence.complete_task(self.user_a.id, TASK_ID_1)
+        self.assertIsNotNone(self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
+
+    def test_task_un_completion(self):
+        self.persistence.complete_task(self.user_a.id, TASK_ID_1)
+        self.assertIsNotNone(self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
+        self.persistence.un_complete_task(self.user_a.id, TASK_ID_1)
+        self.assertIsNone(self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
+
     def date_conflicts(self, task, prev, req, expect):
         new_title = task.title
         new_description = task.description
