@@ -181,9 +181,9 @@ class Persistence:
         title: str,
         due=None,
         description=None,
-        prereq_task_ids=[],
-        depending_task_ids=[],
-        tags=[],
+        prereq_task_ids=(),
+        depending_task_ids=(),
+        tags=(),
     ):
         task_list = self.get_task_list(requesting_user_id, task_list_id)
         prereq = self.query_tasks(requesting_user_id).filter(Task.id.in_(prereq_task_ids)).all()
@@ -191,9 +191,10 @@ class Persistence:
         task = Task(title=title, due=due, description=description, task_list=task_list)
         task.prerequisites.extend(prereq)
         task.depending_tasks.extend(dependents)
+        for t in tags:
+            task.tags.append(Tag(title=t))
         self.session.add(task)
         self.session.commit()
-        # FIXME Tags
 
     def query_tasks(self, requesting_user_id: int):
         return self.session.query(Task).join(Task.task_list).join(TaskList.users).filter(User.id == requesting_user_id)
@@ -266,14 +267,13 @@ class Persistence:
         # FIXME delete orphaned tasks
         pass
 
-    def get_visible_tags(self, user_id: int):
-        # FIXME query: user_id -> lists -> tasks -> tags
-        pass
+    def get_tags(self, requesting_user_id: int, task_id: int) -> List[str]:
+        return self.get_task(task_id, requesting_user_id).tags
 
-    def add_tag(self, task_id: int, tag: str):
-        # FIXME impl
-        # FIXME Access control for task_ids
-        pass
+    def add_tag(self, requesting_user_id: int, task_id: int, tag: str):
+        to_edit = self.get_task(task_id, requesting_user_id)
+        to_edit.tags.append(Tag(title=tag))
+        self.session.commit()
 
     def remove_tag(self, task_id: int, tag: str):
         # FIXME impl

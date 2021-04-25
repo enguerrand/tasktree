@@ -7,8 +7,11 @@ import persistence
 
 
 TASK_ID_1 = 1
+TASK_ID_2 = 2
 TASK_1_TITLE = "task 1"
 TASK_1_DESCRIPTION = "desc task 1"
+TASK_2_TITLE = "task 2"
+TASK_2_DESCRIPTION = "desc task 2"
 
 USER_A_NAME = "Luke"
 USER_A_PSWD = "aiv2Iihe8&ie6oözahx2Lig"
@@ -17,6 +20,8 @@ USER_B_PSWD = "aiv2Iihe8&ie6oözahx2Lih"
 TASK_LIST_1_TITLE = "get it done"
 TASK_LIST_2_TITLE = "let it wait"
 TASK_LIST_3_TITLE = "shared stuff"
+TASK_1_TAG_1 = "first tag"
+TASK_1_TAG_2 = "second tag"
 TASK_DUE_AT_TEN = "due at 10"
 NON_EXISTANT_USER_ID = 42
 
@@ -39,6 +44,9 @@ class TestPersistence(TestCase):
         self.persistence.create_task_list(TASK_LIST_2_TITLE, self.user_b.id)
         self.persistence.create_task_list(TASK_LIST_3_TITLE, self.user_b.id)
         self.persistence.share_task_list_with(3, self.user_a.id, self.user_b.id)
+        self.persistence.create_task(
+            1, 1, TASK_1_TITLE, description=TASK_1_DESCRIPTION, tags=(TASK_1_TAG_1, TASK_1_TAG_2)
+        )
         self.persistence.create_task(1, 1, TASK_1_TITLE, description=TASK_1_DESCRIPTION)
         self.persistence.create_task(1, 1, TASK_DUE_AT_TEN, description="due at 10 desc", due=DATE_TIME_10)
         self.task_due_at_ten = self.persistence.query_tasks(1).filter(persistence.Task.title == TASK_DUE_AT_TEN).one()
@@ -198,3 +206,15 @@ class TestPersistence(TestCase):
         updated = self.persistence.get_task(task.id, self.user_a.id)
         self.assertEqual(expect, updated.due)
         self.assertEqual([], self.persistence.get_task_conflicts(self.user_a.id))
+
+    def test_get_tags(self):
+        tags = self.persistence.get_tags(self.user_a.id, TASK_ID_1)
+        self.assertEqual([TASK_1_TAG_1, TASK_1_TAG_2], [t.title for t in tags])
+
+    def test_add_tag(self):
+        task1 = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        task2 = self.persistence.get_task(TASK_ID_2, self.user_a.id)
+        self.persistence.add_tag(self.user_a.id, TASK_ID_1, "whatever")
+        self.persistence.add_tag(self.user_a.id, TASK_ID_2, "whatelse")
+        self.assertTrue("whatever" in [t.title for t in task1.tags])
+        self.assertTrue("whatelse" in [t.title for t in task2.tags])
