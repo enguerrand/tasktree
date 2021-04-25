@@ -5,7 +5,7 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy import DateTime, ForeignKey, and_, create_engine, Table, Column, Integer, String, delete
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, scoped_session, sessionmaker
+from sqlalchemy.orm import Query, relationship, scoped_session, sessionmaker
 
 Base = declarative_base()
 
@@ -108,7 +108,7 @@ class Tag(Base):
 
 class Persistence:
     def __init__(self, db_url: str):
-        self.engine = create_engine(db_url, echo=True, future=True)
+        self.engine = create_engine(db_url, echo=False, future=True)
         self.session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self.engine))
 
     def create(self):
@@ -196,14 +196,17 @@ class Persistence:
     def query_tasks(self, requesting_user_id: int):
         return self.session.query(Task).join(Task.task_list).join(TaskList.users).filter(User.id == requesting_user_id)
 
-    def query_task_conflicts(self, requesting_user_id: int):
-        return self.session.query(TaskConflict).filter(TaskConflict.user_id == requesting_user_id)
-
-    def query_task_conflicts(self, requesting_user_id: int, task_id: int):
-        return self.query_task_conflicts(requesting_user_id).filter(TaskConflict.task_id == task_id)
+    def query_task_conflicts(self, requesting_user_id: int, task_id=None):
+        conflicts_query = self.session.query(TaskConflict).filter(TaskConflict.user_id == requesting_user_id)
+        if task_id is None:
+            return conflicts_query
+        return conflicts_query.filter(TaskConflict.task_id == task_id)
 
     def get_task(self, task_id: int, requesting_user_id: int):
         return self.query_tasks(requesting_user_id).filter(Task.id == task_id).one()
+
+    def get_task_conflict(self, requesting_user_id: int, task_id: int) -> TaskConflict:
+        return self.query_task_conflicts(requesting_user_id, task_id).limit(1).one_or_none()
 
     def move_task_to_list(self, task_list_id: int, from_task_list_id: int, to_task_list_id: int):
         # FIXME impl
@@ -222,30 +225,33 @@ class Persistence:
         requesting_user_id: int,
     ):
         task = self.get_task(task_id, requesting_user_id)
-        title_conflict = None
-        description_conflict = None
+        conflict = None
         task.due = self.merge_date(task.due, prev_due, next_due)
         self.session.execute(
-            delete(TaskConflict).where(
-                and_(TaskConflict.user_id == requesting_user_id, TaskConflict.task_id == task.id).execution_options(
-                    synchronize_session="fetch"
-                )
-            )
+            delete(TaskConflict)
+            .where(and_(TaskConflict.user_id == requesting_user_id, TaskConflict.task_id == task.id))
+            .execution_options(synchronize_session="fetch")
         )
 
-        if prev_title != task.title:
-            title_conflict = prev_title
-        if prev_description != task.description:
-            description_conflict = prev_description
-        if title_conflict is not None or description_conflict is not None:
+        title_conflicts = prev_title != task.title
+        description_conflicts = prev_description != task.description
+        if title_conflicts:
+            conflict_title = next_title
+        else:
+            conflict_title = None
+            task.title = next_title
+        if description_conflicts:
+            conflict_description = next_description
+        else:
+            conflict_description = None
+            task.description = next_description
+
+        if title_conflicts or description_conflicts:
             self.session.add(
                 TaskConflict(
-                    user_id=requesting_user_id, task_id=task.id, title=title_conflict, description=description_conflict
+                    user_id=requesting_user_id, task_id=task.id, title=conflict_title, description=conflict_description
                 )
             )
-        else:
-            task.title = next_title
-            task.description = next_description
         self.session.commit()
 
     # FIXME implement dependency edit

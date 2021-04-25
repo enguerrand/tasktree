@@ -3,7 +3,10 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 import persistence
 
+
 TASK_ID_1 = 1
+TASK_1_TITLE = "task 1"
+TASK_1_DESCRIPTION = "desc task 1"
 
 USER_A_NAME = "Luke"
 USER_A_PSWD = "aiv2Iihe8&ie6oözahx2Lig"
@@ -27,7 +30,7 @@ class TestPersistence(TestCase):
         self.persistence.create_task_list(TASK_LIST_2_TITLE, self.user_b.id)
         self.persistence.create_task_list(TASK_LIST_3_TITLE, self.user_b.id)
         self.persistence.share_task_list_with(3, self.user_a.id, self.user_b.id)
-        self.persistence.create_task(1, 1, "task 1", description="desc task 1")
+        self.persistence.create_task(1, 1, TASK_1_TITLE, description=TASK_1_DESCRIPTION)
 
     def test_get_user(self):
         user = self.persistence.get_user(1)
@@ -93,5 +96,55 @@ class TestPersistence(TestCase):
     def test_get_task(self):
         self.assertEqual("task 1", self.persistence.get_task(TASK_ID_1, self.user_a.id).title)
 
-    def test_get_task(self):
+    def test_get_task_not_found(self):
         self.assertRaises(NoResultFound, lambda: self.persistence.get_task(TASK_ID_1, self.user_b.id))
+
+    def test_update_task_success(self):
+        new_title = "new title"
+        new_description = "next desc"
+        self.persistence.update_task(
+            TASK_ID_1, TASK_1_TITLE, None, TASK_1_DESCRIPTION, new_title, None, new_description, self.user_a.id
+        )
+        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        self.assertEqual(new_title, updated.title)
+        self.assertEqual(new_description, updated.description)
+
+    def test_update_task_title_conflict(self):
+        new_title = "new title"
+        new_description = "next desc"
+        self.persistence.update_task(
+            TASK_ID_1, "out of sync", None, TASK_1_DESCRIPTION, new_title, None, new_description, self.user_a.id
+        )
+        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        self.assertEqual(TASK_1_TITLE, updated.title)
+        self.assertEqual(new_description, updated.description)
+        conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
+        self.assertEqual(new_title, conflict.title)
+        self.assertEqual(None, conflict.description)
+
+    def test_update_task_description_conflict(self):
+        new_title = "new title"
+        new_description = "next desc"
+        self.persistence.update_task(
+            TASK_ID_1, TASK_1_TITLE, None, "out of sync", new_title, None, new_description, self.user_a.id
+        )
+        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        self.assertEqual(new_title, updated.title)
+        self.assertEqual(TASK_1_DESCRIPTION, updated.description)
+        conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
+        self.assertEqual(None, conflict.title)
+        self.assertEqual(new_description, conflict.description)
+
+    def test_update_task_title_and_description_conflict(self):
+        new_title = "new title"
+        new_description = "next desc"
+        self.persistence.update_task(
+            TASK_ID_1, "out of sync", None, "out of sync", new_title, None, new_description, self.user_a.id
+        )
+        updated = self.persistence.get_task(TASK_ID_1, self.user_a.id)
+        self.assertEqual(TASK_1_TITLE, updated.title)
+        self.assertEqual(TASK_1_DESCRIPTION, updated.description)
+        conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
+        self.assertEqual(new_title, conflict.title)
+        self.assertEqual(new_description, conflict.description)
+
