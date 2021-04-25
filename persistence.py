@@ -30,6 +30,7 @@ association_table_task_x_task = Table(
 )
 
 
+# FIXME should no longer be needed
 class EditConflictException(Exception):
     def __init__(self, current_server_value):
         self.current_server_value = current_server_value
@@ -66,7 +67,7 @@ class Task(Base):
     title = Column(String, nullable=False)
     created = Column("created", DateTime, nullable=False, default=datetime.utcnow)
     due = Column("due", DateTime, nullable=True)
-    description = Column(String)
+    description = Column(String, nullable=False, default="")
     task_list_id = Column(Integer, ForeignKey("task_list.id"))
     tags = relationship("Tag", backref="task")
     prerequisites = relationship(
@@ -84,6 +85,18 @@ class Task(Base):
 
     def __repr__(self):
         return f"Task(id={self.id!r}, title={self.title!r})"
+
+
+class TaskConflicts(Base):
+    __tablename__ = "task_conflicts"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    task_id = Column(Integer, ForeignKey("task.id"))
+    task = relationship("Task", backref="conflicts")
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", backref="conflicts")
 
 
 class Tag(Base):
