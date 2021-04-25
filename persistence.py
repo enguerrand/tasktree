@@ -61,6 +61,7 @@ class Task(Base):
     title = Column(String, nullable=False)
     created = Column("created", DateTime, nullable=False, default=datetime.utcnow)
     due = Column("due", DateTime, nullable=True)
+    completed = Column("completed", DateTime, nullable=True)
     description = Column(String, nullable=False, default="")
     task_list_id = Column(Integer, ForeignKey("task_list.id"))
     tags = relationship("Tag", backref="task")
