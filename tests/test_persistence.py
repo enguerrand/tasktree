@@ -41,6 +41,18 @@ class TestPersistence(TestCase):
         self.assertEqual(USER_A_NAME, self.persistence.get_users()[0].username)
         self.assertEqual(USER_B_NAME, self.persistence.get_users()[1].username)
 
+    def test_authentication_success(self):
+        authenticated_user = self.persistence.get_authenticated_user_by_name(USER_A_NAME, USER_A_PSWD)
+        self.assertEqual(USER_A_NAME, authenticated_user.username)
+
+    def test_authentication_failed(self):
+        authenticated_user = self.persistence.get_authenticated_user_by_name(USER_A_NAME, USER_B_PSWD)
+        self.assertIsNone(authenticated_user)
+
+    def test_authentication_unknown_user(self):
+        authenticated_user = self.persistence.get_authenticated_user_by_name("anonymous", USER_B_PSWD)
+        self.assertIsNone(authenticated_user)
+
     def test_no_duplicate_users(self):
         self.assertRaises(IntegrityError, lambda: self.persistence.create_user(USER_A_NAME, "whatever"))
 
