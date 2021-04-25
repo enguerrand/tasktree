@@ -40,7 +40,7 @@ class User(Base):
     task_lists = relationship("TaskList", secondary=association_table_user_x_task_list, back_populates="users")
 
     def __repr__(self):
-        return f"User(id={self.id!r}, username={self.username!r}, password={self.password!r})"
+        return f"User(id={self.id!r}, username={self.username!r}, password=***)"
 
 
 class TaskList(Base):
@@ -80,7 +80,7 @@ class Task(Base):
     )
 
     def __repr__(self):
-        return f"Task(id={self.id!r}, title={self.title!r})"
+        return f"Task(id={self.id!r}, task_list_id={self.task_list_id!r}, title={self.title!r}, description={self.description!r}, created={self.created!r}, due={self.due!r}, completed={self.completed!r})"
 
 
 class TaskConflict(Base):
@@ -94,6 +94,9 @@ class TaskConflict(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", backref="conflicts", cascade="all, delete")
 
+    def __repr__(self):
+        return f"TaskConflict(id={self.id!r}, user_id={self.user_id!r}, task_id: {self.task_id!r}, title={self.title!r}, description={self.description!r})"
+
 
 class Tag(Base):
     __tablename__ = "tag"
@@ -105,7 +108,7 @@ class Tag(Base):
     task_id = Column(Integer, ForeignKey("task.id"))
 
     def __repr__(self):
-        return f"Tag(id={self.id!r}, title={self.title!r})"
+        return f"Tag(id={self.id!r}, title={self.title!r}, task_id:{self.task_id!r})"
 
 
 class Persistence:

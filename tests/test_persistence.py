@@ -51,6 +51,13 @@ class TestPersistence(TestCase):
         self.persistence.create_task(1, 1, TASK_DUE_AT_TEN, description="due at 10 desc", due=DATE_TIME_10)
         self.task_due_at_ten = self.persistence.query_tasks(1).filter(persistence.Task.title == TASK_DUE_AT_TEN).one()
 
+    def test_string_repr(self):
+        self.assertEqual("User(id=None, username='a', password=***)", str(persistence.User(username="a", password="b")))
+        self.assertEqual("TaskList(id=None, title='a')", str(persistence.TaskList(title="a")))
+        self.assertEqual("Task(id=None, task_list_id=None, title='a', description=None, created=None, due=None, completed=None)", str(persistence.Task(title="a")))
+        self.assertEqual("TaskConflict(id=None, user_id=None, task_id: '134', title='a', description=None)", str(persistence.TaskConflict(title="a", task_id="134")))
+        self.assertEqual("Tag(id=None, title='a', task_id:123)", str(persistence.Tag(title="a", task_id=123)))
+
     def test_get_user(self):
         user = self.persistence.get_user(1)
         self.assertEqual(USER_A_NAME, user.username)
