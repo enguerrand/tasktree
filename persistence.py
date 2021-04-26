@@ -210,10 +210,14 @@ class Persistence:
     def get_task_conflicts(self, requesting_user_id: int) -> List[TaskConflict]:
         return self.query_task_conflicts(requesting_user_id).all()
 
-    def move_task_to_list(self, task_list_id: int, from_task_list_id: int, to_task_list_id: int):
-        # FIXME impl
-        # FIXME Access control for task_list_ids and task_ids for prereq and depending tasks
-        pass
+    def move_task_to_list(self, requesting_user_id: int,  task_id: int, from_task_list_id: int, to_task_list_id: int):
+        task_to_move = self.get_task(requesting_user_id, task_id)
+        src_list = self.get_task_list(requesting_user_id, from_task_list_id)
+        dst_list = self.get_task_list(requesting_user_id, to_task_list_id)
+        if task_to_move not in src_list.tasks:
+            raise NoResultFound()
+        src_list.tasks.remove(task_to_move)
+        dst_list.tasks.append(task_to_move)
 
     def update_task(
         self,

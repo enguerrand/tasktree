@@ -54,8 +54,14 @@ class TestPersistence(TestCase):
     def test_string_repr(self):
         self.assertEqual("User(id=None, username='a', password=***)", str(persistence.User(username="a", password="b")))
         self.assertEqual("TaskList(id=None, title='a')", str(persistence.TaskList(title="a")))
-        self.assertEqual("Task(id=None, task_list_id=None, title='a', description=None, created=None, due=None, completed=None)", str(persistence.Task(title="a")))
-        self.assertEqual("TaskConflict(id=None, user_id=None, task_id: '134', title='a', description=None)", str(persistence.TaskConflict(title="a", task_id="134")))
+        self.assertEqual(
+            "Task(id=None, task_list_id=None, title='a', description=None, created=None, due=None, completed=None)",
+            str(persistence.Task(title="a")),
+        )
+        self.assertEqual(
+            "TaskConflict(id=None, user_id=None, task_id: '134', title='a', description=None)",
+            str(persistence.TaskConflict(title="a", task_id="134")),
+        )
         self.assertEqual("Tag(id=None, title='a', task_id:123)", str(persistence.Tag(title="a", task_id=123)))
 
     def test_get_user(self):
@@ -269,3 +275,37 @@ class TestPersistence(TestCase):
         self.persistence.remove_dependency(self.user_a.id, TASK_ID_1, self.task_due_at_ten.id)
         self.assertFalse(self.task_due_at_ten.id in [t.id for t in task1.depending_tasks])
         self.assertFalse(task1.id in [t.id for t in self.task_due_at_ten.prerequisites])
+
+    def test_move_task_to_list(self):
+        list_1 = self.persistence.get_task_list(self.user_a.id, 1)
+        shared_list = self.persistence.get_task_list(self.user_a.id, 3)
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertTrue(task1 in list_1.tasks)
+        self.assertFalse(task1 in shared_list.tasks)
+        self.persistence.move_task_to_list(self.user_a.id, task1.id, list_1.id, shared_list.id)
+        self.assertFalse(task1 in list_1.tasks)
+        self.assertTrue(task1 in shared_list.tasks)
+
+    def test_move_task_from_list_not_containing_task(self):
+        list_1 = self.persistence.get_task_list(self.user_a.id, 1)
+        shared_list = self.persistence.get_task_list(self.user_a.id, 3)
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertFalse(task1 in shared_list.tasks)  # check test setup
+        self.assertRaises(
+            NoResultFound,
+            lambda: self.persistence.move_task_to_list(self.user_a.id, task1.id, shared_list.id, list_1.id),
+        )
+        self.assertTrue(task1 in list_1.tasks)
+        self.assertFalse(task1 in shared_list.tasks)
+
+    def test_move_task_no_list_permission(self):
+        list_1 = self.persistence.get_task_list(self.user_a.id, 1)
+        shared_list = self.persistence.get_task_list(self.user_a.id, 3)
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertFalse(task1 in shared_list.tasks)  # check test setup
+        self.assertRaises(
+            NoResultFound,
+            lambda: self.persistence.move_task_to_list(self.user_b.id, task1.id, list_1.id, shared_list.id),
+        )
+        self.assertTrue(task1 in list_1.tasks)
+        self.assertFalse(task1 in shared_list.tasks)
