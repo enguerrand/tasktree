@@ -260,3 +260,12 @@ class TestPersistence(TestCase):
         self.assertRaises(NoResultFound, lambda: self.persistence.get_task(self.user_a.id, TASK_ID_1))
         task_1_tags = self.persistence.session.query(persistence.Tag).filter(persistence.Tag.task_id == TASK_ID_1).all()
         self.assertEqual(0, len(task_1_tags))
+
+    def test_add_dependencies(self):
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.persistence.add_dependency(self.user_a.id, TASK_ID_1, self.task_due_at_ten.id)
+        self.assertTrue(self.task_due_at_ten.id in [t.id for t in task1.depending_tasks])
+        self.assertTrue(task1.id in [t.id for t in self.task_due_at_ten.prerequisites])
+        self.persistence.remove_dependency(self.user_a.id, TASK_ID_1, self.task_due_at_ten.id)
+        self.assertFalse(self.task_due_at_ten.id in [t.id for t in task1.depending_tasks])
+        self.assertFalse(task1.id in [t.id for t in self.task_due_at_ten.prerequisites])

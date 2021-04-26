@@ -69,14 +69,9 @@ class Task(Base):
     prerequisites = relationship(
         "Task",
         secondary=association_table_task_x_task,
-        back_populates="depending_tasks",
-        foreign_keys=[association_table_task_x_task.c.prereq_id],
-    )
-    depending_tasks = relationship(
-        "Task",
-        secondary=association_table_task_x_task,
-        back_populates="prerequisites",
-        foreign_keys=[association_table_task_x_task.c.dependent_id],
+        primaryjoin=association_table_task_x_task.c.dependent_id==id,
+        secondaryjoin=association_table_task_x_task.c.prereq_id==id,
+        backref="depending_tasks",
     )
 
     def __repr__(self):
@@ -113,7 +108,7 @@ class Tag(Base):
 
 class Persistence:
     def __init__(self, db_url: str):
-        self.engine = create_engine(db_url, echo=False, future=True)
+        self.engine = create_engine(db_url, echo=True, future=True)
         self.session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self.engine))
 
     def create(self):
@@ -286,21 +281,18 @@ class Persistence:
                 self.session.delete(t)
         self.session.commit()
 
-    def add_prerequisite(self, requesting_user_id: int, task_id: int, prerequisite_task_id: int):
-        # FIXME impl
-        pass
+    def add_dependency(self, requesting_user_id: int, prereq_id: int, dependent_id: int):
+        pre: Task = self.get_task(requesting_user_id, prereq_id)  # just to check access permission
+        dep = self.get_task(requesting_user_id, dependent_id)  # just to check access permission
+        pre.depending_tasks.append(dep)
+        self.session.commit()
 
-    def remove_prerequisite(self, requesting_user_id: int, task_id: int, prerequisite_task_id: int):
-        # FIXME impl
-        pass
-
-    def add_dependent(self, requesting_user_id: int, task_id: int, dependent_id: int):
-        # FIXME impl
-        pass
-
-    def remove_dependent(self, requesting_user_id: int, task_id: int, dependent_id: int):
-        # FIXME impl
-        pass
+    def remove_dependency(self, requesting_user_id: int, prereq_id: int, dependent_id: int):
+        task = self.get_task(requesting_user_id, prereq_id)
+        for dep in task.depending_tasks:
+            if dep.id == dependent_id:
+                task.depending_tasks.remove(dep)
+        self.session.commit()
 
     def merge_date(self, old: DateTime, expected_old: DateTime, wanted_new: DateTime):
         if old == expected_old:  # no conflict
