@@ -53,6 +53,15 @@ def logout():
     return "you are logged out"
 
 
+@app.route(API_BASE_USERS + "current", methods=["GET"])
+@login_required
+def logged_in_user():
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+    }
+
+
 @app.route(API_BASE_USERS)
 @login_required
 def get_users():

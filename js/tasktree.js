@@ -15,6 +15,27 @@ class TaskTreeApp extends React.Component {
         }
     }
 
+    componentDidMount() {
+        fetch(API_URL_USERS + '/current', {
+            method: 'get',
+// FIXME implement csrf
+         // headers: {
+//                        'X-CSRFToken': csrf,
+//             },
+        })
+        .then((response) => {
+            return response.json();
+        }).then((currentUser) => {
+            if (currentUser !== null && currentUser.username !== null) {
+                this.setState({
+                    loggedInUser: currentUser.username
+                });
+            }
+        }).catch((error) => {
+            console.log(error);
+        });
+    }
+
     render() {
         if (this.state.loggedInUser === null) {
             return e(LoginForm, {onServerReply: this.onLoginReply});

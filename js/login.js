@@ -28,7 +28,7 @@ class LoginForm extends React.Component {
         formData.append('username', username);
         formData.append('password', this.state.password);
 
-        fetch('http://localhost:5000/login', {
+        fetch(BASE_URL + '/login', {
             method: 'post',
 // FIXME implement csrf
          // headers: {
