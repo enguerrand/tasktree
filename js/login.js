@@ -1,4 +1,6 @@
 class LoginForm extends React.Component {
+
+    // props.onServerReply(sentUsername, loginSuccess)
     constructor(props) {
         super(props);
         this.state = {
@@ -22,7 +24,8 @@ class LoginForm extends React.Component {
         event.preventDefault();
 
         let formData = new FormData();
-        formData.append('username', this.state.username);
+        const username = this.state.username;
+        formData.append('username', username);
         formData.append('password', this.state.password);
 
         fetch('http://localhost:5000/login', {
@@ -36,9 +39,12 @@ class LoginForm extends React.Component {
         .then((response) => {
             return response.json();
         }).then((reply) => {
+            const success = reply.status == HTTP_STATUS_OK;
             console.log(JSON.stringify(reply));
+            this.props.onServerReply(username, success);
         }).catch((error) => {
             console.log(error);
+            this.props.onServerReply(username, false);
         });
 
     }

@@ -42,7 +42,7 @@ def login():
     if authenticated_user is not None:
         me = UserView(authenticated_user)
         login_user(me)
-        return "success"
+        return jsonify({"status": 200})
     else:
         return jsonify({"status": 401, "reason": "Username or Password Error"})
 
