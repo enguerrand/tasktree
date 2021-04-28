@@ -7,13 +7,12 @@ from persistence import Persistence, User
 
 
 class UserView(UserMixin):
-    def __init__(self, user: User, api_base_url_users: str):
+    def __init__(self, user: User):
         self.id = user.id
         self.username = user.username
-        self.api_base_url = api_base_url_users
 
     def as_dict(self):
-        return {"id": self.id, "username": self.username, "url": self.api_base_url + str(self.id)}
+        return {"id": self.id, "username": self.username}
 
 
 class DataView:
@@ -21,8 +20,8 @@ class DataView:
         self.persistence = persistence
         self.viewing_user = viewing_user
 
-    def get_user(self, api_base_url: str, user_id: int) -> UserView:
-        return UserView(self.persistence.get_user(user_id), api_base_url).as_dict()
+    def get_user(self, user_id: int) -> UserView:
+        return UserView(self.persistence.get_user(user_id)).as_dict()
 
-    def get_users(self, api_base_url: str) -> List[UserView]:
-        return [UserView(user, api_base_url).as_dict() for user in self.persistence.get_users()]
+    def get_users(self) -> List[UserView]:
+        return [UserView(user).as_dict() for user in self.persistence.get_users()]

@@ -29,7 +29,7 @@ theme = themes.solarized_dark
 @login_manager.user_loader
 def load_user(user_id):
     try:
-        return UserView(persistence.get_user(user_id), API_BASE_USERS)
+        return UserView(persistence.get_user(user_id))
     except NoResultFound:
         return None
 
@@ -40,7 +40,7 @@ def login():
     password = request.form["password"]
     authenticated_user = persistence.get_authenticated_user_by_name(username, password)
     if authenticated_user is not None:
-        me = UserView(authenticated_user, API_BASE_USERS)
+        me = UserView(authenticated_user)
         login_user(me)
         return "success"
     else:
@@ -57,14 +57,14 @@ def logout():
 @login_required
 def get_users():
     data_view = DataView(persistence, current_user)
-    return jsonify(data_view.get_users(API_BASE_USERS))
+    return jsonify(data_view.get_users())
 
 
 @app.route(API_BASE_URL + "users/<int:user_id>")
 @login_required
 def get_user(user_id: int):
     data_view = DataView(persistence, current_user)
-    return jsonify(data_view.get_user(API_BASE_USERS, user_id))
+    return jsonify(data_view.get_user(user_id))
 
 
 @app.route("/")
