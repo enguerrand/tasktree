@@ -2,8 +2,7 @@ class TaskTreeApp extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            loggedInUser: null,
-            viewStack: []
+            loggedInUser: null
         };
         this.onLoginReply = this.onLoginReply.bind(this);
     }
@@ -20,7 +19,7 @@ class TaskTreeApp extends React.Component {
         if (this.state.loggedInUser === null) {
             return e(LoginForm, {onServerReply: this.onLoginReply});
         } else {
-            return p(null, "logged in as " + this.state.loggedInUser);
+            return e(MainView);
         }
     }
 }
