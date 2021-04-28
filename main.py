@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
+from flask_wtf import CsrfProtect
 from sqlalchemy.exc import NoResultFound
 
 from data_view import DataView, UserView
@@ -17,7 +18,9 @@ persistence = Persistence(DB_URL_PROD)
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+csrf = CsrfProtect(app)
 # FIXME: apply https://flask.palletsprojects.com/en/1.1.x/security/
+
 
 login_manager = LoginManager()
 login_manager.init_app(app)

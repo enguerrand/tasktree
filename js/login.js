@@ -30,12 +30,12 @@ class LoginForm extends React.Component {
 
         fetch(BASE_URL + '/login', {
             method: 'post',
-// FIXME implement csrf
-         // headers: {
-//                        'X-CSRFToken': csrf,
-//             },
+            headers: {
+                'X-CSRFToken': CSRF_TOKEN,
+            },
             body: formData
         })
+        .then(throwOnHttpError)
         .then((response) => {
             return response.json();
         }).then((reply) => {
