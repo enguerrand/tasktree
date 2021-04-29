@@ -10,3 +10,32 @@ function throwOnHttpError(response){
     }
     return response;
 }
+
+function getJson(url) {
+    return fetch(url, {
+        method: 'get',
+        headers: {
+            'X-CSRFToken': CSRF_TOKEN,
+        },
+    })
+        .then(throwOnHttpError)
+        .then((response) => {
+            return response.json();
+        })
+}
+
+function postJson(url, json) {
+    return fetch(url, {
+        method: 'post',
+        headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            'X-CSRFToken': CSRF_TOKEN,
+        },
+        body: JSON.stringify(json)
+    })
+        .then(throwOnHttpError)
+        .then((response) => {
+            return response.json();
+        })
+}

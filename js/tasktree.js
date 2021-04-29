@@ -16,16 +16,7 @@ class TaskTreeApp extends React.Component {
     }
 
     componentDidMount() {
-        fetch(API_URL_USERS + '/current', {
-            method: 'get',
-            headers: {
-                'X-CSRFToken': CSRF_TOKEN,
-            },
-        })
-        .then(throwOnHttpError)
-        .then((response) => {
-            return response.json();
-        }).then((currentUser) => {
+        getJson(API_URL_USERS + '/current').then((currentUser) => {
             if (currentUser !== null && currentUser.username !== null && currentUser.username !== undefined) {
                 this.setState({
                     loggedInUser: currentUser.username

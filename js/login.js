@@ -22,18 +22,10 @@ class LoginForm extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
-
-        let formData = new FormData();
         const username = this.state.username;
-        formData.append('username', username);
-        formData.append('password', this.state.password);
-
-        fetch(BASE_URL + '/login', {
-            method: 'post',
-            headers: {
-                'X-CSRFToken': CSRF_TOKEN,
-            },
-            body: formData
+        postJson(BASE_URL + '/login', {
+                'username': username,
+                'password': this.state.password
         })
         .then(throwOnHttpError)
         .then((response) => {
