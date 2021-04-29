@@ -1,6 +1,7 @@
 const BASE_URL = ''
 const API_URL = BASE_URL + '/api';
 const API_URL_USERS = API_URL + '/users';
+const API_URL_LISTS = API_URL + '/lists';
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_AUTHORIZED = 401;
 const CSRF_TOKEN = document.head.querySelector("[name=csrf-token][content]").content;
@@ -38,4 +39,8 @@ function postJson(url, json) {
         .then((response) => {
             return response.json();
         })
+}
+
+function isNull(obj) {
+    return obj === undefined || obj === null;
 }

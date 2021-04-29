@@ -14,6 +14,7 @@ import themes
 load_dotenv()
 API_BASE_URL = "/api/"
 API_BASE_USERS = API_BASE_URL + "users/"
+API_BASE_LISTS = API_BASE_URL + "lists/"
 
 persistence = Persistence(DB_URL_PROD)
 app = Flask(__name__)
@@ -68,6 +69,13 @@ def logged_in_user():
         "id": current_user.id,
         "username": current_user.username,
     }
+
+
+@app.route(API_BASE_LISTS)
+@login_required
+def get_lists():
+    data_view = DataView(persistence, current_user)
+    return jsonify(data_view.get_lists())
 
 
 @app.route(API_BASE_USERS)

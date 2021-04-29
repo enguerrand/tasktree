@@ -317,4 +317,8 @@ if __name__ == "__main__":
     os.remove(DB_NAME)
     persistence = Persistence(DB_URL_PROD)
     persistence.create()
-    persistence.create_user("edr", "foobar")  # FIXME remove test code
+    # FIXME remove test code
+    persistence.create_user("edr", "foobar")
+    u = persistence.get_user_by_name("edr")
+    persistence.create_task_list("First list", u.id)
+    persistence.create_task_list("Second list", u.id)
