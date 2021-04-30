@@ -69,8 +69,8 @@ class Task(Base):
     prerequisites = relationship(
         "Task",
         secondary=association_table_task_x_task,
-        primaryjoin=association_table_task_x_task.c.dependent_id==id,
-        secondaryjoin=association_table_task_x_task.c.prereq_id==id,
+        primaryjoin=association_table_task_x_task.c.dependent_id == id,
+        secondaryjoin=association_table_task_x_task.c.prereq_id == id,
         backref="depending_tasks",
     )
 
@@ -210,7 +210,7 @@ class Persistence:
     def get_task_conflicts(self, requesting_user_id: int) -> List[TaskConflict]:
         return self.query_task_conflicts(requesting_user_id).all()
 
-    def move_task_to_list(self, requesting_user_id: int,  task_id: int, from_task_list_id: int, to_task_list_id: int):
+    def move_task_to_list(self, requesting_user_id: int, task_id: int, from_task_list_id: int, to_task_list_id: int):
         task_to_move = self.get_task(requesting_user_id, task_id)
         src_list = self.get_task_list(requesting_user_id, from_task_list_id)
         dst_list = self.get_task_list(requesting_user_id, to_task_list_id)
@@ -322,3 +322,17 @@ if __name__ == "__main__":
     u = persistence.get_user_by_name("edr")
     persistence.create_task_list("First list", u.id)
     persistence.create_task_list("Second list", u.id)
+    for tl in persistence.get_task_lists(u.id):
+        for i in (1, 2, 3, 4):
+            persistence.create_task(
+                u.id, tl.id, f"task {i}", description=f"Description of task {i} in list " + tl.title
+            )
+        for task in tl.tasks:
+            if task.id % 2 == 0:
+                task.tags.append(Tag(title="even"))
+            else:
+                task.tags.append(Tag(title="uneven"))
+            if task.id % 3 == 0:
+                task.tags.append(Tag(title="multiple of 3"))
+
+        persistence.session.commit()

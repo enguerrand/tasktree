@@ -78,6 +78,13 @@ def get_lists():
     return jsonify(data_view.get_lists())
 
 
+@app.route(API_BASE_LISTS + "<int:task_list_id>/")
+@login_required
+def get_tasks(task_list_id: int):
+    data_view = DataView(persistence, current_user)
+    return jsonify(data_view.get_tasks(task_list_id))
+
+
 @app.route(API_BASE_USERS)
 @login_required
 def get_users():

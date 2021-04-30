@@ -3,7 +3,7 @@ from typing import List
 
 from flask_login import UserMixin
 
-from persistence import Persistence, TaskList, User
+from persistence import Persistence, Task, TaskList, User
 
 
 class UserView(UserMixin):
@@ -15,13 +15,30 @@ class UserView(UserMixin):
         return {"id": self.id, "username": self.username}
 
 
-class ListView(UserMixin):
+class ListView:
     def __init__(self, task_list: TaskList):
         self.id = task_list.id
         self.title = task_list.title
 
     def as_dict(self):
         return {"id": self.id, "title": self.title}
+
+
+class TaskView:
+    def __init__(self, task: Task):
+        self.task = task
+        self.tags = [t.title for t in self.task.tags]
+
+    def as_dict(self):
+        return {
+            "id": self.task.id,
+            "title": self.task.title,
+            "description": self.task.description,
+            "created": self.task.created,
+            "due": self.task.due,
+            "completed": self.task.completed,
+            "tags": self.tags
+        }
 
 
 class DataView:
@@ -37,3 +54,7 @@ class DataView:
 
     def get_lists(self) -> List[ListView]:
         return [ListView(task_list).as_dict() for task_list in self.persistence.get_task_lists(self.viewing_user.id)]
+
+    def get_tasks(self, task_list_id: int) -> List[ListView]:
+        task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
+        return [TaskView(task).as_dict() for task in task_list.tasks]
