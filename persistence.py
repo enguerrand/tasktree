@@ -270,12 +270,17 @@ class Persistence:
         to_un_complete.due = None
         self.session.commit()
 
-    def get_tags(self, requesting_user_id: int, task_id: int) -> List[str]:
+    def get_tags(self, requesting_user_id: int, task_id: int) -> List[Tag]:
         return self.get_task(requesting_user_id, task_id).tags
+
+    def get_tags_as_strings(self, requesting_user_id: int, task_id: int) -> List[str]:
+        return [t.title for t in self.get_task(requesting_user_id, task_id).tags]
 
     def add_tag(self, requesting_user_id: int, task_id: int, tag: str):
         to_edit = self.get_task(requesting_user_id, task_id)
-        to_edit.tags.append(Tag(title=tag))
+        current_tags = self.get_tags_as_strings(requesting_user_id, task_id)
+        if tag not in current_tags:
+            to_edit.tags.append(Tag(title=tag))
         self.session.commit()
 
     def remove_tag(self, requesting_user_id: int, task_id: int, tag: str):
@@ -329,10 +334,8 @@ if __name__ == "__main__":
             )
         for task in tl.tasks:
             if task.id % 2 == 0:
-                task.tags.append(Tag(title="even"))
+                persistence.add_tag(u.id, task.id, "even")
             else:
-                task.tags.append(Tag(title="uneven"))
+                persistence.add_tag(u.id, task.id, "uneven")
             if task.id % 3 == 0:
-                task.tags.append(Tag(title="multiple of 3"))
-
-        persistence.session.commit()
+                persistence.add_tag(u.id, task.id, "multiple of 3")

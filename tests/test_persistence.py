@@ -235,6 +235,10 @@ class TestPersistence(TestCase):
         tags = self.persistence.get_tags(self.user_a.id, TASK_ID_1)
         self.assertEqual([TASK_1_TAG_1, TASK_1_TAG_2], [t.title for t in tags])
 
+    def test_get_tags_as_string(self):
+        tags = self.persistence.get_tags_as_strings(self.user_a.id, TASK_ID_1)
+        self.assertEqual([TASK_1_TAG_1, TASK_1_TAG_2], tags)
+
     def test_add_tag(self):
         task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         task2 = self.persistence.get_task(self.user_a.id, TASK_ID_2)
@@ -242,6 +246,13 @@ class TestPersistence(TestCase):
         self.persistence.add_tag(self.user_a.id, TASK_ID_2, "whatelse")
         self.assertTrue("whatever" in [t.title for t in task1.tags])
         self.assertTrue("whatelse" in [t.title for t in task2.tags])
+
+    def test_add_duplicate_tag(self):
+        tags_before_add = self.persistence.get_tags_as_strings(self.user_a.id, TASK_ID_1)
+        self.assertEqual([TASK_1_TAG_1, TASK_1_TAG_2], tags_before_add)  # verify test precondition
+        self.persistence.add_tag(self.user_a.id, TASK_ID_1, TASK_1_TAG_2)
+        tags_after_add = self.persistence.get_tags_as_strings(self.user_a.id, TASK_ID_1)
+        self.assertEqual([TASK_1_TAG_1, TASK_1_TAG_2], tags_after_add)
 
     def test_delete_tag(self):
         task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
