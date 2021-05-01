@@ -4,13 +4,17 @@ class ListEditView extends React.Component {
     // props.editingDone(listAfterEdit)
     constructor(props) {
         super(props);
+        let header;
         let initialTitle;
         if (isNull(this.props.taskList)) {
+            header = "Create list";
             initialTitle = "";
         } else {
+            header = "Edit list";
             initialTitle = this.props.taskList.title;
         }
         this.state = {
+            header: header,
             title: initialTitle
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
@@ -60,7 +64,7 @@ class ListEditView extends React.Component {
                 form(
                     {onSubmit: this.handleSubmit},
                     h1({className: "h3 mb-3 fw-normal text-light"},
-                        "Edit list"
+                        this.state.header
                     ),
                     div({className:"form-floating"},
                         input({type: "text", className: "form-control", id: "title-input", placeholder: "Title", value: this.state.title, onChange: this.handleTitleChange}),
@@ -87,9 +91,19 @@ class ListsView extends React.Component {
         }
         this.editList = this.editList.bind(this);
         this.renderSelf = this.renderSelf.bind(this);
+        this.addList = this.addList.bind(this);
+        this.editList = this.editList.bind(this);
     }
 
-    editList(taskList) {
+    addList(event) {
+        event.preventDefault();
+        this.setState({
+            createNew: true
+        });
+    }
+
+    editList(event, taskList) {
+        event.preventDefault();
         this.setState({
             editingList: taskList
         });
@@ -105,12 +119,12 @@ class ListsView extends React.Component {
                     td({key: "title", className: "align-middle"}, taskList.title),
                     td(
                         {key: "action", className: "right align-middle"},
-                        button({className: "btn btn-primary", onClick: () => this.editList(taskList)}, i({className: "mdi mdi-pencil-outline"}))
+                        button({className: "btn btn-primary", onClick: (event) => this.editList(event, taskList)}, i({className: "mdi mdi-pencil-outline"}))
                     )
                 )
             );
         }
-        return table({className: "table table-striped table-dark"},
+        const listsTable = table({className: "table table-striped table-dark", key: "table"},
             thead({key: "head"},
                 tr(null,
                     th({key: "id", scope: "col", className: "align-middle"}, "ID"),
@@ -119,6 +133,15 @@ class ListsView extends React.Component {
                 )
             ),
             tbody({key: "body"}, rows)
+        )
+
+        return div(null,
+            listsTable,
+            button({
+                key: "addButton",
+                className: "btn btn-primary",
+                onClick:  this.addList
+            }, "+")
         )
     }
 
