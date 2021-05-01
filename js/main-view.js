@@ -1,9 +1,10 @@
 class MainView extends React.Component {
     // prop.lists
+    // prop.listAdded(taskList)
+    // prop.listUpdated(taskList)
     constructor(props) {
         super(props);
         this.state = {
-            viewStack: []
         };
     }
 
@@ -11,7 +12,9 @@ class MainView extends React.Component {
         return e(
             ListsView,
             {
-                lists: this.props.lists
+                lists: this.props.lists,
+                listAdded: this.props.listAdded,
+                listUpdated: this.props.listUpdated
             }
         );
     }

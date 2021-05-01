@@ -74,6 +74,14 @@ def get_lists():
     return jsonify(data_view.get_lists())
 
 
+@app.route(API_BASE_LISTS + "<int:task_list_id>", methods=["POST"])
+@login_required
+def post_task_list(task_list_id: int):
+    data_view = DataView(persistence, current_user)
+    data_view.create_or_update_list(task_list_id, request.json)
+    return success()
+
+
 @app.route(API_BASE_LISTS + "<int:task_list_id>/")
 @login_required
 def get_tasks(task_list_id: int):
@@ -123,6 +131,10 @@ def handle_no_result_found(nrf):
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     persistence.session.remove()
+
+
+def success():
+    return jsonify({"status": "success"})
 
 
 if __name__ == "__main__":

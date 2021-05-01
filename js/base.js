@@ -35,10 +35,6 @@ function postJson(url, json) {
         },
         body: JSON.stringify(json)
     })
-        .then(throwOnHttpError)
-        .then((response) => {
-            return response.json();
-        })
 }
 
 function isNull(obj) {

@@ -8,6 +8,8 @@ class TaskTreeApp extends React.Component {
         };
         this.onLoginReply = this.onLoginReply.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
+        this.onListAdded = this.onListAdded.bind(this);
+        this.onListUpdated = this.onListUpdated.bind(this);
     }
 
     fetchAll() {
@@ -21,11 +23,13 @@ class TaskTreeApp extends React.Component {
 
                 for (const taskList of lists) {
                     nextListsRemote[taskList.id] = {
+                        id: taskList.id,
                         title: taskList.title
                     }
                     const local = prevState.listsLocal[taskList.id];
                     if (isNull(local) || local.synced) {
                         nextListsLocal[taskList.id] = {
+                            id: taskList.id,
                             title: taskList.title,
                             synced: true
                         };
@@ -38,6 +42,7 @@ class TaskTreeApp extends React.Component {
                     } else if (!isNull(nextListsRemote[localTaskListId])) {
                         const nextLocal = nextListsRemote[localTaskListId];
                         nextListsLocal[localTaskListId] = {
+                            id: localTaskListId,
                             title: nextLocal.title,
                             synced: true
                         };
@@ -46,7 +51,7 @@ class TaskTreeApp extends React.Component {
                 return {
                     listsLocal: nextListsLocal,
                     listsRemote: nextListsRemote,
-                }
+                };
             });
         }).catch((error) => {
             console.log(error);
@@ -59,6 +64,26 @@ class TaskTreeApp extends React.Component {
         } else {
             this.setState({loggedInUser: null});
         }
+    }
+
+    onListAdded(taskList) {
+        console.log("list added: " + JSON.stringify(taskList));
+    }
+
+    onListUpdated(taskList) {
+        console.log("list updated: " + JSON.stringify(taskList));
+        const synced = taskList.synced;
+        this.setState((prevState, prevProps) => {
+            const nextState = {
+            }
+            nextState.listsLocal = Object.assign({}, prevState.listsRemote);
+            nextState.listsLocal[taskList.id] = taskList;
+            if (synced) {
+                nextState.listsRemote = Object.assign({}, prevState.listsRemote);
+                nextState.listsRemote[taskList.id] = taskList;
+            }
+            return nextState;
+        });
     }
 
     componentDidMount() {
@@ -77,7 +102,13 @@ class TaskTreeApp extends React.Component {
         if (this.state.loggedInUser === null) {
             return e(LoginForm, {onServerReply: this.onLoginReply});
         } else {
-            return e(MainView, {lists: this.state.listsLocal});
+            // prop.listAdded(taskList)
+            // prop.listUpdated(taskList)
+            return e(MainView, {
+                lists: this.state.listsLocal,
+                listAdded: this.onListAdded,
+                listUpdated: this.onListUpdated
+            });
         }
     }
 }

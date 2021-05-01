@@ -55,6 +55,13 @@ class DataView:
     def get_lists(self) -> List[ListView]:
         return [ListView(task_list).as_dict() for task_list in self.persistence.get_task_lists(self.viewing_user.id)]
 
+    def create_or_update_list(self, task_list_id: int, json_request):
+        title = json_request["title"]
+        if task_list_id is None:
+            self.persistence.create_task_list(title, self.viewing_user.id)
+        else:
+            self.persistence.set_task_list_title(task_list_id, title, self.viewing_user.id)
+
     def get_tasks(self, task_list_id: int) -> List[ListView]:
         task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
         return [TaskView(task).as_dict() for task in task_list.tasks]
