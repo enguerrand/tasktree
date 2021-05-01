@@ -8,11 +8,12 @@ class TaskTreeApp extends React.Component {
         };
         this.onLoginReply = this.onLoginReply.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
+        this.fetchLists = this.fetchLists.bind(this);
         this.onListAdded = this.onListAdded.bind(this);
         this.onListUpdated = this.onListUpdated.bind(this);
     }
 
-    fetchAll() {
+    fetchLists() {
         getJson(API_URL_LISTS).then((lists) => {
             if (lists === null) {
                 return;
@@ -58,6 +59,10 @@ class TaskTreeApp extends React.Component {
         });
     }
 
+    fetchAll() {
+        this.fetchLists();
+    }
+
     onLoginReply(sentUsername, authorizationSuccess) {
         if (authorizationSuccess) {
             this.setState({loggedInUser: sentUsername}, this.fetchAll);
@@ -68,6 +73,7 @@ class TaskTreeApp extends React.Component {
 
     onListAdded(taskList) {
         console.log("list added: " + JSON.stringify(taskList));
+        this.fetchLists();
     }
 
     onListUpdated(taskList) {
@@ -102,8 +108,6 @@ class TaskTreeApp extends React.Component {
         if (this.state.loggedInUser === null) {
             return e(LoginForm, {onServerReply: this.onLoginReply});
         } else {
-            // prop.listAdded(taskList)
-            // prop.listUpdated(taskList)
             return e(MainView, {
                 lists: this.state.listsLocal,
                 listAdded: this.onListAdded,

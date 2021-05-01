@@ -62,8 +62,8 @@ class ListEditView extends React.Component {
             {className: "row"},
             div({className: "col-12"},
                 form(
-                    {onSubmit: this.handleSubmit},
-                    h1({className: "h3 mb-3 fw-normal text-light"},
+                    { onSubmit: this.handleSubmit },
+                    h2({className: "h3 mb-3 fw-normal text-light"},
                         this.state.header
                     ),
                     div({className:"form-floating"},
@@ -90,7 +90,7 @@ class ListsView extends React.Component {
             createNew: false
         }
         this.editList = this.editList.bind(this);
-        this.renderSelf = this.renderSelf.bind(this);
+        this.renderListsTable = this.renderListsTable.bind(this);
         this.addList = this.addList.bind(this);
         this.editList = this.editList.bind(this);
     }
@@ -109,7 +109,7 @@ class ListsView extends React.Component {
         });
     }
 
-    renderSelf() {
+    renderListsTable() {
         let rows = [];
         for (const listId in this.props.lists) {
             const taskList = this.props.lists[listId];
@@ -134,15 +134,16 @@ class ListsView extends React.Component {
             ),
             tbody({key: "body"}, rows)
         )
-
-        return div(null,
-            listsTable,
-            button({
-                key: "addButton",
-                className: "btn btn-primary",
-                onClick:  this.addList
-            }, "+")
-        )
+        return div({ className: "row" },
+            div({ className: "col-12" },
+                listsTable,
+                button({
+                    key: "addButton",
+                    className: "btn btn-primary",
+                    onClick:  this.addList
+                }, "+")
+            )
+        );
     }
 
     render() {
@@ -169,7 +170,7 @@ class ListsView extends React.Component {
                 }
             );
         } else {
-            return this.renderSelf();
+            return this.renderListsTable();
         }
     }
 }

@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 from dotenv import load_dotenv
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
