@@ -1,17 +1,15 @@
 body {
     margin: 1em 0;
-    color: {{ theme.bodyText}};
-    background-color: {{ theme.background }};
 }
 
 #content {
     margin-top: 2em;
 }
 
-a, a:hover {
-    color: {{ theme.links }};
+table td.center, table th.center{
+    text-align: center;
 }
 
-a:visited, a:visited:hover {
-    color: {{ theme.linksVisited }};
+table td.right, table th.right{
+    text-align: right;
 }

@@ -3,13 +3,12 @@ import os
 from dotenv import load_dotenv
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from flask_talisman import Talisman
-from flask_wtf import CsrfProtect
+from flask_wtf import CSRFProtect
 from sqlalchemy.exc import NoResultFound
 
 from data_view import DataView, UserView
 from flask import Flask, Response, jsonify, render_template, request, send_from_directory
 from persistence import DB_URL_PROD, Persistence
-import themes
 
 load_dotenv()
 API_BASE_URL = "/api/"
@@ -25,14 +24,11 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Strict',
 )
-CsrfProtect(app)
+CSRFProtect(app)
 Talisman(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-
-theme = themes.solarized_dark
 
 
 @login_manager.user_loader
@@ -106,7 +102,7 @@ def index():
 
 @app.route("/css/style.css")
 def css():
-    return Response(render_template("css/style.css", theme=theme), mimetype="text/css")
+    return Response(render_template("css/style.css"), mimetype="text/css")
 
 
 @app.route("/js/<path:path>")
