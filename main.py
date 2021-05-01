@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from dotenv import load_dotenv
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
@@ -74,9 +75,17 @@ def get_lists():
     return jsonify(data_view.get_lists())
 
 
+@app.route(API_BASE_LISTS, methods=["POST"])
+@login_required
+def add_task_list():
+    data_view = DataView(persistence, current_user)
+    data_view.create_or_update_list(None, request.json)
+    return success()
+
+
 @app.route(API_BASE_LISTS + "<int:task_list_id>", methods=["POST"])
 @login_required
-def post_task_list(task_list_id: int):
+def update_task_list(task_list_id: int):
     data_view = DataView(persistence, current_user)
     data_view.create_or_update_list(task_list_id, request.json)
     return success()

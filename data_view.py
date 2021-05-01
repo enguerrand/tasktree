@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Optional
 
 from flask_login import UserMixin
 
@@ -55,7 +55,7 @@ class DataView:
     def get_lists(self) -> List[ListView]:
         return [ListView(task_list).as_dict() for task_list in self.persistence.get_task_lists(self.viewing_user.id)]
 
-    def create_or_update_list(self, task_list_id: int, json_request):
+    def create_or_update_list(self, task_list_id: Optional[int], json_request):
         title = json_request["title"]
         if task_list_id is None:
             self.persistence.create_task_list(title, self.viewing_user.id)
