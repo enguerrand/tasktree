@@ -31,7 +31,7 @@ class LoginForm extends React.Component {
         .then((response) => {
             return response.json();
         }).then((reply) => {
-            const success = reply.status == HTTP_STATUS_OK;
+            const success = reply.status === HTTP_STATUS_OK;
             console.log(JSON.stringify(reply));
             this.props.onServerReply(username, success);
         }).catch((error) => {
