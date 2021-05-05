@@ -5,12 +5,14 @@ class TaskTreeApp extends React.Component {
             loggedInUser: null,
             listsLocal: {},
             listsRemote: {},
+            online: true
         };
         this.onLoginReply = this.onLoginReply.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
         this.onListAdded = this.onListAdded.bind(this);
         this.onListUpdated = this.onListUpdated.bind(this);
+        this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
     }
 
     fetchLists() {
@@ -92,7 +94,20 @@ class TaskTreeApp extends React.Component {
         });
     }
 
+    updateOnlineStatus() {
+        const online = navigator.onLine;
+        console.log("online state changed: " + String(online));
+        this.setState({
+            online: online
+        })
+        if (online) {
+            this.fetchAll();
+        }
+    }
+
     componentDidMount() {
+        window.addEventListener('online', this.updateOnlineStatus);
+        window.addEventListener('offline', this.updateOnlineStatus);
         getJson(API_URL_USERS + '/current').then((currentUser) => {
             if (currentUser !== null && currentUser.username !== null && currentUser.username !== undefined) {
                 this.setState({
