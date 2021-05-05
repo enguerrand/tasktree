@@ -21,6 +21,7 @@ mode="$1"
 [ -z "${mode}" ] && abort "Missing argument: mode"
 
 reactjs_version=17.0.2
+immer_version=9.0.2
 bootstrap_version=4.3.1
 mdi_version=5.9.55
 
@@ -31,11 +32,12 @@ mkdir -p assets/js assets/css assets/fonts
 if [ "$mode" == "prod" ]; then
     wget "https://unpkg.com/react@${reactjs_version}/umd/react.production.min.js" -N -O assets/js/react.js
     wget "https://unpkg.com/react-dom@${reactjs_version}/umd/react-dom.production.min.js" -N -O assets/js/react-dom.js
-elif [ "$mode" == "dev" ]; then 
+    wget "https://unpkg.com/immer@${immer_version}/dist/immer.umd.production.min.js" -N -O assets/js/immer.js
+elif [ "$mode" == "dev" ]; then
     wget "https://unpkg.com/react@${reactjs_version}/umd/react.development.js" -N -O assets/js/react.js
     wget "https://unpkg.com/react-dom@${reactjs_version}/umd/react-dom.development.js" -N -O assets/js/react-dom.js
+    wget "https://unpkg.com/immer@${immer_version}/dist/immer.umd.development.js" -N -O assets/js/immer.js
 fi
-
 wget https://stackpath.bootstrapcdn.com/bootstrap/${bootstrap_version}/css/bootstrap.min.css -P assets/css/
 wget https://cdn.jsdelivr.net/npm/@mdi/font@${mdi_version}/css/materialdesignicons.min.css -P assets/css/
 wget https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/${mdi_version}/fonts/materialdesignicons-webfont.woff2 -P assets/fonts
