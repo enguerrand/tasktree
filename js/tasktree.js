@@ -20,42 +20,31 @@ class TaskTreeApp extends React.Component {
             if (lists === null) {
                 return;
             }
-            this.setState((prevState, prevProps) => {
-                let nextListsRemote = {};
-                let nextListsLocal = {};
+            this.setState(
+                immer.produce(prevState => {
+                    prevState.listsRemote = [];
 
-                for (const taskList of lists) {
-                    nextListsRemote[taskList.id] = {
-                        id: taskList.id,
-                        title: taskList.title
-                    }
-                    const local = prevState.listsLocal[taskList.id];
-                    if (isNull(local) || local.synced) {
-                        nextListsLocal[taskList.id] = {
+                    for (const taskList of lists) {
+                        prevState.listsRemote[taskList.id] = {
                             id: taskList.id,
-                            title: taskList.title,
-                            synced: true
-                        };
+                            title: taskList.title
+                        }
+                        const local = prevState.listsLocal[taskList.id];
+                        if (isNull(local) || local.synced) {
+                            prevState.listsLocal[taskList.id] = {
+                                id: taskList.id,
+                                title: taskList.title,
+                                synced: true
+                            };
+                        }
                     }
-                }
-                for (const localTaskListId in prevState.listsLocal) {
-                    const local = prevState.listsLocal[localTaskListId];
-                    if (!isNull(local) && !local.synced) {
-                        nextListsLocal[localTaskListId] = local;
-                    } else if (!isNull(nextListsRemote[localTaskListId])) {
-                        const nextLocal = nextListsRemote[localTaskListId];
-                        nextListsLocal[localTaskListId] = {
-                            id: localTaskListId,
-                            title: nextLocal.title,
-                            synced: true
-                        };
+                    for (const localTaskListId in prevState.listsLocal) {
+                        if (prevState.listsLocal[localTaskListId].synced && isNull(prevState.listsRemote[localTaskListId])) {
+                            delete prevState.listsLocal[localTaskListId];
+                        }
                     }
-                }
-                return {
-                    listsLocal: nextListsLocal,
-                    listsRemote: nextListsRemote,
-                };
-            });
+                })
+            );
         }).catch((error) => {
             console.log(error);
         });
