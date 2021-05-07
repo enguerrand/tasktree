@@ -36,8 +36,7 @@ class ListEditView extends React.Component {
             listId = "";
             listAfterEdit.id = null;
         } else {
-            listId = String(this.props.taskList.id);
-            listAfterEdit.id = listId;
+            listAfterEdit.id = this.props.taskList.id;
         }
         postJson(API_URL_LISTS + '/' + listId, {
             'title': title
