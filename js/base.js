@@ -40,3 +40,33 @@ function postJson(url, json) {
 function isNull(obj) {
     return obj === undefined || obj === null;
 }
+
+Array.prototype.removeIf = function(predicate) {
+    let i = this.length;
+    while (i--) {
+        if (predicate(this[i], i)) {
+            this.splice(i, 1);
+        }
+    }
+};
+
+Array.prototype.updateIf = function(predicate, updateFn) {
+    for (let i=0; i<this.length; i++) {
+        if (predicate(this[i])) {
+            updateFn(this[i]);
+        }
+    }
+};
+
+Array.prototype.anyMatch = function(predicate) {
+    for (let i=0; i<this.length; i++) {
+        if (predicate(this[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Array.prototype.noneMatch = function(predicate) {
+    return !this.anyMatch(predicate);
+}
