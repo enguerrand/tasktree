@@ -10,8 +10,8 @@ class TaskTreeApp extends React.Component {
         this.onLoginReply = this.onLoginReply.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
-        this.onListAdded = this.onListAdded.bind(this);
-        this.onListUpdated = this.onListUpdated.bind(this);
+        this.onListAddedLocally = this.onListAddedLocally.bind(this);
+        this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
     }
 
@@ -23,23 +23,14 @@ class TaskTreeApp extends React.Component {
             this.setState(
                 immer.produce(draftState => {
                     draftState.listsRemote = [];
-
-                    for (const taskListIndex in lists) {
+                    for (let taskListIndex = 0; taskListIndex < lists.length; taskListIndex++) {
                         const remoteList = lists[taskListIndex];
                         draftState.listsRemote.push({
                             id: remoteList.id,
                             title: remoteList.title
                         });
-                        let foundLocally = false;
-                        for (const localIndex in draftState.listsLocal) {
-                            const localList = draftState.listsLocal[localIndex];
-                            if (localList.id === remoteList.id) {
-                                draftState.listsLocal[localIndex].title = remoteList.title;
-                                foundLocally = true;
-                                break;
-                            }
-                        }
-                        if (!foundLocally) {
+                        draftState.listsLocal.updateIf(l => l.synced && l.id === remoteList.id, l => l.title = remoteList.title);
+                        if (draftState.listsLocal.noneMatch(l => l.id === remoteList.id)){
                             draftState.listsLocal.push({
                                 id: remoteList.id,
                                 title: remoteList.title,
@@ -48,12 +39,7 @@ class TaskTreeApp extends React.Component {
                         }
                     }
                     const remoteIds = draftState.listsRemote.map(t => t.id);
-                    for (const localTaskListIndex in draftState.listsLocal) {
-                        const localList = draftState.listsLocal[localTaskListIndex];
-                        if (localList.synced && !remoteIds.includes(localList.id)) {
-                            delete draftState.listsLocal[localTaskListIndex];
-                        }
-                    }
+                    draftState.listsLocal.removeIf(l => l.synced && !remoteIds.includes(l.id));
                 })
             );
         }).catch((error) => {
@@ -73,7 +59,7 @@ class TaskTreeApp extends React.Component {
         }
     }
 
-    onListAdded(taskList) {
+    onListAddedLocally(taskList) {
         console.log("list added: " + JSON.stringify(taskList));
         this.setState(
             immer.produce(draftState => {
@@ -81,32 +67,23 @@ class TaskTreeApp extends React.Component {
                 if (taskList.synced) {
                     draftState.listsRemote.push(taskList);
                 }
-            })
+            }), this.fetchAll
         );
     }
 
-    onListUpdated(taskList) {
+    onListUpdatedLocally(taskList) {
         console.log("list updated: " + JSON.stringify(taskList));
         const synced = taskList.synced;
         this.setState(
             immer.produce(draftState => {
-                for (const localIndex in draftState.listsLocal) {
-                    const localList = draftState.listsLocal[localIndex];
-                    if (localList.id === taskList.id) {
-                        draftState.listsLocal[localIndex] = taskList;
-                        break;
-                    }
-                }
+                draftState.listsLocal.updateIf(l => l.id === taskList.id, l => {
+                    l.synced = synced;
+                    l.title = taskList.title;
+                });
                 if (synced) {
-                    for (const remoteIndex in draftState.listsRemote) {
-                        const remoteList = draftState.listsRemote[remoteIndex];
-                        if (remoteList.id === taskList.id) {
-                            draftState.listsRemote[remoteIndex] = taskList;
-                            break;
-                        }
-                    }
+                    draftState.listsRemote.updateIf(l => l.id === taskList.id, l => l.title = taskList.title);
                 }
-            })
+            }), this.fetchAll
         );
     }
 
@@ -141,8 +118,8 @@ class TaskTreeApp extends React.Component {
         } else {
             return e(MainView, {
                 lists: this.state.listsLocal,
-                listAdded: this.onListAdded,
-                listUpdated: this.onListUpdated
+                onListAddedLocally: this.onListAddedLocally,
+                onListUpdatedLocally: this.onListUpdatedLocally
             });
         }
     }

@@ -80,8 +80,8 @@ class ListEditView extends React.Component {
 
 class ListsView extends React.Component {
     // prop.lists
-    // prop.listAdded(taskList)
-    // prop.listUpdated(taskList)
+    // prop.onListAddedLocally(taskList)
+    // prop.onListUpdatedLocally(taskList)
     constructor(props) {
         super(props);
         this.state = {
@@ -110,8 +110,9 @@ class ListsView extends React.Component {
 
     renderListsTable() {
         let rows = [];
-        for (const listId in this.props.lists) {
-            const taskList = this.props.lists[listId];
+        for (let listIndex = 0; listIndex < this.props.lists.length; listIndex++) {
+            const taskList = this.props.lists[listIndex];
+            const listId = taskList.id;
             rows.push(
                 tr({key: listId},
                     th({key: "id", scope: "row", className: "align-middle"}, listId),
@@ -152,7 +153,7 @@ class ListsView extends React.Component {
                 {
                     taskList: null,
                     editingDone: (listAfterEdit) => {
-                        this.props.listAdded(listAfterEdit);
+                        this.props.onListAddedLocally(listAfterEdit);
                         this.setState({ createNew: false });
                     }
                 }
@@ -163,7 +164,7 @@ class ListsView extends React.Component {
                 {
                     taskList: this.state.editingList,
                     editingDone: (listAfterEdit) => {
-                        this.props.listUpdated(listAfterEdit);
+                        this.props.onListUpdatedLocally(listAfterEdit);
                         this.setState({ editingList: null });
                     }
                 }

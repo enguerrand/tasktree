@@ -1,7 +1,7 @@
 class MainView extends React.Component {
     // prop.lists
-    // prop.listAdded(taskList)
-    // prop.listUpdated(taskList)
+    // prop.onListAddedLocally(taskList)
+    // prop.onListUpdatedLocally(taskList)
     constructor(props) {
         super(props);
         this.state = {
@@ -13,8 +13,8 @@ class MainView extends React.Component {
             ListsView,
             {
                 lists: this.props.lists,
-                listAdded: this.props.listAdded,
-                listUpdated: this.props.listUpdated
+                onListAddedLocally: this.props.onListAddedLocally,
+                onListUpdatedLocally: this.props.onListUpdatedLocally
             }
         );
     }
