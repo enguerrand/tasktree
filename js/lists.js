@@ -36,7 +36,8 @@ class ListEditView extends React.Component {
             listId = "";
             listAfterEdit.id = null;
         } else {
-            listAfterEdit.id = this.props.taskList.id;
+            listId = this.props.taskList.id;
+            listAfterEdit.id = listId.id;
         }
         postJson(API_URL_LISTS + '/' + listId, {
             'title': title
@@ -113,8 +114,12 @@ class ListsView extends React.Component {
         for (let listIndex = 0; listIndex < this.props.lists.length; listIndex++) {
             const taskList = this.props.lists[listIndex];
             const listId = taskList.id;
+            let key = listId;
+            if (isNull(key)) {
+                key = Math.random().toString(36).substring(10);
+            }
             rows.push(
-                tr({key: listId},
+                tr({key: key},
                     th({key: "id", scope: "row", className: "align-middle"}, listId),
                     td({key: "title", className: "align-middle"}, taskList.title),
                     td(
