@@ -8,6 +8,7 @@ class TaskTreeApp extends React.Component {
         };
         this.createRequestId = this.createRequestId.bind(this);
         this.onLoginReply = this.onLoginReply.bind(this);
+        this.writeUnsyncedLists = this.writeUnsyncedLists.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
@@ -20,6 +21,29 @@ class TaskTreeApp extends React.Component {
             throw Error("not logged in!");
         }
         return u + "." + String(Date.now());
+    }
+
+    async writeUnsyncedLists() {
+        const asyncRequests = [];
+        for (const reqId in this.state.taskLists) {
+            const localList = this.state.taskLists[reqId];
+            if (localList.synced) {
+                continue;
+            }
+            asyncRequests.push(
+                postTaskList(localList).then(success => {
+                    if (success) {
+                        this.setState(
+                            immer.produce(draftState => {
+                                draftState.taskLists[reqId].synced = true;
+                            })
+                        );
+                    }
+                })
+            );
+        }
+        await Promise.all(asyncRequests);
+        await this.fetchLists();
     }
 
     async fetchLists() {
@@ -40,10 +64,10 @@ class TaskTreeApp extends React.Component {
                                 };
                             }
                         }
-                        const remoteIds = lists.map(t => t.id);
+                        const remoteReqIds = lists.map(t => t.requestId);
                         for (const reqId in draftState.taskLists) {
-                            if (!remoteIds.includes(draftState.taskLists[reqId].id)) {
-                                delete draftState.taskLists[list.requestId];
+                            if (draftState.taskLists[reqId].synced && !remoteReqIds.includes(reqId)) {
+                                delete draftState.taskLists[reqId];
                             }
                         }
                     })
@@ -70,7 +94,7 @@ class TaskTreeApp extends React.Component {
         this.setState(
             immer.produce(draftState => {
                 draftState.taskLists[taskList.requestId] = taskList;
-            })
+            }), this.writeUnsyncedLists
         );
     }
 
@@ -81,7 +105,7 @@ class TaskTreeApp extends React.Component {
             online: online
         })
         if (online) {
-            this.fetchAll();
+            this.writeUnsyncedLists();
         }
     }
 
