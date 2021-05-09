@@ -20,24 +20,14 @@ class LoginForm extends React.Component {
         this.setState({password: event.target.value});
     }
 
-    handleSubmit(event) {
+    async handleSubmit(event) {
         event.preventDefault();
         const username = this.state.username;
-        postJson(BASE_URL + '/login', {
+        const success = await postJson(BASE_URL + '/login', {
                 'username': username,
                 'password': this.state.password
         })
-        .then(throwOnHttpError)
-        .then((response) => {
-            return response.json();
-        }).then((reply) => {
-            const success = reply.status === HTTP_STATUS_OK;
-            console.log(JSON.stringify(reply));
-            this.props.onServerReply(username, success);
-        }).catch((error) => {
-            console.log(error);
-            this.props.onServerReply(username, false);
-        });
+        this.props.onServerReply(username, success);
     }
 
     render() {

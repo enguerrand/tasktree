@@ -15,43 +15,42 @@ class TaskTreeApp extends React.Component {
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
     }
 
-    fetchLists() {
-        getJson(API_URL_LISTS).then((lists) => {
-            if (lists === null) {
-                return;
-            }
-            this.setState(
-                immer.produce(draftState => {
-                    draftState.listsRemote = [];
-                    for (let taskListIndex = 0; taskListIndex < lists.length; taskListIndex++) {
-                        const remoteList = lists[taskListIndex];
-                        draftState.listsRemote.push({
-                            id: remoteList.id,
-                            title: remoteList.title
-                        });
-                        draftState.listsLocal.updateIf(l => l.synced && l.id === remoteList.id, l => l.title = remoteList.title);
-                        if (draftState.listsLocal.noneMatch(l => l.id === remoteList.id)){
-                            draftState.listsLocal.push({
+    async fetchLists() {
+        const result = await getJson(API_URL_LISTS);
+        result.handle(
+            lists => {
+                this.setState(
+                    immer.produce(draftState => {
+                        draftState.listsRemote = [];
+                        for (let taskListIndex = 0; taskListIndex < lists.length; taskListIndex++) {
+                            const remoteList = lists[taskListIndex];
+                            draftState.listsRemote.push({
                                 id: remoteList.id,
-                                title: remoteList.title,
-                                synced: true
+                                title: remoteList.title
                             });
+                            draftState.listsLocal.updateIf(l => l.synced && l.id === remoteList.id, l => l.title = remoteList.title);
+                            if (draftState.listsLocal.noneMatch(l => l.id === remoteList.id)){
+                                draftState.listsLocal.push({
+                                    id: remoteList.id,
+                                    title: remoteList.title,
+                                    synced: true
+                                });
+                            }
                         }
-                    }
-                    const remoteIds = draftState.listsRemote.map(t => t.id);
-                    draftState.listsLocal.removeIf(l => l.synced && !remoteIds.includes(l.id));
-                })
-            );
-        }).catch((error) => {
-            console.log(error);
-        });
+                        const remoteIds = draftState.listsRemote.map(t => t.id);
+                        draftState.listsLocal.removeIf(l => l.synced && !remoteIds.includes(l.id));
+                    })
+                );
+            },
+            errorMessage => console.log(errorMessage)
+        );
     }
 
-    fetchAll() {
+    async fetchAll() {
         this.fetchLists();
     }
 
-    onLoginReply(sentUsername, authorizationSuccess) {
+    async onLoginReply(sentUsername, authorizationSuccess) {
         if (authorizationSuccess) {
             this.setState({loggedInUser: sentUsername}, this.fetchAll);
         } else {
@@ -59,7 +58,7 @@ class TaskTreeApp extends React.Component {
         }
     }
 
-    onListAddedLocally(taskList) {
+    async onListAddedLocally(taskList) {
         console.log("list added: " + JSON.stringify(taskList));
         this.setState(
             immer.produce(draftState => {
@@ -71,7 +70,7 @@ class TaskTreeApp extends React.Component {
         );
     }
 
-    onListUpdatedLocally(taskList) {
+    async onListUpdatedLocally(taskList) {
         console.log("list updated: " + JSON.stringify(taskList));
         const synced = taskList.synced;
         this.setState(
@@ -87,7 +86,7 @@ class TaskTreeApp extends React.Component {
         );
     }
 
-    updateOnlineStatus() {
+    async updateOnlineStatus() {
         const online = navigator.onLine;
         console.log("online state changed: " + String(online));
         this.setState({
@@ -98,18 +97,22 @@ class TaskTreeApp extends React.Component {
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         window.addEventListener('online', this.updateOnlineStatus);
         window.addEventListener('offline', this.updateOnlineStatus);
-        getJson(API_URL_USERS + '/current').then((currentUser) => {
-            if (currentUser !== null && currentUser.username !== null && currentUser.username !== undefined) {
-                this.setState({
-                    loggedInUser: currentUser.username
-                }, this.fetchAll);
+        const jsonResult = await getJson(API_URL_USERS + '/current');
+        jsonResult.handle(
+            currentUser => {
+                if (currentUser !== null && currentUser.username !== null && currentUser.username !== undefined) {
+                    this.setState({
+                        loggedInUser: currentUser.username
+                    }, this.fetchAll);
+                }
+            },
+            errorMessage => {
+                console.log(errorMessage);
             }
-        }).catch((error) => {
-            console.log(error);
-        });
+        );
     }
 
     render() {

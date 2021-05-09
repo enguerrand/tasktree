@@ -25,7 +25,7 @@ class ListEditView extends React.Component {
         this.setState({title: event.target.value});
     }
 
-    handleSubmit(event) {
+    async handleSubmit(event) {
         event.preventDefault();
         const title = this.state.title;
         const listAfterEdit = {
@@ -34,10 +34,9 @@ class ListEditView extends React.Component {
         if (!isNull(this.props.taskList)) {
             listAfterEdit.id = this.props.taskList.id
         }
-        postTaskList(listAfterEdit).then(success => {
-            listAfterEdit.synced = success;
-            this.props.editingDone(listAfterEdit);
-        });
+        const success = await postTaskList(listAfterEdit);
+        listAfterEdit.synced = success;
+        this.props.editingDone(listAfterEdit);
     }
 
     render() {
@@ -140,8 +139,8 @@ class ListsView extends React.Component {
                 ListEditView,
                 {
                     taskList: null,
-                    editingDone: (listAfterEdit) => {
-                        this.props.onListAddedLocally(listAfterEdit);
+                    editingDone: async (listAfterEdit) => {
+                        await this.props.onListAddedLocally(listAfterEdit);
                         this.setState({ createNew: false });
                     }
                 }
@@ -151,8 +150,8 @@ class ListsView extends React.Component {
                 ListEditView,
                 {
                     taskList: this.state.editingList,
-                    editingDone: (listAfterEdit) => {
-                        this.props.onListUpdatedLocally(listAfterEdit);
+                    editingDone: async (listAfterEdit) => {
+                        await this.props.onListUpdatedLocally(listAfterEdit);
                         this.setState({ editingList: null });
                     }
                 }

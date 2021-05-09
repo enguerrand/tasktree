@@ -5,39 +5,66 @@ const API_URL_LISTS = API_URL + '/lists';
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_AUTHORIZED = 401;
 const CSRF_TOKEN = document.head.querySelector("[name=csrf-token][content]").content;
-function throwOnHttpError(response){
-    if (!response.ok) {
-        throw Error(response.statusText);
+
+class JsonResult {
+    constructor(success, payload) {
+        if (isNull(payload)) {
+            this.success = false;
+            this.payload = "Result is null";
+        } else {
+            this.payload = payload;
+            this.success = success;
+        }
     }
-    return response;
+    // onSuccess(requestedValue)
+    // onError(message)
+    handle(onSuccess, onError) {
+        if (this.success) {
+            onSuccess(this.payload);
+        } else {
+            onError(this.payload);
+        }
+    }
 }
 
-function getJson(url) {
-    return fetch(url, {
-        method: 'get',
-        headers: {
-            'X-CSRFToken': CSRF_TOKEN,
-        },
-    })
-        .then(throwOnHttpError)
-        .then((response) => {
-            return response.json();
-        })
+// returns JsonResult
+async function getJson(url) {
+    try {
+        const response = await fetch(url, {
+            method: 'get',
+            headers: {
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+        });
+        if (!response.ok) {
+            return new JsonResult(false, response.statusText);
+        }
+        const json = await response.json();
+        return new JsonResult(true, json);
+    } catch (e) {
+        return new JsonResult(false, e.toString())
+    }
 }
 
-function postJson(url, json) {
-    return fetch(url, {
-        method: 'post',
-        headers: {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': CSRF_TOKEN,
-        },
-        body: JSON.stringify(json)
-    })
+// returns success true/false
+async function postJson(url, json) {
+    try {
+        const response = await fetch(url, {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: JSON.stringify(json)
+        });
+        return response.ok;
+    } catch (e) {
+        return false;
+    }
 }
 
-function postTaskList(taskList) {
+async function postTaskList(taskList) {
     let listId;
     if (isNull(taskList.id)) {
         listId = "";
@@ -46,10 +73,6 @@ function postTaskList(taskList) {
     }
     return postJson(API_URL_LISTS + '/' + listId, {
         'title': taskList.title
-    }).then(response => {
-        return response.ok;
-    }).catch(() => {
-        return false;
     });
 }
 
