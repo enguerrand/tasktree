@@ -3,7 +3,7 @@ class TaskTreeApp extends React.Component {
         super(props);
         this.state = {
             loggedInUser: null,
-            listsLocal: {},
+            taskLists: {},
             online: true
         };
         this.createRequestId = this.createRequestId.bind(this);
@@ -30,9 +30,9 @@ class TaskTreeApp extends React.Component {
                     immer.produce(draftState => {
                         for (let taskListIndex = 0; taskListIndex < lists.length; taskListIndex++) {
                             const remoteList = lists[taskListIndex];
-                            const current = draftState.listsLocal[remoteList.requestId];
+                            const current = draftState.taskLists[remoteList.requestId];
                             if (isNull(current) || current.synced) {
-                                draftState.listsLocal[remoteList.requestId] = {
+                                draftState.taskLists[remoteList.requestId] = {
                                     id: remoteList.id,
                                     title: remoteList.title,
                                     requestId: remoteList.requestId,
@@ -41,9 +41,9 @@ class TaskTreeApp extends React.Component {
                             }
                         }
                         const remoteIds = lists.map(t => t.id);
-                        for (const reqId in draftState.listsLocal) {
-                            if (!remoteIds.includes(draftState.listsLocal[reqId].id)) {
-                                delete draftState.listsLocal[list.requestId];
+                        for (const reqId in draftState.taskLists) {
+                            if (!remoteIds.includes(draftState.taskLists[reqId].id)) {
+                                delete draftState.taskLists[list.requestId];
                             }
                         }
                     })
@@ -69,7 +69,7 @@ class TaskTreeApp extends React.Component {
         console.log("list updated: " + JSON.stringify(taskList));
         this.setState(
             immer.produce(draftState => {
-                draftState.listsLocal[taskList.requestId] = taskList;
+                draftState.taskLists[taskList.requestId] = taskList;
             })
         );
     }
@@ -108,7 +108,7 @@ class TaskTreeApp extends React.Component {
             return e(LoginForm, {onServerReply: this.onLoginReply});
         } else {
             return e(MainView, {
-                lists: this.state.listsLocal,
+                lists: this.state.taskLists,
                 onListUpdatedLocally: this.onListUpdatedLocally,
                 createRequestId: this.createRequestId
             });
