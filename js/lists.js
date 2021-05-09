@@ -36,9 +36,12 @@ class ListEditView extends React.Component {
         if (isNull(this.props.taskList)) {
             listAfterEdit.requestId = this.props.createRequestId();
         } else {
-            listAfterEdit.id = this.props.taskList.id
             listAfterEdit.requestId = this.props.taskList.requestId;
+            if (!isNull(this.props.taskList.id)) {
+                listAfterEdit.id = this.props.taskList.id;
+            }
         }
+
         const success = await postTaskList(listAfterEdit);
         listAfterEdit.synced = success;
         this.props.editingDone(listAfterEdit);
@@ -98,15 +101,11 @@ class ListsView extends React.Component {
 
     renderListsTable() {
         let rows = [];
-        for (let listIndex = 0; listIndex < this.props.lists.length; listIndex++) {
-            const taskList = this.props.lists[listIndex];
+        for (const reqId in this.props.lists) {
+            const taskList = this.props.lists[reqId];
             const listId = taskList.id;
-            let key = listId;
-            if (isNull(key)) {
-                key = Math.random().toString(36).substring(10);
-            }
             rows.push(
-                tr({key: key},
+                tr({key: reqId},
                     th({key: "id", scope: "row", className: "align-middle"}, listId),
                     td({key: "title", className: "align-middle"}, taskList.title),
                     td(

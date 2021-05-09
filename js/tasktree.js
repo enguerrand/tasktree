@@ -3,7 +3,7 @@ class TaskTreeApp extends React.Component {
         super(props);
         this.state = {
             loggedInUser: null,
-            listsLocal: [],
+            listsLocal: {},
             online: true
         };
         this.createRequestId = this.createRequestId.bind(this);
@@ -30,18 +30,22 @@ class TaskTreeApp extends React.Component {
                     immer.produce(draftState => {
                         for (let taskListIndex = 0; taskListIndex < lists.length; taskListIndex++) {
                             const remoteList = lists[taskListIndex];
-                            draftState.listsLocal.updateIf(l => l.synced && l.id === remoteList.id, l => l.title = remoteList.title);
-                            if (draftState.listsLocal.noneMatch(l => l.id === remoteList.id)){
-                                draftState.listsLocal.push({
+                            const current = draftState.listsLocal[remoteList.requestId];
+                            if (isNull(current) || current.synced) {
+                                draftState.listsLocal[remoteList.requestId] = {
                                     id: remoteList.id,
                                     title: remoteList.title,
                                     requestId: remoteList.requestId,
                                     synced: true
-                                });
+                                };
                             }
                         }
                         const remoteIds = lists.map(t => t.id);
-                        draftState.listsLocal.removeIf(l => l.synced && !remoteIds.includes(l.id));
+                        for (const reqId in draftState.listsLocal) {
+                            if (!remoteIds.includes(draftState.listsLocal[reqId].id)) {
+                                delete draftState.listsLocal[list.requestId];
+                            }
+                        }
                     })
                 );
             },
@@ -65,14 +69,7 @@ class TaskTreeApp extends React.Component {
         console.log("list updated: " + JSON.stringify(taskList));
         this.setState(
             immer.produce(draftState => {
-                if (isNull(taskList.id)) {
-                    draftState.listsLocal.push(taskList);
-                } else {
-                    draftState.listsLocal.updateIf(l => l.id === taskList.id, l => {
-                        l.synced = synced;
-                        l.title = taskList.title;
-                    });
-                }
+                draftState.listsLocal[taskList.requestId] = taskList;
             })
         );
     }
