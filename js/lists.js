@@ -31,28 +31,11 @@ class ListEditView extends React.Component {
         const listAfterEdit = {
             title: title
         }
-        let listId;
-        if (isNull(this.props.taskList)) {
-            listId = "";
-            listAfterEdit.id = null;
-        } else {
-            listId = this.props.taskList.id;
-            listAfterEdit.id = listId.id;
+        if (!isNull(this.props.taskList)) {
+            listAfterEdit.id = this.props.taskList.id
         }
-        postJson(API_URL_LISTS + '/' + listId, {
-            'title': title
-        }).then(response => {
-            if (response.ok) {
-                console.log("ok");
-                listAfterEdit.synced = true;
-            } else {
-                console.log("error");
-                listAfterEdit.synced = false;
-            }
-            this.props.editingDone(listAfterEdit);
-        }).catch((error) => {
-            console.log(error);
-            listAfterEdit.synced = false;
+        postTaskList(listAfterEdit).then(success => {
+            listAfterEdit.synced = success;
             this.props.editingDone(listAfterEdit);
         });
     }

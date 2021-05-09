@@ -83,7 +83,7 @@ class TaskTreeApp extends React.Component {
                 if (synced) {
                     draftState.listsRemote.updateIf(l => l.id === taskList.id, l => l.title = taskList.title);
                 }
-            }), this.fetchAll
+            })
         );
     }
 

@@ -37,6 +37,22 @@ function postJson(url, json) {
     })
 }
 
+function postTaskList(taskList) {
+    let listId;
+    if (isNull(taskList.id)) {
+        listId = "";
+    } else {
+        listId = taskList.id;
+    }
+    return postJson(API_URL_LISTS + '/' + listId, {
+        'title': taskList.title
+    }).then(response => {
+        return response.ok;
+    }).catch(() => {
+        return false;
+    });
+}
+
 function isNull(obj) {
     return obj === undefined || obj === null;
 }
