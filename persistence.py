@@ -47,12 +47,13 @@ class TaskList(Base):
     __tablename__ = "task_list"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    request_id = Column(String, unique=True, nullable=False)
     title = Column(String, nullable=False)
     users = relationship("User", secondary=association_table_user_x_task_list, back_populates="task_lists")
     tasks = relationship("Task", backref="task_list", cascade="all, delete")
 
     def __repr__(self):
-        return f"TaskList(id={self.id!r}, title={self.title!r})"
+        return f"TaskList(id={self.id!r}, title={self.title!r}, request_id={self.request_id!r})"
 
 
 class Task(Base):
@@ -138,9 +139,9 @@ class Persistence:
             return None
         return user
 
-    def create_task_list(self, title: str, requesting_user_id: int):
+    def create_task_list(self, title: str, request_id: str, requesting_user_id: int):
         user = self.session.query(User).filter(User.id == requesting_user_id).one()
-        task_list = TaskList(title=title, users=[user])
+        task_list = TaskList(title=title, request_id=request_id, users=[user])
         self.session.add(task_list)
         self.session.commit()
 
@@ -325,8 +326,8 @@ if __name__ == "__main__":
     # FIXME remove test code
     persistence.create_user("edr", "foobar")
     u = persistence.get_user_by_name("edr")
-    persistence.create_task_list("First list", u.id)
-    persistence.create_task_list("Second list", u.id)
+    persistence.create_task_list("First list", "edr-1", u.id)
+    persistence.create_task_list("Second list", "edr-2", u.id)
     for tl in persistence.get_task_lists(u.id):
         for i in (1, 2, 3, 4):
             persistence.create_task(

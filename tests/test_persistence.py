@@ -40,9 +40,9 @@ class TestPersistence(TestCase):
         self.persistence.create_user(USER_B_NAME, USER_B_PSWD)
         self.user_a = self.persistence.get_user_by_name(USER_A_NAME)
         self.user_b = self.persistence.get_user_by_name(USER_B_NAME)
-        self.persistence.create_task_list(TASK_LIST_1_TITLE, self.user_a.id)
-        self.persistence.create_task_list(TASK_LIST_2_TITLE, self.user_b.id)
-        self.persistence.create_task_list(TASK_LIST_3_TITLE, self.user_b.id)
+        self.persistence.create_task_list(TASK_LIST_1_TITLE, "req_l1", self.user_a.id)
+        self.persistence.create_task_list(TASK_LIST_2_TITLE, "req_l2", self.user_b.id)
+        self.persistence.create_task_list(TASK_LIST_3_TITLE, "req_l3", self.user_b.id)
         self.persistence.share_task_list_with(3, self.user_a.id, self.user_b.id)
         self.persistence.create_task(
             1, 1, TASK_1_TITLE, description=TASK_1_DESCRIPTION, tags=(TASK_1_TAG_1, TASK_1_TAG_2)
@@ -53,7 +53,7 @@ class TestPersistence(TestCase):
 
     def test_string_repr(self):
         self.assertEqual("User(id=None, username='a', password=***)", str(persistence.User(username="a", password="b")))
-        self.assertEqual("TaskList(id=None, title='a')", str(persistence.TaskList(title="a")))
+        self.assertEqual("TaskList(id=None, title='a', request_id='foo')", str(persistence.TaskList(title="a", request_id="foo")))
         self.assertEqual(
             "Task(id=None, task_list_id=None, title='a', description=None, created=None, due=None, completed=None)",
             str(persistence.Task(title="a")),
@@ -92,7 +92,7 @@ class TestPersistence(TestCase):
         self.assertRaises(IntegrityError, lambda: self.persistence.create_user(USER_A_NAME, "whatever"))
 
     def test_no_insert_task_list_for_non_existant_user(self):
-        self.assertRaises(NoResultFound, lambda: self.persistence.create_task_list("whatever", NON_EXISTANT_USER_ID))
+        self.assertRaises(NoResultFound, lambda: self.persistence.create_task_list("whatever", "foo", NON_EXISTANT_USER_ID))
 
     def test_get_task_list(self):
         self.assertEqual(TASK_LIST_1_TITLE, self.persistence.get_task_list(requesting_user_id=1, task_list_id=1).title)

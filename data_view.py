@@ -18,10 +18,11 @@ class UserView(UserMixin):
 class ListView:
     def __init__(self, task_list: TaskList):
         self.id = task_list.id
+        self.request_id = task_list.request_id
         self.title = task_list.title
 
     def as_dict(self):
-        return {"id": self.id, "title": self.title}
+        return {"id": self.id, "title": self.title, "requestId": self.request_id}
 
 
 class TaskView:
@@ -57,8 +58,9 @@ class DataView:
 
     def create_or_update_list(self, task_list_id: Optional[int], json_request):
         title = json_request["title"]
+        request_id = json_request["requestId"]
         if task_list_id is None:
-            self.persistence.create_task_list(title, self.viewing_user.id)
+            self.persistence.create_task_list(title, request_id, self.viewing_user.id)
         else:
             self.persistence.set_task_list_title(task_list_id, title, self.viewing_user.id)
 
