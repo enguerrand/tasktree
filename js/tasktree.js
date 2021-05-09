@@ -4,15 +4,22 @@ class TaskTreeApp extends React.Component {
         this.state = {
             loggedInUser: null,
             listsLocal: [],
-            listsRemote: [],
             online: true
         };
+        this.createRequestId = this.createRequestId.bind(this);
         this.onLoginReply = this.onLoginReply.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
-        this.onListAddedLocally = this.onListAddedLocally.bind(this);
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
+    }
+
+    createRequestId() {
+        const u = this.state.loggedInUser;
+        if (isNull(u)) {
+            throw Error("not logged in!");
+        }
+        return u + "." + String(Date.now());
     }
 
     async fetchLists() {
@@ -21,23 +28,19 @@ class TaskTreeApp extends React.Component {
             lists => {
                 this.setState(
                     immer.produce(draftState => {
-                        draftState.listsRemote = [];
                         for (let taskListIndex = 0; taskListIndex < lists.length; taskListIndex++) {
                             const remoteList = lists[taskListIndex];
-                            draftState.listsRemote.push({
-                                id: remoteList.id,
-                                title: remoteList.title
-                            });
                             draftState.listsLocal.updateIf(l => l.synced && l.id === remoteList.id, l => l.title = remoteList.title);
                             if (draftState.listsLocal.noneMatch(l => l.id === remoteList.id)){
                                 draftState.listsLocal.push({
                                     id: remoteList.id,
                                     title: remoteList.title,
+                                    requestId: remoteList.requestId,
                                     synced: true
                                 });
                             }
                         }
-                        const remoteIds = draftState.listsRemote.map(t => t.id);
+                        const remoteIds = lists.map(t => t.id);
                         draftState.listsLocal.removeIf(l => l.synced && !remoteIds.includes(l.id));
                     })
                 );
@@ -58,29 +61,17 @@ class TaskTreeApp extends React.Component {
         }
     }
 
-    async onListAddedLocally(taskList) {
-        console.log("list added: " + JSON.stringify(taskList));
-        this.setState(
-            immer.produce(draftState => {
-                draftState.listsLocal.push(taskList);
-                if (taskList.synced) {
-                    draftState.listsRemote.push(taskList);
-                }
-            }), this.fetchAll
-        );
-    }
-
     async onListUpdatedLocally(taskList) {
         console.log("list updated: " + JSON.stringify(taskList));
-        const synced = taskList.synced;
         this.setState(
             immer.produce(draftState => {
-                draftState.listsLocal.updateIf(l => l.id === taskList.id, l => {
-                    l.synced = synced;
-                    l.title = taskList.title;
-                });
-                if (synced) {
-                    draftState.listsRemote.updateIf(l => l.id === taskList.id, l => l.title = taskList.title);
+                if (isNull(taskList.id)) {
+                    draftState.listsLocal.push(taskList);
+                } else {
+                    draftState.listsLocal.updateIf(l => l.id === taskList.id, l => {
+                        l.synced = synced;
+                        l.title = taskList.title;
+                    });
                 }
             })
         );
@@ -121,8 +112,8 @@ class TaskTreeApp extends React.Component {
         } else {
             return e(MainView, {
                 lists: this.state.listsLocal,
-                onListAddedLocally: this.onListAddedLocally,
-                onListUpdatedLocally: this.onListUpdatedLocally
+                onListUpdatedLocally: this.onListUpdatedLocally,
+                createRequestId: this.createRequestId
             });
         }
     }

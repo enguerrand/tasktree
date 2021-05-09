@@ -2,6 +2,7 @@
 class ListEditView extends React.Component {
     // props.taskList
     // props.editingDone(listAfterEdit)
+    // props.createRequestId
     constructor(props) {
         super(props);
         let header;
@@ -29,10 +30,14 @@ class ListEditView extends React.Component {
         event.preventDefault();
         const title = this.state.title;
         const listAfterEdit = {
-            title: title
+            title: title,
+            synced: false
         }
-        if (!isNull(this.props.taskList)) {
+        if (isNull(this.props.taskList)) {
+            listAfterEdit.requestId = this.props.createRequestId();
+        } else {
             listAfterEdit.id = this.props.taskList.id
+            listAfterEdit.requestId = this.props.taskList.requestId;
         }
         const success = await postTaskList(listAfterEdit);
         listAfterEdit.synced = success;
@@ -63,8 +68,8 @@ class ListEditView extends React.Component {
 
 class ListsView extends React.Component {
     // prop.lists
-    // prop.onListAddedLocally(taskList)
     // prop.onListUpdatedLocally(taskList)
+    // props.createRequestId
     constructor(props) {
         super(props);
         this.state = {
@@ -134,26 +139,22 @@ class ListsView extends React.Component {
     }
 
     render() {
-        if (this.state.createNew) {
+        if (this.state.createNew || !isNull(this.state.editingList)) {
+            let listToSet;
+            if (this.state.createNew) {
+                listToSet = null;
+            } else {
+                listToSet = this.state.editingList;
+            }
             return e(
                 ListEditView,
                 {
-                    taskList: null,
-                    editingDone: async (listAfterEdit) => {
-                        await this.props.onListAddedLocally(listAfterEdit);
-                        this.setState({ createNew: false });
-                    }
-                }
-            );
-        } else if (!isNull(this.state.editingList)) {
-            return e(
-                ListEditView,
-                {
-                    taskList: this.state.editingList,
+                    taskList: listToSet,
                     editingDone: async (listAfterEdit) => {
                         await this.props.onListUpdatedLocally(listAfterEdit);
-                        this.setState({ editingList: null });
-                    }
+                        this.setState({ editingList: null, createNew: false });
+                    },
+                    createRequestId: this.props.createRequestId
                 }
             );
         } else {

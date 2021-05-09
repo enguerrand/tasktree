@@ -72,7 +72,8 @@ async function postTaskList(taskList) {
         listId = taskList.id;
     }
     return postJson(API_URL_LISTS + '/' + listId, {
-        'title': taskList.title
+        'title': taskList.title,
+        'requestId': taskList.requestId
     });
 }
 
