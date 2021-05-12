@@ -60,6 +60,7 @@ class Task(Base):
     __tablename__ = "task"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    request_id = Column(String, unique=True, nullable=False)
     title = Column(String, nullable=False)
     created = Column("created", DateTime, nullable=False, default=datetime.utcnow)
     due = Column("due", DateTime, nullable=True)
@@ -174,6 +175,7 @@ class Persistence:
     def create_task(
         self,
         requesting_user_id: int,
+        request_id: str,
         task_list_id: int,
         title: str,
         due=None,
@@ -185,7 +187,7 @@ class Persistence:
         task_list = self.get_task_list(requesting_user_id, task_list_id)
         prereq = self.query_tasks(requesting_user_id).filter(Task.id.in_(prereq_task_ids)).all()
         dependents = self.query_tasks(requesting_user_id).filter(Task.id.in_(depending_task_ids)).all()
-        task = Task(title=title, due=due, description=description, task_list=task_list)
+        task = Task(title=title, request_id=request_id, due=due, description=description, task_list=task_list)
         task.prerequisites.extend(prereq)
         task.depending_tasks.extend(dependents)
         for t in tags:
@@ -331,7 +333,7 @@ if __name__ == "__main__":
     for tl in persistence.get_task_lists(u.id):
         for i in (1, 2, 3, 4):
             persistence.create_task(
-                u.id, tl.id, f"task {i}", description=f"Description of task {i} in list " + tl.title
+                u.id, f"u{u.id}_l{tl.id}_t{i}", tl.id, f"task {i}", description=f"Description of task {i} in list " + tl.title
             )
         for task in tl.tasks:
             if task.id % 2 == 0:
