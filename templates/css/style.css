@@ -1,5 +1,6 @@
 body {
     margin: 1em 0;
+    background-color: #464c52;
 }
 
 #content {
@@ -12,4 +13,13 @@ table td.center, table th.center{
 
 table td.right, table th.right{
     text-align: right;
+}
+
+.navbar {
+    margin-bottom: 20px;
+}
+
+.navbar-nav > .nav-item {
+    padding-right: 15px;
+    padding-left: 15px;
 }

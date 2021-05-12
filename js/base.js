@@ -2,6 +2,8 @@ const BASE_URL = ''
 const API_URL = BASE_URL + '/api';
 const API_URL_USERS = API_URL + '/users';
 const API_URL_LISTS = API_URL + '/lists';
+const CATEGORY_ID_LISTS = "LISTS";
+const CATEGORY_ID_TASKS = "TASKS";
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_AUTHORIZED = 401;
 const CSRF_TOKEN = document.head.querySelector("[name=csrf-token][content]").content;

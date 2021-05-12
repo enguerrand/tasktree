@@ -4,7 +4,8 @@ class TaskTreeApp extends React.Component {
         this.state = {
             loggedInUser: null,
             taskLists: {},
-            online: true
+            online: true,
+            currentCategory: CATEGORY_ID_TASKS
         };
         this.createRequestId = this.createRequestId.bind(this);
         this.onLoginReply = this.onLoginReply.bind(this);
@@ -131,11 +132,22 @@ class TaskTreeApp extends React.Component {
         if (this.state.loggedInUser === null) {
             return e(LoginForm, {onServerReply: this.onLoginReply});
         } else {
-            return e(MainView, {
-                lists: this.state.taskLists,
-                onListUpdatedLocally: this.onListUpdatedLocally,
-                createRequestId: this.createRequestId
-            });
+            return [
+                e(NavBar, {
+                    key: "navbar",
+                    currentCategory: this.state.currentCategory,
+                    setCategory: cat => this.setState({
+                        currentCategory: cat
+                    })
+                }),
+                e(MainView, {
+                    key: "main-view",
+                    category: this.state.currentCategory,
+                    lists: this.state.taskLists,
+                    onListUpdatedLocally: this.onListUpdatedLocally,
+                    createRequestId: this.createRequestId
+                })
+            ];
         }
     }
 }
