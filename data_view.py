@@ -20,9 +20,10 @@ class ListView:
         self.id = task_list.id
         self.request_id = task_list.request_id
         self.title = task_list.title
+        self.tasks = [TaskView(task).as_dict() for task in task_list.tasks]
 
     def as_dict(self):
-        return {"id": self.id, "title": self.title, "requestId": self.request_id}
+        return {"id": self.id, "title": self.title, "requestId": self.request_id, "tasks": self.tasks}
 
 
 class TaskView:
@@ -53,6 +54,10 @@ class DataView:
     def get_users(self) -> List[UserView]:
         return [UserView(user).as_dict() for user in self.persistence.get_users()]
 
+    def get_task_list(self, task_list_id: int) -> ListView:
+        task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
+        return ListView(task_list).as_dict()
+
     def get_lists(self) -> List[ListView]:
         return [ListView(task_list).as_dict() for task_list in self.persistence.get_task_lists(self.viewing_user.id)]
 
@@ -63,7 +68,3 @@ class DataView:
             self.persistence.create_task_list(title, request_id, self.viewing_user.id)
         else:
             self.persistence.set_task_list_title(task_list_id, title, self.viewing_user.id)
-
-    def get_tasks(self, task_list_id: int) -> List[ListView]:
-        task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
-        return [TaskView(task).as_dict() for task in task_list.tasks]

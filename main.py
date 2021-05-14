@@ -92,9 +92,9 @@ def update_task_list(task_list_id: int):
 
 @app.route(API_BASE_LISTS + "<int:task_list_id>/")
 @login_required
-def get_tasks(task_list_id: int):
+def get_task_list(task_list_id: int):
     data_view = DataView(persistence, current_user)
-    return jsonify(data_view.get_tasks(task_list_id))
+    return jsonify(data_view.get_task_list(task_list_id))
 
 
 @app.route(API_BASE_USERS)
