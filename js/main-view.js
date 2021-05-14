@@ -2,11 +2,10 @@ class MainView extends React.Component {
     // props.lists
     // props.category
     // props.onListUpdatedLocally(taskList)
-    // props.createRequestId
+    // props.createListId
     constructor(props) {
         super(props);
-        this.state = {
-        };
+        this.state = {};
     }
 
     render() {
@@ -16,7 +15,7 @@ class MainView extends React.Component {
                 {
                     lists: this.props.lists,
                     onListUpdatedLocally: this.props.onListUpdatedLocally,
-                    createRequestId: this.props.createRequestId
+                    createListId: this.props.createListId
                 }
             );
         } else if (this.props.category === CATEGORY_ID_TASKS) {

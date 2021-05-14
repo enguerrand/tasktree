@@ -2,7 +2,7 @@
 class ListEditView extends React.Component {
     // props.taskList
     // props.editingDone(listAfterEdit)
-    // props.createRequestId
+    // props.createListId
     constructor(props) {
         super(props);
         let header;
@@ -34,7 +34,7 @@ class ListEditView extends React.Component {
             synced: false
         }
         if (isNull(this.props.taskList)) {
-            listAfterEdit.requestId = this.props.createRequestId();
+            listAfterEdit.id = this.props.createListId();
         } else {
             listAfterEdit.requestId = this.props.taskList.requestId;
             if (!isNull(this.props.taskList.id)) {
@@ -42,7 +42,7 @@ class ListEditView extends React.Component {
             }
         }
 
-        const success = await postTaskList(listAfterEdit);
+        const success = await sendTaskList(listAfterEdit);
         listAfterEdit.synced = success;
         this.props.editingDone(listAfterEdit);
     }
@@ -72,7 +72,7 @@ class ListEditView extends React.Component {
 class ListsView extends React.Component {
     // prop.lists
     // prop.onListUpdatedLocally(taskList)
-    // props.createRequestId
+    // props.createListId
     constructor(props) {
         super(props);
         this.state = {
@@ -101,11 +101,10 @@ class ListsView extends React.Component {
 
     renderListsTable() {
         let rows = [];
-        for (const reqId in this.props.lists) {
-            const taskList = this.props.lists[reqId];
-            const listId = taskList.id;
+        for (const listId in this.props.lists) {
+            const taskList = this.props.lists[listId];
             rows.push(
-                tr({key: reqId},
+                tr({key: listId},
                     th({key: "id", scope: "row", className: "align-middle"}, listId),
                     td({key: "title", className: "align-middle"}, taskList.title),
                     td(
@@ -153,7 +152,7 @@ class ListsView extends React.Component {
                         await this.props.onListUpdatedLocally(listAfterEdit);
                         this.setState({ editingList: null, createNew: false });
                     },
-                    createRequestId: this.props.createRequestId
+                    createListId: this.props.createListId
                 }
             );
         } else {

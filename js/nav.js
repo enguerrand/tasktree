@@ -53,7 +53,7 @@ class NavBar extends React.Component {
         }
         return div({className: "row"},
             div({className: "col-12"},
-                e('nav', { className: "navbar navbar-expand-lg navbar-dark bg-dark"},
+                e('nav', { className: "navbar navbar-expand navbar-dark bg-dark"},
                     div({className: "collapse navbar-collapse"},
                         ul({className: "navbar-nav mr-auto mt-2 mt-lg-0"},
                             navItems

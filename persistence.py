@@ -46,21 +46,19 @@ class User(Base):
 class TaskList(Base):
     __tablename__ = "task_list"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    request_id = Column(String, unique=True, nullable=False)
+    id = Column(Integer, primary_key=True, unique=True)
     title = Column(String, nullable=False)
     users = relationship("User", secondary=association_table_user_x_task_list, back_populates="task_lists")
     tasks = relationship("Task", backref="task_list", cascade="all, delete")
 
     def __repr__(self):
-        return f"TaskList(id={self.id!r}, title={self.title!r}, request_id={self.request_id!r})"
+        return f"TaskList(id={self.id!r}, title={self.title!r})"
 
 
 class Task(Base):
     __tablename__ = "task"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    request_id = Column(String, unique=True, nullable=False)
+    id = Column(Integer, primary_key=True, unique=True)
     title = Column(String, nullable=False)
     created = Column("created", DateTime, nullable=False, default=datetime.utcnow)
     due = Column("due", DateTime, nullable=True)
@@ -140,19 +138,20 @@ class Persistence:
             return None
         return user
 
-    def create_task_list(self, title: str, request_id: str, requesting_user_id: int):
-        user = self.session.query(User).filter(User.id == requesting_user_id).one()
-        task_list = TaskList(title=title, request_id=request_id, users=[user])
-        self.session.add(task_list)
+    def create_or_replace_task_list(self, id: int, title: str, requesting_user_id: int):
+        existing_list = self.session.query(TaskList).join(TaskList.users).filter(TaskList.id == id).one_or_none()
+        if existing_list is None:
+            user = self.session.query(User).filter(User.id == requesting_user_id).one()
+            task_list = TaskList(id=id, title=title, users=[user])
+            self.session.add(task_list)
+        elif requesting_user_id in [user.id for user in existing_list.users]:
+            existing_list.title = title
+        else:
+            raise PermissionError()
         self.session.commit()
 
     def get_task_lists(self, requesting_user_id: int) -> List[TaskList]:
         return self.session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id).all()
-
-    def set_task_list_title(self, task_list_id: int, title: str, requesting_user_id: int):
-        task_list = self.get_task_list(requesting_user_id, task_list_id)
-        task_list.title = title
-        self.session.commit()
 
     def share_task_list_with(self, task_list_id: int, user_to_add_id: int, requesting_user_id: int):
         user_to_add = self.session.query(User).filter(User.id == user_to_add_id).one()
@@ -175,7 +174,7 @@ class Persistence:
     def create_task(
         self,
         requesting_user_id: int,
-        request_id: str,
+        id: int,
         task_list_id: int,
         title: str,
         due=None,
@@ -187,7 +186,7 @@ class Persistence:
         task_list = self.get_task_list(requesting_user_id, task_list_id)
         prereq = self.query_tasks(requesting_user_id).filter(Task.id.in_(prereq_task_ids)).all()
         dependents = self.query_tasks(requesting_user_id).filter(Task.id.in_(depending_task_ids)).all()
-        task = Task(title=title, request_id=request_id, due=due, description=description, task_list=task_list)
+        task = Task(id=id, title=title, due=due, description=description, task_list=task_list)
         task.prerequisites.extend(prereq)
         task.depending_tasks.extend(dependents)
         for t in tags:
@@ -328,13 +327,15 @@ if __name__ == "__main__":
     # FIXME remove test code
     persistence.create_user("edr", "foobar")
     u = persistence.get_user_by_name("edr")
-    persistence.create_task_list("First list", "edr-1", u.id)
-    persistence.create_task_list("Second list", "edr-2", u.id)
+    persistence.create_or_replace_task_list(1, "First list", u.id)
+    persistence.create_or_replace_task_list(2, "Second list", u.id)
+    task_id = 1
     for tl in persistence.get_task_lists(u.id):
         for i in (1, 2, 3, 4):
             persistence.create_task(
-                u.id, f"u{u.id}_l{tl.id}_t{i}", tl.id, f"task {i}", description=f"Description of task {i} in list " + tl.title
+                u.id, task_id, tl.id, f"task {i}", description=f"Description of task {i} in list " + tl.title
             )
+            task_id = task_id + 1
         for task in tl.tasks:
             if task.id % 2 == 0:
                 persistence.add_tag(u.id, task.id, "even")

@@ -49,10 +49,10 @@ async function getJson(url) {
 }
 
 // returns success true/false
-async function postJson(url, json) {
+async function sendJson(url, method, json) {
     try {
         const response = await fetch(url, {
-            method: 'post',
+            method: method,
             headers: {
                 'Accept': 'application/json, text/plain, */*',
                 'Content-Type': 'application/json',
@@ -66,14 +66,15 @@ async function postJson(url, json) {
     }
 }
 
-async function postTaskList(taskList) {
+// todo: detect permission error and create new random id?
+async function sendTaskList(taskList) {
     let listId;
     if (isNull(taskList.id)) {
         listId = "";
     } else {
         listId = taskList.id;
     }
-    return postJson(API_URL_LISTS + '/' + listId, {
+    return sendJson(API_URL_LISTS + '/' + listId, 'put', {
         'title': taskList.title,
         'requestId': taskList.requestId
     });

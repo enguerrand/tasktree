@@ -20,6 +20,9 @@ USER_B_PSWD = "aiv2Iihe8&ie6oözahx2Lih"
 TASK_LIST_1_TITLE = "get it done"
 TASK_LIST_2_TITLE = "let it wait"
 TASK_LIST_3_TITLE = "shared stuff"
+TASK_LIST_1_ID = 1
+TASK_LIST_2_ID = 2
+TASK_LIST_3_ID = 3
 TASK_1_TAG_1 = "first tag"
 TASK_1_TAG_2 = "second tag"
 TASK_DUE_AT_TEN = "due at 10"
@@ -40,22 +43,20 @@ class TestPersistence(TestCase):
         self.persistence.create_user(USER_B_NAME, USER_B_PSWD)
         self.user_a = self.persistence.get_user_by_name(USER_A_NAME)
         self.user_b = self.persistence.get_user_by_name(USER_B_NAME)
-        self.persistence.create_task_list(TASK_LIST_1_TITLE, "req_l1", self.user_a.id)
-        self.persistence.create_task_list(TASK_LIST_2_TITLE, "req_l2", self.user_b.id)
-        self.persistence.create_task_list(TASK_LIST_3_TITLE, "req_l3", self.user_b.id)
+        self.persistence.create_or_replace_task_list(TASK_LIST_1_ID, TASK_LIST_1_TITLE, self.user_a.id)
+        self.persistence.create_or_replace_task_list(TASK_LIST_2_ID, TASK_LIST_2_TITLE, self.user_b.id)
+        self.persistence.create_or_replace_task_list(TASK_LIST_3_ID, TASK_LIST_3_TITLE, self.user_b.id)
         self.persistence.share_task_list_with(3, self.user_a.id, self.user_b.id)
         self.persistence.create_task(
-            1, "u1_t1", 1, TASK_1_TITLE, description=TASK_1_DESCRIPTION, tags=(TASK_1_TAG_1, TASK_1_TAG_2)
+            1, TASK_ID_1, 1, TASK_1_TITLE, description=TASK_1_DESCRIPTION, tags=(TASK_1_TAG_1, TASK_1_TAG_2)
         )
-        self.persistence.create_task(
-            1, "u1_t_due_at_ten", 1, TASK_DUE_AT_TEN, description="due at 10 desc", due=DATE_TIME_10
-        )
+        self.persistence.create_task(1, TASK_ID_2, 1, TASK_DUE_AT_TEN, description="due at 10 desc", due=DATE_TIME_10)
         self.task_due_at_ten = self.persistence.query_tasks(1).filter(persistence.Task.title == TASK_DUE_AT_TEN).one()
 
     def test_string_repr(self):
         self.assertEqual("User(id=None, username='a', password=***)", str(persistence.User(username="a", password="b")))
         self.assertEqual(
-            "TaskList(id=None, title='a', request_id='foo')", str(persistence.TaskList(title="a", request_id="foo"))
+            "TaskList(id=None, title='a')", str(persistence.TaskList(title="a"))
         )
         self.assertEqual(
             "Task(id=None, task_list_id=None, title='a', description=None, created=None, due=None, completed=None)",
@@ -96,7 +97,7 @@ class TestPersistence(TestCase):
 
     def test_no_insert_task_list_for_non_existant_user(self):
         self.assertRaises(
-            NoResultFound, lambda: self.persistence.create_task_list("whatever", "foo", NON_EXISTANT_USER_ID)
+            NoResultFound, lambda: self.persistence.create_or_replace_task_list(432, "foo", NON_EXISTANT_USER_ID)
         )
 
     def test_get_task_list(self):
@@ -104,11 +105,6 @@ class TestPersistence(TestCase):
 
     def test_get_task_list(self):
         self.assertRaises(NoResultFound, lambda: self.persistence.get_task_list(requesting_user_id=2, task_list_id=1))
-
-    def test_no_duplicate_task_list_request_id(self):
-        self.assertRaises(
-            IntegrityError, lambda: self.persistence.create_task_list("something something", "req_l1", self.user_a.id)
-        )
 
     def test_get_task_lists_user_a(self):
         tl = self.persistence.get_task_lists(self.user_a.id)
@@ -124,20 +120,21 @@ class TestPersistence(TestCase):
 
     def test_change_task_list_title_success(self):
         next_title = "something"
-        self.persistence.set_task_list_title(3, next_title, self.user_a.id)
+        self.persistence.create_or_replace_task_list(3, next_title, self.user_a.id)
         self.assertEqual(next_title, self.persistence.get_task_lists(self.user_b.id)[1].title)
 
     def test_change_task_list_title_no_permission(self):
         next_title = "something"
         self.assertRaises(
-            NoResultFound,
-            lambda: self.persistence.set_task_list_title(2, next_title, self.user_a.id),
+            PermissionError,
+            lambda: self.persistence.create_or_replace_task_list(2, next_title, self.user_a.id),
         )
         self.assertEqual(TASK_LIST_2_TITLE, self.persistence.get_task_lists(self.user_b.id)[0].title)
 
-    def test_no_duplicate_task_request_id(self):
+    def test_no_duplicate_task_id(self):
         self.assertRaises(
-            IntegrityError, lambda: self.persistence.create_task(1, "u1_t1", 1, "whatever", description="whatever")
+            IntegrityError,
+            lambda: self.persistence.create_task(1, TASK_ID_1, TASK_LIST_1_ID, "whatever", description="whatever"),
         )
 
     def test_get_task(self):

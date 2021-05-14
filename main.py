@@ -74,19 +74,11 @@ def get_lists():
     return jsonify(data_view.get_lists())
 
 
-@app.route(API_BASE_LISTS, methods=["POST"])
+@app.route(API_BASE_LISTS + "<int:task_list_id>", methods=["PUT"])
 @login_required
-def add_task_list():
+def add_task_list(task_list_id: int):
     data_view = DataView(persistence, current_user)
-    data_view.create_or_update_list(None, request.json)
-    return success()
-
-
-@app.route(API_BASE_LISTS + "<int:task_list_id>", methods=["POST"])
-@login_required
-def update_task_list(task_list_id: int):
-    data_view = DataView(persistence, current_user)
-    data_view.create_or_update_list(task_list_id, request.json)
+    data_view.create_or_replace_list(task_list_id, request.json)
     return success()
 
 
@@ -134,6 +126,11 @@ def serve_assets(path):
 @app.errorhandler(NoResultFound)
 def handle_no_result_found(nrf):
     return "not found!", 404
+
+
+@app.errorhandler(PermissionError)
+def handle_no_result_found(perm_error):
+    return "unauthorized!", 401
 
 
 @app.teardown_appcontext

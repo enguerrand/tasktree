@@ -7,7 +7,7 @@ class TaskTreeApp extends React.Component {
             online: true,
             currentCategory: CATEGORY_ID_TASKS
         };
-        this.createRequestId = this.createRequestId.bind(this);
+        this.createListId = this.createListId.bind(this);
         this.onLoginReply = this.onLoginReply.bind(this);
         this.writeUnsyncedLists = this.writeUnsyncedLists.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
@@ -16,27 +16,28 @@ class TaskTreeApp extends React.Component {
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
     }
 
-    createRequestId() {
-        const u = this.state.loggedInUser;
-        if (isNull(u)) {
-            throw Error("not logged in!");
+    // TODO generate truly unique ids
+    createListId() {
+        let candidate = Date.now();
+        while (!isNull(this.state.taskLists[String(candidate)])) {
+            candidate = candidate + 1;
         }
-        return u + "." + String(Date.now());
+        return candidate;
     }
 
     async writeUnsyncedLists() {
         const asyncRequests = [];
-        for (const reqId in this.state.taskLists) {
-            const localList = this.state.taskLists[reqId];
+        for (const listId in this.state.taskLists) {
+            const localList = this.state.taskLists[listId];
             if (localList.synced) {
                 continue;
             }
             asyncRequests.push(
-                postTaskList(localList).then(success => {
+                sendTaskList(localList).then(success => {
                     if (success) {
                         this.setState(
                             immer.produce(draftState => {
-                                draftState.taskLists[reqId].synced = true;
+                                draftState.taskLists[listId].synced = true;
                             })
                         );
                     }
@@ -55,20 +56,20 @@ class TaskTreeApp extends React.Component {
                     immer.produce(draftState => {
                         for (let taskListIndex = 0; taskListIndex < lists.length; taskListIndex++) {
                             const remoteList = lists[taskListIndex];
-                            const current = draftState.taskLists[remoteList.requestId];
+                            const current = draftState.taskLists[remoteList.id];
                             if (isNull(current) || current.synced) {
-                                draftState.taskLists[remoteList.requestId] = {
+                                draftState.taskLists[remoteList.id] = {
                                     id: remoteList.id,
                                     title: remoteList.title,
-                                    requestId: remoteList.requestId,
                                     synced: true
                                 };
                             }
                         }
-                        const remoteReqIds = lists.map(t => t.requestId);
-                        for (const reqId in draftState.taskLists) {
-                            if (draftState.taskLists[reqId].synced && !remoteReqIds.includes(reqId)) {
-                                delete draftState.taskLists[reqId];
+                        const remoteIds = lists.map(t => t.id);
+                        for (const listId in draftState.taskLists) {
+                            let taskList = draftState.taskLists[listId];
+                            if (taskList.synced && !remoteIds.includes(taskList.id)) {
+                                delete draftState.taskLists[listId];
                             }
                         }
                     })
@@ -94,7 +95,7 @@ class TaskTreeApp extends React.Component {
         console.log("list updated: " + JSON.stringify(taskList));
         this.setState(
             immer.produce(draftState => {
-                draftState.taskLists[taskList.requestId] = taskList;
+                draftState.taskLists[taskList.id] = taskList;
             }), this.writeUnsyncedLists
         );
     }
@@ -145,7 +146,7 @@ class TaskTreeApp extends React.Component {
                     category: this.state.currentCategory,
                     lists: this.state.taskLists,
                     onListUpdatedLocally: this.onListUpdatedLocally,
-                    createRequestId: this.createRequestId
+                    createListId: this.createListId
                 })
             ];
         }
