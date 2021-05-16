@@ -2,7 +2,9 @@ class MainView extends React.Component {
     // props.taskLists
     // props.category
     // props.onListUpdatedLocally(taskList)
+    // props.onTaskUpdatedLocally(taskList)
     // props.createListId
+    // props.createTaskId
     constructor(props) {
         super(props);
         this.state = {};
@@ -23,8 +25,8 @@ class MainView extends React.Component {
                 TasksView,
                 {
                     taskLists: this.props.taskLists,
-                    onListUpdatedLocally: this.props.onListUpdatedLocally,
-                    createListId: this.props.createListId
+                    onTaskUpdatedLocally: this.props.onTaskUpdatedLocally,
+                    createTaskId: this.props.createTaskId
                 }
             );
         } else {

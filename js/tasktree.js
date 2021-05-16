@@ -8,11 +8,13 @@ class TaskTreeApp extends React.Component {
             currentCategory: CATEGORY_ID_TASKS
         };
         this.createListId = this.createListId.bind(this);
+        this.createTaskId = this.createTaskId.bind(this);
         this.onLoginReply = this.onLoginReply.bind(this);
         this.writeUnsyncedLists = this.writeUnsyncedLists.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
+        this.onTaskUpdatedLocally = this.onTaskUpdatedLocally.bind(this);
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
     }
 
@@ -23,6 +25,11 @@ class TaskTreeApp extends React.Component {
             candidate = candidate + 1;
         }
         return candidate;
+    }
+
+    // TODO generate truly unique ids
+    createTaskId() {
+        return this.createListId();
     }
 
     async writeUnsyncedLists() {
@@ -101,6 +108,11 @@ class TaskTreeApp extends React.Component {
         );
     }
 
+    async onTaskUpdatedLocally(task) {
+        console.log("task updated: " + JSON.stringify(task));
+        // FIXME impl
+    }
+
     async updateOnlineStatus() {
         const online = navigator.onLine;
         console.log("online state changed: " + String(online));
@@ -147,7 +159,9 @@ class TaskTreeApp extends React.Component {
                     category: this.state.currentCategory,
                     taskLists: this.state.taskLists,
                     onListUpdatedLocally: this.onListUpdatedLocally,
-                    createListId: this.createListId
+                    onTaskUpdatedLocally: this.onTaskUpdatedLocally,
+                    createListId: this.createListId,
+                    createTaskId: this.createTaskId
                 })
             ];
         }

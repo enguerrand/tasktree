@@ -6,7 +6,7 @@ class TaskEditView extends React.Component {
         super(props);
         let header;
         let initialTitle;
-        if (isNull(this.props.taskTask)) {
+        if (isNull(this.props.task)) {
             header = "Create task";
             initialTitle = "";
         } else {
@@ -33,7 +33,7 @@ class TaskEditView extends React.Component {
             synced: false
         }
         if (isNull(this.props.task)) {
-            taskAfterEdit.id = this.props.createListId();
+            taskAfterEdit.id = this.props.createTaskId();
         } else {
             taskAfterEdit.id = this.props.task.id;
             if (!isNull(this.props.task.id)) {
@@ -70,6 +70,8 @@ class TaskEditView extends React.Component {
 
 class TasksView extends React.Component {
     // props.taskLists
+    // props.createTaskId
+    // props.onTaskUpdatedLocally
     constructor(props) {
         super(props);
         this.state = {
@@ -135,6 +137,26 @@ class TasksView extends React.Component {
     }
 
     render() {
-        return this.renderTasksTable();
+        if (this.state.createNew || !isNull(this.state.editingTask)) {
+            let taskToSet;
+            if (this.state.createNew) {
+                taskToSet = null;
+            } else {
+                taskToSet = this.state.editingTask;
+            }
+            return e(
+                TaskEditView,
+                {
+                    task: taskToSet,
+                    editingDone: async (taskAfterEdit) => {
+                        await this.props.onTaskUpdatedLocally(taskAfterEdit);
+                        this.setState({ editingTask: null, createNew: false });
+                    },
+                    createTaskId: this.props.createTaskId
+                }
+            );
+        } else {
+            return this.renderTasksTable();
+        }
     }
 }
