@@ -333,7 +333,7 @@ if __name__ == "__main__":
     for tl in persistence.get_task_lists(u.id):
         for i in (1, 2, 3, 4):
             persistence.create_task(
-                u.id, task_id, tl.id, f"task {i}", description=f"Description of task {i} in list " + tl.title
+                u.id, task_id, tl.id, f"task {i} in list " + tl.title, description=f"Description of task {i} in list " + tl.title
             )
             task_id = task_id + 1
         for task in tl.tasks:
