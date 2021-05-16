@@ -34,8 +34,7 @@ class TaskTreeApp extends React.Component {
 
     async writeUnsyncedLists() {
         const asyncRequests = [];
-        for (const listId in this.state.taskLists) {
-            const localList = this.state.taskLists[listId];
+        for (const [listId, localList] of Object.entries(this.state.taskLists)) {
             if (localList.synced) {
                 continue;
             }
@@ -69,6 +68,7 @@ class TaskTreeApp extends React.Component {
                                     id: remoteList.id,
                                     title: remoteList.title,
                                     synced: true,
+                                    // TODO: conflict resolution
                                     tasks: remoteList.tasks.reduce((a,t) => ({...a, [t.id]: t}), {})
                                 };
                             }
