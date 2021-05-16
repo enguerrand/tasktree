@@ -61,13 +61,14 @@ class TaskTreeApp extends React.Component {
                                 draftState.taskLists[remoteList.id] = {
                                     id: remoteList.id,
                                     title: remoteList.title,
-                                    synced: true
+                                    synced: true,
+                                    tasks: remoteList.tasks.reduce((a,t) => ({...a, [t.id]: t}), {})
                                 };
                             }
                         }
                         const remoteIds = lists.map(t => t.id);
-                        for (const listId in draftState.taskLists) {
-                            let taskList = draftState.taskLists[listId];
+                        for (const [listId, taskList] of Object.entries(draftState.taskLists)) {
+                            // FIXME check for undefined
                             if (taskList.synced && !remoteIds.includes(taskList.id)) {
                                 delete draftState.taskLists[listId];
                             }
@@ -144,7 +145,7 @@ class TaskTreeApp extends React.Component {
                 e(MainView, {
                     key: "main-view",
                     category: this.state.currentCategory,
-                    lists: this.state.taskLists,
+                    taskLists: this.state.taskLists,
                     onListUpdatedLocally: this.onListUpdatedLocally,
                     createListId: this.createListId
                 })

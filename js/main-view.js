@@ -1,5 +1,5 @@
 class MainView extends React.Component {
-    // props.lists
+    // props.taskLists
     // props.category
     // props.onListUpdatedLocally(taskList)
     // props.createListId
@@ -13,13 +13,20 @@ class MainView extends React.Component {
             return e(
                 ListsView,
                 {
-                    lists: this.props.lists,
+                    taskLists: this.props.taskLists,
                     onListUpdatedLocally: this.props.onListUpdatedLocally,
                     createListId: this.props.createListId
                 }
             );
         } else if (this.props.category === CATEGORY_ID_TASKS) {
-            return div(null, "TASKS");
+            return e(
+                TasksView,
+                {
+                    taskLists: this.props.taskLists,
+                    onListUpdatedLocally: this.props.onListUpdatedLocally,
+                    createListId: this.props.createListId
+                }
+            );
         } else {
             return div(null, "Unexpected category: " + this.props.category);
         }

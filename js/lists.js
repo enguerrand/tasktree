@@ -70,7 +70,7 @@ class ListEditView extends React.Component {
 }
 
 class ListsView extends React.Component {
-    // prop.lists
+    // prop.taskLists
     // prop.onListUpdatedLocally(taskList)
     // props.createListId
     constructor(props) {
@@ -101,11 +101,10 @@ class ListsView extends React.Component {
 
     renderListsTable() {
         let rows = [];
-        for (const listId in this.props.lists) {
-            const taskList = this.props.lists[listId];
+        for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
             rows.push(
-                tr({key: listId},
-                    th({key: "id", scope: "row", className: "align-middle"}, listId),
+                tr({key: taskListId},
+                    th({key: "id", scope: "row", className: "align-middle"}, taskListId),
                     td({key: "title", className: "align-middle"}, taskList.title),
                     td(
                         {key: "action", className: "right align-middle"},
