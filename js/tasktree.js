@@ -64,18 +64,37 @@ class TaskTreeApp extends React.Component {
                             const remoteList = lists[taskListIndex];
                             const current = draftState.taskLists[remoteList.id];
                             if (isNull(current) || current.synced) {
+                                let tasks;
+                                if (isNull(current)) {
+                                    tasks = remoteList.tasks.reduce((a, t) => ({...a, [t.id]: t}), {});
+                                } else {
+                                    tasks = current.tasks;
+                                    for (const task of remoteList.tasks) {
+                                        const currentTask = current.tasks[task.id];
+                                        if (isNull(currentTask) || currentTask.synced) {
+                                            tasks[task.id] = task;
+                                        } else {
+                                            tasks[task.id] = currentTask;
+                                        }
+                                    }
+                                    const remoteIds = remoteList.tasks.map(t => t.id);
+                                    for (const [taskId, task] of Object.entries(tasks)) {
+                                        if (task.synced && !remoteIds.includes(task.id)) {
+                                            delete tasks[taskId];
+                                        }
+                                    }
+                                }
                                 draftState.taskLists[remoteList.id] = {
                                     id: remoteList.id,
                                     title: remoteList.title,
                                     synced: true,
-                                    // TODO: conflict resolution
-                                    tasks: remoteList.tasks.reduce((a,t) => ({...a, [t.id]: t}), {})
+                                    tasks: tasks
                                 };
                             }
                         }
                         const remoteIds = lists.map(t => t.id);
                         for (const [listId, taskList] of Object.entries(draftState.taskLists)) {
-                            // FIXME check for undefined
+                            // FIXME check for undefined?
                             if (taskList.synced && !remoteIds.includes(taskList.id)) {
                                 delete draftState.taskLists[listId];
                             }
@@ -108,9 +127,13 @@ class TaskTreeApp extends React.Component {
         );
     }
 
-    async onTaskUpdatedLocally(task) {
+    async onTaskUpdatedLocally(task, taskList) {
         console.log("task updated: " + JSON.stringify(task));
-        // FIXME impl
+        this.setState(
+            immer.produce(draftState => {
+                draftState.taskLists[taskList.id] = taskList;
+            }), this.writeUnsyncedLists
+        );
     }
 
     async updateOnlineStatus() {
