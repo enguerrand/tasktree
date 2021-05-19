@@ -35,11 +35,10 @@ class ListEditView extends React.Component {
         }
         if (isNull(this.props.taskList)) {
             listAfterEdit.id = this.props.createListId();
+            listAfterEdit.tasks = {};
         } else {
-            listAfterEdit.requestId = this.props.taskList.requestId;
-            if (!isNull(this.props.taskList.id)) {
-                listAfterEdit.id = this.props.taskList.id;
-            }
+            listAfterEdit.id = this.props.taskList.id;
+            listAfterEdit.tasks = this.props.taskList.tasks;
         }
 
         const success = await sendTaskList(listAfterEdit);
