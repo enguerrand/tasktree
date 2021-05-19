@@ -2,7 +2,7 @@ class MainView extends React.Component {
     // props.taskLists
     // props.category
     // props.onListUpdatedLocally(taskList)
-    // props.onTaskUpdatedLocally(taskList)
+    // props.onTaskUpdatedLocally(task, taskList)
     // props.createListId
     // props.createTaskId
     constructor(props) {

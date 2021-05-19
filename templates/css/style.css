@@ -23,3 +23,7 @@ table td.right, table th.right{
     padding-right: 15px;
     padding-left: 15px;
 }
+
+form > div {
+    margin-bottom: 15px;
+}
