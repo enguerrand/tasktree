@@ -38,7 +38,7 @@ class TaskView:
             "created": self.task.created,
             "due": self.task.due,
             "completed": self.task.completed,
-            "tags": self.tags
+            "tags": self.tags,
         }
 
 
@@ -63,3 +63,30 @@ class DataView:
     def create_or_replace_list(self, task_list_id: int, json_request):
         title = json_request["title"]
         self.persistence.create_or_replace_task_list(task_list_id, title, self.viewing_user.id)
+
+    def create_or_update_task(self, task_list_id: int, task_id: int, json_request):
+        prev_task = json_request.get("prev")
+        next_task = json_request["next"]
+
+        requesting_user_id = self.viewing_user.id
+        if prev_task is None:
+            self.persistence.create_task(
+                requesting_user_id,
+                task_id,
+                task_list_id,
+                next_task["title"],
+                next_task["due"],
+                next_task["description"]
+                # TODO: tags + dependencies
+            )
+        else:
+            self.persistence.update_task(
+                task_id,
+                prev_task["title"],
+                prev_task["due"],
+                prev_task["description"],
+                next_task["title"],
+                next_task["due"],
+                next_task["description"],
+                requesting_user_id,
+            )

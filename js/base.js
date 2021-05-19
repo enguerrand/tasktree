@@ -73,10 +73,21 @@ async function sendTaskList(taskList) {
     });
 }
 
-async function sendTask(task, taskList) {
-    return sendJson(API_URL_LISTS + '/' + taskList.id + '/' + task.id, 'put', {
-        'title': taskList.title
-    });
+async function sendTask(task, taskList, prevTask) {
+    const json = {};
+    json["next"] = {
+        title: task.title,
+        due: null,          // FIXME
+        description: null   // FIXME
+    }
+    if (!isNull(prevTask)) {
+        json["prev"] = {
+            title: prevTask.title,
+            due: null,          // FIXME
+            description: null   // FIXME
+        }
+    }
+    return sendJson(API_URL_LISTS + '/' + taskList.id + '/' + task.id, 'put', json);
 }
 
 function isNull(obj) {

@@ -76,9 +76,17 @@ def get_lists():
 
 @app.route(API_BASE_LISTS + "<int:task_list_id>", methods=["PUT"])
 @login_required
-def add_task_list(task_list_id: int):
+def write_task_list(task_list_id: int):
     data_view = DataView(persistence, current_user)
     data_view.create_or_replace_list(task_list_id, request.json)
+    return success()
+
+
+@app.route(API_BASE_LISTS + "<int:task_list_id>/<int:task_id>", methods=["PUT"])
+@login_required
+def write_task(task_list_id: int, task_id: int):
+    data_view = DataView(persistence, current_user)
+    data_view.create_or_update_task(task_list_id, task_id, request.json)
     return success()
 
 
