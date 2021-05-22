@@ -11,6 +11,7 @@ class TaskTreeApp extends React.Component {
         this.createTaskId = this.createTaskId.bind(this);
         this.onLoginReply = this.onLoginReply.bind(this);
         this.writeUnsyncedLists = this.writeUnsyncedLists.bind(this);
+        this.writeUnsyncedTasks = this.writeUnsyncedTasks.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
@@ -46,12 +47,26 @@ class TaskTreeApp extends React.Component {
                                 draftState.taskLists[listId].synced = true;
                             })
                         );
+                        this.writeUnsyncedTasks(localList);
                     }
                 })
             );
         }
         await Promise.all(asyncRequests);
         await this.fetchLists();
+    }
+
+    async writeUnsyncedTasks(taskList) {
+        const asyncRequests = [];
+        for (const [taskId, localTask] of Object.entries(taskList.tasks)) {
+            if (localTask.synced) {
+                continue;
+            }
+            asyncRequests.push(
+                sendTask(localTask, taskList, taskList.remoteTasks[taskId])
+            )
+        }
+        await Promise.all(asyncRequests);
     }
 
     async fetchLists() {
@@ -135,7 +150,7 @@ class TaskTreeApp extends React.Component {
         console.log("task updated: " + JSON.stringify(task));
         this.setState(
             immer.produce(draftState => {
-                draftState.taskLists[taskList.id] = taskList;
+                draftState.taskLists[taskList.id].tasks[task.id] = task;
             }), this.writeUnsyncedLists
         );
     }
