@@ -326,9 +326,12 @@ if __name__ == "__main__":
     persistence.create()
     # FIXME remove test code
     persistence.create_user("edr", "foobar")
+    persistence.create_user("sdr", "foobar")
     u = persistence.get_user_by_name("edr")
+    s = persistence.get_user_by_name("sdr")
     persistence.create_or_replace_task_list(1, "First list", u.id)
     persistence.create_or_replace_task_list(2, "Second list", u.id)
+    persistence.share_task_list_with(1, s.id, u.id)
     task_id = 1
     for tl in persistence.get_task_lists(u.id):
         for i in (1, 2, 3, 4):
