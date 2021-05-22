@@ -23,7 +23,7 @@ class LoginForm extends React.Component {
     async handleSubmit(event) {
         event.preventDefault();
         const username = this.state.username;
-        const success = await postJson(BASE_URL + '/login', {
+        const success = await sendJson(BASE_URL + '/login', 'post', {
                 'username': username,
                 'password': this.state.password
         })
