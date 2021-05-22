@@ -8,12 +8,21 @@ class TaskEditView extends React.Component {
         super(props);
         let header;
         let initialTitle;
+        let initialDescription;
+        let initialDue;
+        let initialTags;
         if (isNull(this.props.task)) {
             header = "Create task";
             initialTitle = "";
+            initialDescription = "";
+            initialDue = null;
+            initialTags = [];
         } else {
             header = "Edit task";
             initialTitle = this.props.task.title;
+            initialDescription = this.props.task.description;
+            initialDue = this.props.task.due;
+            initialTags = this.props.task.tags;
         }
         let parentListId = null;
         if (!isNull(this.props.parentList)) {
@@ -22,6 +31,9 @@ class TaskEditView extends React.Component {
         this.state = {
             header: header,
             title: initialTitle,
+            description: initialDescription,
+            due: initialDue,
+            tags: initialTags,
             parentListId: parentListId,
             listDropDownVisible: false
         }
@@ -40,9 +52,11 @@ class TaskEditView extends React.Component {
 
     async handleSubmit(event) {
         event.preventDefault();
-        const title = this.state.title;
         const taskAfterEdit = {
-            title: title,
+            title: this.state.title,
+            description: this.state.description,
+            due: this.state.due,
+            tags: this.state.tags,
             synced: false
         }
         if (isNull(this.props.task)) {
