@@ -1,6 +1,7 @@
 class TaskEditView extends React.Component {
     // props.task
     // props.editingDone(taskAfterEdit, parentList)
+    // props.onCancel
     // props.parentList (only for edit, set to null for create)
     // props.createTaskId
     // props.allLists
@@ -38,12 +39,17 @@ class TaskEditView extends React.Component {
             listDropDownVisible: false
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
+        this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
         this.handleParentListChange = this.handleParentListChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     handleTitleChange(event) {
         this.setState({title: event.target.value});
+    }
+
+    handleDescriptionChange(event) {
+        this.setState({description: event.target.value});
     }
 
     handleParentListChange(event) {
@@ -78,16 +84,19 @@ class TaskEditView extends React.Component {
     }
 
     render() {
-        const formInputs = [];
+        const formGroups = [];
         let currentlySelectedList = this.props.allLists[this.state.parentListId];
-        formInputs.push(
-            div({className:"form-floating", key: "titleInput"},
-                input({type: "text", className: "form-control", id: "title-input", placeholder: "Title", value: this.state.title, onChange: this.handleTitleChange})
+        formGroups.push(
+            div({className:"form-group row", key: "titleInput"},
+                label({key: "label", htmlFor: "title-input", className: "col-sm-2 col-form-label text-light"}, "Title"),
+                div({key: "input", className: "col-sm-10"},
+                    input({type: "text", className: "form-control", id: "title-input", placeholder: "Title", value: this.state.title, onChange: this.handleTitleChange})
+                )
             )
         );
 
         if (isNull(this.props.parentList)) {
-            let classDropdown = "dropdown";
+            let classDropdown = "col-12 col-sm-10 dropdown ";
             let classDropdownMenu = "dropdown-menu";
             let expanded = this.state.listDropDownVisible;
             if (this.state.listDropDownVisible) {
@@ -100,6 +109,7 @@ class TaskEditView extends React.Component {
             } else {
                 buttonTitle = currentlySelectedList.title;
             }
+
             const choices = [];
             for (const [listId, taskList] of Object.entries(this.props.allLists)) {
                 choices.push(
@@ -116,35 +126,54 @@ class TaskEditView extends React.Component {
                     )
                 );
             }
-            formInputs.push(
-                div({className: classDropdown, key: "listChoice"},
-                    button({
-                        key: "button",
-                        type: "button",
-                        className: "btn btn-secondary dropdown-toggle",
-                        "data-toggle":"dropdown",
-                        "aria-haspopup": true,
-                        "aria-expanded": expanded,
-                        id: "list-input",
-                        value: this.state.parentListId,
-                        onClick: e => {
-                            this.setState(prevState => {
-                                return {
-                                    listDropDownVisible: !prevState.listDropDownVisible
-                                }
-                            })
-                        },
-                        onChange: this.handleParentListChange
-                    }, buttonTitle),
-                    div({className: classDropdownMenu, "aria-labelledby": "list-input"},
-                        choices
+            formGroups.push(
+                div({className:"form-group row", key: "listChoice"},
+                    label({key: "label", htmlFor: "list-input", className: "col-sm-2 col-form-label text-light"}, "Task List"),
+                    div({className: classDropdown, key: "input"},
+                        button({
+                            key: "button",
+                            type: "button",
+                            className: "btn btn-secondary dropdown-toggle",
+                            id: "list-input",
+                            value: this.state.parentListId,
+                            onClick: e => {
+                                this.setState(prevState => {
+                                    return {
+                                        listDropDownVisible: !prevState.listDropDownVisible
+                                    }
+                                })
+                            },
+                            onChange: this.handleParentListChange
+                        }, buttonTitle),
+                        div({className: classDropdownMenu, "aria-labelledby": "list-input"},
+                            choices
+                        )
                     )
                 )
             );
         }
-        formInputs.push(
-            button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", disabled: isNull(currentlySelectedList)},
-                "Save"
+
+        formGroups.push(
+            div({className:"form-group row", key: "descriptionInput"},
+                label({key: "label", htmlFor: "description-input", className: "col-sm-2 col-form-label text-light"}, "Description"),
+                div({key: "input", className: "col-sm-10"},
+                    e('textarea', {key: "input", className: "form-control", rows: "10", id: "description-input", value: this.state.description, onChange: this.handleDescriptionChange})
+                )
+            )
+        );
+
+        formGroups.push(
+            div({className:"form-group row", key: "submit"},
+                div({className: "col-6", key: "cancel"},
+                    button({className: "w-100 btn btn-lg btn-secondary", type: "cancel", onClick: this.props.onCancel, key: "cancel"},
+                        "Cancel"
+                    )
+                ),
+                div({className: "col-6", key: "save"},
+                    button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", disabled: isNull(currentlySelectedList)},
+                        "Save"
+                    )
+                )
             )
         );
 
@@ -156,7 +185,7 @@ class TaskEditView extends React.Component {
                     h2({className: "h3 mb-3 fw-normal text-light"},
                         this.state.header
                     ),
-                    formInputs
+                    formGroups
                 )
             )
         );
@@ -244,6 +273,9 @@ class TasksView extends React.Component {
                     parentList: this.state.editingList,
                     editingDone: async (taskAfterEdit, parentList) => {
                         await this.props.onTaskUpdatedLocally(taskAfterEdit, parentList);
+                        this.setState({ editingTask: null, editingList: null, createNew: false });
+                    },
+                    onCancel: () => {
                         this.setState({ editingTask: null, editingList: null, createNew: false });
                     },
                     createTaskId: this.props.createTaskId,

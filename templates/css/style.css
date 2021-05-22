@@ -24,6 +24,6 @@ table td.right, table th.right{
     padding-left: 15px;
 }
 
-form > div {
-    margin-bottom: 15px;
+.dropdown-menu {
+    left: 15px;
 }
