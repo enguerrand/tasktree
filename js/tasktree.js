@@ -63,10 +63,11 @@ class TaskTreeApp extends React.Component {
                         for (let taskListIndex = 0; taskListIndex < lists.length; taskListIndex++) {
                             const remoteList = lists[taskListIndex];
                             const current = draftState.taskLists[remoteList.id];
+                            const remoteTasks = remoteList.tasks.reduce((a, t) => ({...a, [t.id]: t}), {});
                             if (isNull(current) || current.synced) {
                                 let tasks;
                                 if (isNull(current)) {
-                                    tasks = remoteList.tasks.reduce((a, t) => ({...a, [t.id]: t}), {});
+                                    tasks = deepCopy(remoteTasks);
                                 } else {
                                     tasks = current.tasks;
                                     for (const task of remoteList.tasks) {
@@ -88,8 +89,11 @@ class TaskTreeApp extends React.Component {
                                     id: remoteList.id,
                                     title: remoteList.title,
                                     synced: true,
-                                    tasks: tasks
+                                    tasks: tasks,
+                                    remoteTasks: remoteTasks
                                 };
+                            } else {
+                                current.remoteTasks = remoteTasks;
                             }
                         }
                         const remoteIds = lists.map(t => t.id);

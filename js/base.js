@@ -94,6 +94,10 @@ function isNull(obj) {
     return obj === undefined || obj === null;
 }
 
+function deepCopy(source) {
+    return JSON.parse(JSON.stringify(source));
+}
+
 Array.prototype.removeIf = function(predicate) {
     let i = this.length;
     while (i--) {
