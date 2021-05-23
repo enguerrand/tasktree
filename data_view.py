@@ -27,20 +27,29 @@ class ListView:
 class TaskView:
     def __init__(self, task: Task, conflict: TaskConflict):
         self.task = task
-        if conflict is None:
+        # this is somewhat counter intuitive: in the view we swap "actual" values with conflicting values because
+        # the conflict caused by the user is stored as such, but from the user's point of view the conflicting
+        # value is the one he did *not* write himself.
+        if conflict is None or conflict.title is None:
+            self.title = task.title
             self.conflicting_title = None
+        else:
+            self.title = conflict.title
+            self.conflicting_title = task.title
+        if conflict is None or conflict.description is None:
+            self.description = task.description
             self.conflicting_description = None
         else:
-            self.conflicting_title = conflict.title
-            self.conflicting_description = conflict.description
+            self.description = conflict.description
+            self.conflicting_description = task.description
         self.tags = [t.title for t in self.task.tags]
 
     def as_dict(self):
         return {
             "id": self.task.id,
-            "title": self.task.title,
+            "title": self.title,
             "conflicting_title": self.conflicting_title,
-            "description": self.task.description,
+            "description": self.description,
             "conflicting_description": self.conflicting_description,
             "created": self.task.created,
             "due": self.task.due,

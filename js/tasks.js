@@ -9,7 +9,9 @@ class TaskEditView extends React.Component {
         super(props);
         let header;
         let initialTitle;
+        let remoteTitle;
         let initialDescription;
+        let remoteDescription;
         let initialDue;
         let initialTags;
         if (isNull(this.props.task)) {
@@ -22,6 +24,8 @@ class TaskEditView extends React.Component {
             header = "Edit task";
             initialTitle = this.props.task.title;
             initialDescription = this.props.task.description;
+            remoteTitle = this.props.task.conflicting_title;
+            remoteDescription = this.props.task.conflicting_description;
             initialDue = this.props.task.due;
             initialTags = this.props.task.tags;
         }
@@ -31,17 +35,29 @@ class TaskEditView extends React.Component {
         }
         this.state = {
             header: header,
+            previousTitle: initialTitle,
             title: initialTitle,
+            remoteTitle: remoteTitle,
+            showRemoteTitle: false,
+            previousDescription: initialDescription,
             description: initialDescription,
+            remoteDescription: remoteDescription,
+            showRemoteDescription: false,
             due: initialDue,
             tags: initialTags,
             parentListId: parentListId,
-            listDropDownVisible: false
+            listDropDownVisible: false,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
+        this.pullRemoteTitle = this.pullRemoteTitle.bind(this);
+        this.pushLocalTitle = this.pushLocalTitle.bind(this);
         this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
         this.handleParentListChange = this.handleParentListChange.bind(this);
+        this.pullRemoteDescription = this.pullRemoteDescription.bind(this);
+        this.pushLocalDescription = this.pushLocalDescription.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.toggleShowRemoteTitle = this.toggleShowRemoteTitle.bind(this);
+        this.showRemoteDescription = this.showRemoteDescription.bind(this);
     }
 
     handleTitleChange(event) {
@@ -56,8 +72,65 @@ class TaskEditView extends React.Component {
         this.setState({parentListId: event.target.value});
     }
 
+    toggleShowRemoteTitle() {
+        this.setState(prevState => {
+            return {
+                showRemoteTitle: !prevState.showRemoteTitle
+            }
+        });
+    }
+
+    pullRemoteTitle() {
+        this.setState(prevState => {
+            return {
+                showRemoteTitle: false,
+                previousTitle: prevState.remoteTitle,
+                title: prevState.remoteTitle,
+                remoteTitle: null
+            };
+        });
+    }
+
+    pushLocalTitle() {
+        this.setState(prevState => {
+            return {
+                showRemoteTitle: false,
+                previousTitle: prevState.remoteTitle,
+                remoteTitle: null
+            };
+        });
+    }
+
+    pullRemoteDescription() {
+        this.setState(prevState => {
+            return {
+                showRemoteDescription: false,
+                previousDescription: prevState.remoteDescription,
+                description: prevState.remoteDescription,
+                remoteDescription: null
+            };
+        });
+    }
+
+    pushLocalDescription() {
+        this.setState(prevState => {
+            return {
+                showRemoteDescription: false,
+                previousDescription: prevState.remoteDescription,
+                remoteDescription: null
+            };
+        });
+    }
+
+    showRemoteDescription(show) {
+        this.setState({showRemoteDescription: show})
+    }
+
     async handleSubmit(event) {
         event.preventDefault();
+        const prevTask = deepCopy(this.props.task);
+        prevTask.title = this.state.previousTitle;
+        prevTask.description = this.state.previousDescription;
         const taskAfterEdit = {
             title: this.state.title,
             description: this.state.description,
@@ -77,7 +150,7 @@ class TaskEditView extends React.Component {
         const parentList = this.props.allLists[this.state.parentListId];
         if (!isNull(parentList)) {
             // noinspection UnnecessaryLocalVariableJS
-            const success = await sendTask(taskAfterEdit, parentList, this.props.task);
+            const success = await sendTask(taskAfterEdit, parentList, prevTask);
             taskAfterEdit.synced = success;
             this.props.editingDone(taskAfterEdit, parentList);
         }
@@ -86,11 +159,51 @@ class TaskEditView extends React.Component {
     render() {
         const formGroups = [];
         let currentlySelectedList = this.props.allLists[this.state.parentListId];
+        const conflictButtons = [];
+        if (!isNull(this.state.remoteTitle)) {
+            let toggleRemoteTitleButton = "mdi mdi-swap-horizontal-circle";
+            if (this.state.showRemoteTitle) {
+                toggleRemoteTitleButton += " mdi-flip-h";
+                conflictButtons.push(
+                    div({key: "pull-button", className: "conflict-button conflict-button-pull", onClick: this.pullRemoteTitle},
+                        i({
+                            className: "mdi mdi-arrow-down-circle"
+                        })
+                    )
+                );
+                conflictButtons.push(
+                    div({key: "push-button", className: "conflict-button conflict-button-push", onClick: this.pushLocalTitle},
+                        i({
+                            className: "mdi mdi-arrow-up-circle"
+                        })
+                    )
+                );
+            }
+            conflictButtons.push(
+                div({key: "toggle-button", className: "conflict-button conflict-button-toggle", onClick: this.toggleShowRemoteTitle},
+                    i({
+                        className: toggleRemoteTitleButton
+                    })
+                )
+            );
+        }
         formGroups.push(
             div({className:"form-group row", key: "titleInput"},
                 label({key: "label", htmlFor: "title-input", className: "col-sm-2 col-form-label text-light"}, "Title"),
                 div({key: "input", className: "col-sm-10"},
-                    input({type: "text", className: "form-control", id: "title-input", placeholder: "Title", value: this.state.title, onChange: this.handleTitleChange})
+                    input({
+                        id: "title-input",
+                        key: "title-input",
+                        type: "text",
+                        className: "form-control",
+                        placeholder: "Title",
+                        value: this.state.showRemoteTitle ? this.state.remoteTitle : this.state.title,
+                        onChange: this.handleTitleChange,
+                        disabled: this.state.showRemoteTitle
+                    }),
+                    div({key: "conflict-buttons", className: "conflict-button-area"},
+                        conflictButtons
+                    )
                 )
             )
         );
@@ -98,7 +211,6 @@ class TaskEditView extends React.Component {
         if (isNull(this.props.parentList)) {
             let classDropdown = "col-12 col-sm-10 dropdown ";
             let classDropdownMenu = "dropdown-menu";
-            let expanded = this.state.listDropDownVisible;
             if (this.state.listDropDownVisible) {
                 classDropdown = classDropdown + " show";
                 classDropdownMenu = classDropdownMenu + " show";
@@ -157,11 +269,22 @@ class TaskEditView extends React.Component {
             div({className:"form-group row", key: "descriptionInput"},
                 label({key: "label", htmlFor: "description-input", className: "col-sm-2 col-form-label text-light"}, "Description"),
                 div({key: "input", className: "col-sm-10"},
-                    e('textarea', {key: "input", className: "form-control", rows: "10", id: "description-input", value: this.state.description, onChange: this.handleDescriptionChange})
+                    e(
+                        'textarea',
+                        {
+                            id: "description-input",
+                            key: "input",
+                            className: "form-control",
+                            rows: "10",
+                            value: this.state.description,
+                            onChange: this.handleDescriptionChange
+                        }
+                    )
                 )
             )
         );
 
+        const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
         formGroups.push(
             div({className:"form-group row", key: "submit"},
                 div({className: "col-6", key: "cancel"},
@@ -170,7 +293,7 @@ class TaskEditView extends React.Component {
                     )
                 ),
                 div({className: "col-6", key: "save"},
-                    button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", disabled: isNull(currentlySelectedList)},
+                    button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", disabled: saveDisabled },
                         "Save"
                     )
                 )
@@ -231,9 +354,15 @@ class TasksView extends React.Component {
             let tasks = taskList.tasks;
             for (const [taskId, task] of Object.entries(tasks)) {
                 rows.push(
+                    // TODO add conflict hints
                     tr({key: taskId},
                         th({key: "id", scope: "row", className: "align-middle"}, taskId),
-                        td({key: "title", className: "align-middle"}, task.title),
+                        td(
+                            {
+                                key: "title",
+                                className: "align-middle"
+                            }, task.title
+                        ),
                         td(
                             {key: "action", className: "right align-middle"},
                             button({className: "btn btn-primary", onClick: (event) => this.editTask(event, task, taskList)}, i({className: "mdi mdi-pencil-outline"}))

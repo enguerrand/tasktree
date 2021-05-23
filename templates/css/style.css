@@ -31,3 +31,31 @@ table td.right, table th.right{
 .dropdown-menu {
     left: 15px;
 }
+
+.conflict-button-area {
+    position: absolute;
+    right: 25px;
+    top: 0;
+}
+
+.conflict-button {
+    background: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: inline;
+    margin: 0 10px;
+}
+
+.conflict-button-pull {
+    color: green;
+}
+
+.conflict-button-push {
+    color: blue;
+}
+
+.conflict-button-toggle {
+    color: red;
+}
