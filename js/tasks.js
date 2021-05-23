@@ -96,13 +96,13 @@ class TaskEditView extends React.Component {
         this.handleTitleChange = this.handleTitleChange.bind(this);
         this.pullRemoteTitle = this.pullRemoteTitle.bind(this);
         this.pushLocalTitle = this.pushLocalTitle.bind(this);
+        this.toggleShowRemoteTitle = this.toggleShowRemoteTitle.bind(this);
         this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
         this.handleParentListChange = this.handleParentListChange.bind(this);
         this.pullRemoteDescription = this.pullRemoteDescription.bind(this);
         this.pushLocalDescription = this.pushLocalDescription.bind(this);
+        this.toggleShowRemoteDescription = this.toggleShowRemoteDescription.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
-        this.toggleShowRemoteTitle = this.toggleShowRemoteTitle.bind(this);
-        this.showRemoteDescription = this.showRemoteDescription.bind(this);
     }
 
     handleTitleChange(event) {
@@ -167,8 +167,13 @@ class TaskEditView extends React.Component {
         });
     }
 
-    showRemoteDescription(show) {
-        this.setState({showRemoteDescription: show})
+
+    toggleShowRemoteDescription() {
+        this.setState(prevState => {
+            return {
+                showRemoteDescription: !prevState.showRemoteDescription
+            }
+        });
     }
 
     async handleSubmit(event) {
@@ -272,7 +277,7 @@ class TaskEditView extends React.Component {
                             className: "btn btn-secondary dropdown-toggle",
                             id: "list-input",
                             value: this.state.parentListId,
-                            onClick: e => {
+                            onClick: () => {
                                 this.setState(prevState => {
                                     return {
                                         listDropDownVisible: !prevState.listDropDownVisible
@@ -300,8 +305,19 @@ class TaskEditView extends React.Component {
                             key: "input",
                             className: "form-control",
                             rows: "10",
-                            value: this.state.description,
-                            onChange: this.handleDescriptionChange
+                            value: this.state.showRemoteDescription ? this.state.remoteDescription : this.state.description,
+                            onChange: this.handleDescriptionChange,
+                            disabled: this.state.showRemoteDescription,
+                        }
+                    ),
+                    e(
+                        ConflictButtonsArea,
+                        {
+                            toggle: this.toggleShowRemoteDescription,
+                            pull: this.pullRemoteDescription,
+                            push: this.pushLocalDescription,
+                            remoteValueAvailable: !isNull(this.state.remoteDescription),
+                            remoteValueShown: this.state.showRemoteDescription
                         }
                     )
                 )
