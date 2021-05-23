@@ -1,9 +1,8 @@
-import json
-from typing import List, Optional
+from typing import List
 
 from flask_login import UserMixin
 
-from persistence import Persistence, Task, TaskList, User
+from persistence import Persistence, Task, TaskConflict, TaskList, User
 
 
 class UserView(UserMixin):
@@ -16,25 +15,33 @@ class UserView(UserMixin):
 
 
 class ListView:
-    def __init__(self, task_list: TaskList):
+    def __init__(self, task_list: TaskList, conflicts):
         self.id = task_list.id
         self.title = task_list.title
-        self.tasks = [TaskView(task).as_dict() for task in task_list.tasks]
+        self.tasks = [TaskView(task, conflicts.get(task.id)).as_dict() for task in task_list.tasks]
 
     def as_dict(self):
         return {"id": self.id, "title": self.title, "tasks": self.tasks}
 
 
 class TaskView:
-    def __init__(self, task: Task):
+    def __init__(self, task: Task, conflict: TaskConflict):
         self.task = task
+        if conflict is None:
+            self.conflicting_title = None
+            self.conflicting_description = None
+        else:
+            self.conflicting_title = conflict.title
+            self.conflicting_description = conflict.description
         self.tags = [t.title for t in self.task.tags]
 
     def as_dict(self):
         return {
             "id": self.task.id,
             "title": self.task.title,
+            "conflicting_title": self.conflicting_title,
             "description": self.task.description,
+            "conflicting_description": self.conflicting_description,
             "created": self.task.created,
             "due": self.task.due,
             "completed": self.task.completed,
@@ -54,11 +61,16 @@ class DataView:
         return [UserView(user).as_dict() for user in self.persistence.get_users()]
 
     def get_task_list(self, task_list_id: int) -> ListView:
+        self.persistence.get_task_conflicts()
         task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
         return ListView(task_list).as_dict()
 
     def get_lists(self) -> List[ListView]:
-        return [ListView(task_list).as_dict() for task_list in self.persistence.get_task_lists(self.viewing_user.id)]
+        conflicts = self.persistence.get_task_conflicts_as_map(self.viewing_user.id)
+        return [
+            ListView(task_list, conflicts).as_dict()
+            for task_list in self.persistence.get_task_lists(self.viewing_user.id)
+        ]
 
     def create_or_replace_list(self, task_list_id: int, json_request):
         title = json_request["title"]
