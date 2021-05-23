@@ -24,6 +24,10 @@ table td.right, table th.right{
     padding-left: 15px;
 }
 
+.navbar-nav > .nav-item > a {
+    cursor: pointer;
+}
+
 .dropdown-menu {
     left: 15px;
 }
