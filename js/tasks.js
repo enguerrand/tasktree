@@ -1,3 +1,48 @@
+class ConflictButtonsArea extends React.Component {
+    // props.toggle
+    // props.pull
+    // props.push
+    // props.remoteValueAvailable
+    // props.remoteValueShown
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const conflictButtons = [];
+        if (this.props.remoteValueAvailable) {
+            let toggleRemoteTitleButton = "mdi mdi-swap-horizontal-circle";
+            if (this.props.remoteValueShown) {
+                toggleRemoteTitleButton += " mdi-flip-h";
+                conflictButtons.push(
+                    div({key: "pull-button", className: "conflict-button conflict-button-pull", onClick: this.props.pull},
+                        i({
+                            className: "mdi mdi-arrow-down-circle"
+                        })
+                    )
+                );
+                conflictButtons.push(
+                    div({key: "push-button", className: "conflict-button conflict-button-push", onClick: this.props.push},
+                        i({
+                            className: "mdi mdi-arrow-up-circle"
+                        })
+                    )
+                );
+            }
+            conflictButtons.push(
+                div({key: "toggle-button", className: "conflict-button conflict-button-toggle", onClick: this.props.toggle},
+                    i({
+                        className: toggleRemoteTitleButton
+                    })
+                )
+            );
+        }
+        return div({key: "conflict-buttons", className: "conflict-button-area"},
+            conflictButtons
+        );
+    }
+}
+
 class TaskEditView extends React.Component {
     // props.task
     // props.editingDone(taskAfterEdit, parentList)
@@ -159,34 +204,6 @@ class TaskEditView extends React.Component {
     render() {
         const formGroups = [];
         let currentlySelectedList = this.props.allLists[this.state.parentListId];
-        const conflictButtons = [];
-        if (!isNull(this.state.remoteTitle)) {
-            let toggleRemoteTitleButton = "mdi mdi-swap-horizontal-circle";
-            if (this.state.showRemoteTitle) {
-                toggleRemoteTitleButton += " mdi-flip-h";
-                conflictButtons.push(
-                    div({key: "pull-button", className: "conflict-button conflict-button-pull", onClick: this.pullRemoteTitle},
-                        i({
-                            className: "mdi mdi-arrow-down-circle"
-                        })
-                    )
-                );
-                conflictButtons.push(
-                    div({key: "push-button", className: "conflict-button conflict-button-push", onClick: this.pushLocalTitle},
-                        i({
-                            className: "mdi mdi-arrow-up-circle"
-                        })
-                    )
-                );
-            }
-            conflictButtons.push(
-                div({key: "toggle-button", className: "conflict-button conflict-button-toggle", onClick: this.toggleShowRemoteTitle},
-                    i({
-                        className: toggleRemoteTitleButton
-                    })
-                )
-            );
-        }
         formGroups.push(
             div({className:"form-group row", key: "titleInput"},
                 label({key: "label", htmlFor: "title-input", className: "col-sm-2 col-form-label text-light"}, "Title"),
@@ -201,8 +218,15 @@ class TaskEditView extends React.Component {
                         onChange: this.handleTitleChange,
                         disabled: this.state.showRemoteTitle
                     }),
-                    div({key: "conflict-buttons", className: "conflict-button-area"},
-                        conflictButtons
+                    e(
+                        ConflictButtonsArea,
+                        {
+                            toggle: this.toggleShowRemoteTitle,
+                            pull: this.pullRemoteTitle,
+                            push: this.pushLocalTitle,
+                            remoteValueAvailable: !isNull(this.state.remoteTitle),
+                            remoteValueShown: this.state.showRemoteTitle
+                        }
                     )
                 )
             )
