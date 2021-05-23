@@ -152,7 +152,7 @@ class TestPersistence(TestCase):
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(new_title, updated.title)
         self.assertEqual(new_description, updated.description)
-        self.assertIsNone(self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1))
+        self.assertIsNone(self.persistence.get_task_conflicts_as_map(self.user_a.id).get(TASK_ID_1))
 
     def test_update_task_title_conflict(self):
         new_title = "new title"
@@ -163,7 +163,7 @@ class TestPersistence(TestCase):
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
         self.assertEqual(new_description, updated.description)
-        conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
+        conflict = self.persistence.get_task_conflicts_as_map(self.user_a.id).get(TASK_ID_1)
         self.assertEqual(new_title, conflict.title)
         self.assertEqual(None, conflict.description)
 
@@ -176,7 +176,7 @@ class TestPersistence(TestCase):
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(new_title, updated.title)
         self.assertEqual(TASK_1_DESCRIPTION, updated.description)
-        conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
+        conflict = self.persistence.get_task_conflicts_as_map(self.user_a.id)[TASK_ID_1]
         self.assertEqual(None, conflict.title)
         self.assertEqual(new_description, conflict.description)
 
@@ -189,7 +189,7 @@ class TestPersistence(TestCase):
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
         self.assertEqual(TASK_1_DESCRIPTION, updated.description)
-        conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
+        conflict = self.persistence.get_task_conflicts_as_map(self.user_a.id).get(TASK_ID_1)
         self.assertEqual(new_title, conflict.title)
         self.assertEqual(new_description, conflict.description)
 
@@ -202,7 +202,7 @@ class TestPersistence(TestCase):
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
         self.assertEqual(TASK_1_DESCRIPTION, updated.description)
-        conflict = self.persistence.get_task_conflict(self.user_a.id, TASK_ID_1)
+        conflict = self.persistence.get_task_conflicts_as_map(self.user_a.id).get(TASK_ID_1)
         self.assertEqual(new_title, conflict.title)
         self.assertEqual(new_description, conflict.description)
 

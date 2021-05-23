@@ -6,7 +6,7 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy import DateTime, ForeignKey, and_, create_engine, Table, Column, Integer, String, delete
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Query, relationship, scoped_session, sessionmaker
+from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
 Base = declarative_base()
 
@@ -206,11 +206,12 @@ class Persistence:
     def get_task(self, requesting_user_id: int, task_id: int) -> Task:
         return self.query_tasks(requesting_user_id).filter(Task.id == task_id).one()
 
-    def get_task_conflict(self, requesting_user_id: int, task_id: int) -> Optional[TaskConflict]:
-        return self.query_task_conflicts(requesting_user_id, task_id).limit(1).one_or_none()
-
     def get_task_conflicts(self, requesting_user_id: int) -> List[TaskConflict]:
         return self.query_task_conflicts(requesting_user_id).all()
+
+    def get_task_conflicts_as_map(self, requesting_user_id: int):
+        task_ids_with_conflict = [(conflict.task_id, conflict) for conflict in self.get_task_conflicts(requesting_user_id)]
+        return dict(task_ids_with_conflict)
 
     def move_task_to_list(self, requesting_user_id: int, task_id: int, from_task_list_id: int, to_task_list_id: int):
         task_to_move = self.get_task(requesting_user_id, task_id)
