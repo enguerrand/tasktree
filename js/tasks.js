@@ -302,8 +302,10 @@ class TaskEditView extends React.Component {
     async handleSubmit(event) {
         event.preventDefault();
         const prevTask = deepCopy(this.props.task);
-        prevTask.title = this.state.previousTitle;
-        prevTask.description = this.state.previousDescription;
+        if (!isNull(prevTask)) {
+            prevTask.title = this.state.previousTitle;
+            prevTask.description = this.state.previousDescription;
+        }
         const taskAfterEdit = {
             title: this.state.title,
             description: this.state.description,
