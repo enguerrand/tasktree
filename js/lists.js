@@ -2,6 +2,7 @@
 class ListEditView extends React.Component {
     // props.taskList
     // props.editingDone(listAfterEdit)
+    // props.onCancel
     // props.createListId
     constructor(props) {
         super(props);
@@ -47,24 +48,38 @@ class ListEditView extends React.Component {
     }
 
     render() {
-        return div(
-            {className: "row"},
-            div({className: "col-12"},
-                form(
-                    { onSubmit: this.handleSubmit },
-                    h2({className: "h3 mb-3 fw-normal text-light"},
-                        this.state.header
-                    ),
-                    div({className:"form-floating"},
-                        input({type: "text", className: "form-control", id: "title-input", placeholder: "Title", value: this.state.title, onChange: this.handleTitleChange}),
-                        label({htmlFor: "title-input", className: "text-light"}, "Title")
-                    ),
-                    button({className: "w-100 btn btn-lg btn-primary", type: "submit"},
+        return [
+            div(
+                {className: "row", key: "form"},
+                div({className: "col-12"},
+                    form(
+                        null,
+                        h2({className: "h3 mb-3 fw-normal text-light"},
+                            this.state.header
+                        ),
+                        div({className:"form-floating"},
+                            input({type: "text", className: "form-control", id: "title-input", placeholder: "Title", value: this.state.title, onChange: this.handleTitleChange}),
+                            label({htmlFor: "title-input", className: "text-light"}, "Title")
+                        ),
+                        button({className: "w-100 btn btn-lg btn-primary", type: "submit"},
+                            "Save"
+                        )
+                    )
+                )
+            ),
+            div({className:"row floating-form-buttons bg-dark", key: "submit"},
+                div({className: "col-6", key: "cancel"},
+                    button({className: "w-100 btn btn-lg btn-secondary", type: "cancel", onClick: this.props.onCancel, key: "cancel"},
+                        "Cancel"
+                    )
+                ),
+                div({className: "col-6", key: "save"},
+                    button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", onClick: this.handleSubmit },
                         "Save"
                     )
                 )
             )
-        );
+        ];
     }
 }
 
@@ -148,6 +163,9 @@ class ListsView extends React.Component {
                     taskList: listToSet,
                     editingDone: async (listAfterEdit) => {
                         await this.props.onListUpdatedLocally(listAfterEdit);
+                        this.setState({ editingList: null, createNew: false });
+                    },
+                    onCancel: () => {
                         this.setState({ editingList: null, createNew: false });
                     },
                     createListId: this.props.createListId
