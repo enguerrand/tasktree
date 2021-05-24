@@ -324,7 +324,8 @@ class Persistence:
 
 
 if __name__ == "__main__":
-    os.remove(DB_LOCATION)
+    if os.path.exists(DB_LOCATION):
+        os.remove(DB_LOCATION)
     persistence = Persistence(DB_URL_PROD)
     persistence.create()
     # FIXME remove test code
