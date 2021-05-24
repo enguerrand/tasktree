@@ -33,9 +33,7 @@ table td.right, table th.right{
 }
 
 .conflict-button-area {
-    position: absolute;
-    right: 15px;
-    top: 0;
+    text-align: right;
 }
 
 .conflict-button {

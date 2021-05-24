@@ -212,18 +212,11 @@ class TaskEditView extends React.Component {
         let currentlySelectedList = this.props.allLists[this.state.parentListId];
         formGroups.push(
             div({className:"form-group row", key: "titleInput"},
-                label({key: "label", htmlFor: "title-input", className: "col-sm-2 col-form-label text-light"}, "Title"),
-                div({key: "input", className: "col-sm-10"},
-                    input({
-                        id: "title-input",
-                        key: "title-input",
-                        type: "text",
-                        className: "form-control",
-                        placeholder: "Title",
-                        value: this.state.showRemoteTitle ? this.state.remoteTitle : this.state.title,
-                        onChange: this.handleTitleChange,
-                        disabled: this.state.showRemoteTitle
-                    }),
+                label({key: "label", htmlFor: "title-input", className: "col-6 col-form-label text-light"}, "Title"),
+                div({
+                    key: "conflict-buttons",
+                    className: "col-6"
+                },
                     e(
                         ConflictButtonsArea,
                         {
@@ -234,12 +227,24 @@ class TaskEditView extends React.Component {
                             remoteValueShown: this.state.showRemoteTitle
                         }
                     )
+                ),
+                div({key: "input", className: "col-12"},
+                    input({
+                        id: "title-input",
+                        key: "title-input",
+                        type: "text",
+                        className: "form-control",
+                        placeholder: "Title",
+                        value: this.state.showRemoteTitle ? this.state.remoteTitle : this.state.title,
+                        onChange: this.handleTitleChange,
+                        disabled: this.state.showRemoteTitle
+                    })
                 )
             )
         );
 
         if (isNull(this.props.parentList)) {
-            let classDropdown = "col-12 col-sm-10 dropdown ";
+            let classDropdown = "col-12 dropdown ";
             let classDropdownMenu = "dropdown-menu";
             if (this.state.listDropDownVisible) {
                 classDropdown = classDropdown + " show";
@@ -270,7 +275,7 @@ class TaskEditView extends React.Component {
             }
             formGroups.push(
                 div({className:"form-group row", key: "listChoice"},
-                    label({key: "label", htmlFor: "list-input", className: "col-sm-2 col-form-label text-light"}, "Task List"),
+                    label({key: "label", htmlFor: "list-input", className: "col-12 col-form-label text-light"}, "Task List"),
                     div({className: classDropdown, key: "input"},
                         button({
                             key: "button",
@@ -297,8 +302,23 @@ class TaskEditView extends React.Component {
 
         formGroups.push(
             div({className:"form-group row", key: "descriptionInput"},
-                label({key: "label", htmlFor: "description-input", className: "col-sm-2 col-form-label text-light"}, "Description"),
-                div({key: "input", className: "col-sm-10"},
+                label({key: "label", htmlFor: "description-input", className: "col-6 col-form-label text-light"}, "Description"),
+                div({
+                        key: "conflict-buttons",
+                        className: "col-6"
+                    },
+                    e(
+                        ConflictButtonsArea,
+                        {
+                            toggle: this.toggleShowRemoteDescription,
+                            pull: this.pullRemoteDescription,
+                            push: this.pushLocalDescription,
+                            remoteValueAvailable: !isNull(this.state.remoteDescription),
+                            remoteValueShown: this.state.showRemoteDescription
+                        }
+                    )
+                ),
+                div({key: "input", className: "col-12"},
                     e(
                         'textarea',
                         {
@@ -309,16 +329,6 @@ class TaskEditView extends React.Component {
                             value: this.state.showRemoteDescription ? this.state.remoteDescription : this.state.description,
                             onChange: this.handleDescriptionChange,
                             disabled: this.state.showRemoteDescription,
-                        }
-                    ),
-                    e(
-                        ConflictButtonsArea,
-                        {
-                            toggle: this.toggleShowRemoteDescription,
-                            pull: this.pullRemoteDescription,
-                            push: this.pushLocalDescription,
-                            remoteValueAvailable: !isNull(this.state.remoteDescription),
-                            remoteValueShown: this.state.showRemoteDescription
                         }
                     )
                 )
