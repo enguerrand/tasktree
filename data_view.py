@@ -90,6 +90,7 @@ class DataView:
         next_task = json_request["next"]
 
         requesting_user_id = self.viewing_user.id
+        next_tags = next_task["tags"]
         if prev_task is None:
             self.persistence.create_task(
                 requesting_user_id,
@@ -97,8 +98,9 @@ class DataView:
                 task_list_id,
                 next_task["title"],
                 next_task["due"],
-                next_task["description"]
-                # TODO: tags + dependencies
+                next_task["description"],
+                # TODO: dependencies
+                tags=tuple(next_tags)
             )
         else:
             self.persistence.update_task(
@@ -109,5 +111,13 @@ class DataView:
                 next_task["title"],
                 next_task["due"],
                 next_task["description"],
-                requesting_user_id,
+                requesting_user_id
             )
+            prev_tags = prev_task["tags"]
+            for add_tag_candidate in next_tags:
+                if add_tag_candidate not in prev_tags:
+                    self.persistence.add_tag(requesting_user_id, task_id, add_tag_candidate)
+            for remove_tag_candidate in prev_tags:
+                if remove_tag_candidate not in next_tags:
+                    self.persistence.remove_tag(requesting_user_id, task_id, remove_tag_candidate)
+            # TODO: dependencies

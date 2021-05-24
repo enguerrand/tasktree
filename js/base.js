@@ -77,14 +77,16 @@ async function sendTask(task, taskList, prevTask) {
     const json = {};
     json["next"] = {
         title: task.title,
-        due: task.due,
         description: task.description,
+        due: task.due,
+        tags: task.tags
     }
     if (!isNull(prevTask)) {
         json["prev"] = {
             title: prevTask.title,
             description: prevTask.description,
-            due: prevTask.due
+            due: prevTask.due,
+            tags: prevTask.tags
         }
     }
     return sendJson(API_URL_LISTS + '/' + taskList.id + '/' + task.id, 'put', json);
