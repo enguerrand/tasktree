@@ -1,3 +1,32 @@
+class TagInput extends React.Component {
+    // props.currentTags
+    // props.allTags
+    // props.addTag(tag)
+    // props.removeTag(tag)
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const tagButtons = [];
+        for (const tag of this.props.currentTags) {
+            tagButtons.push(
+                div({className: "btn btn-primary btn-tag", key: "tag", onClick: e => this.props.removeTag(tag)},
+                    tag,
+                    i({className: "mdi mdi-close-circle"})
+                )
+            )
+        }
+        return (
+            div({className: "col-12"},
+                div({className: "tags-input-field form-control bg-light"},
+                    tagButtons
+                )
+            )
+        );
+    }
+}
+
 class ConflictButtonsArea extends React.Component {
     // props.toggle
     // props.pull
@@ -103,6 +132,7 @@ class TaskEditView extends React.Component {
         this.pullRemoteDescription = this.pullRemoteDescription.bind(this);
         this.pushLocalDescription = this.pushLocalDescription.bind(this);
         this.toggleShowRemoteDescription = this.toggleShowRemoteDescription.bind(this);
+        this.removeTag = this.removeTag.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -175,6 +205,18 @@ class TaskEditView extends React.Component {
                 showRemoteDescription: !prevState.showRemoteDescription
             }
         });
+    }
+
+    removeTag(tag) {
+        this.setState(
+            prevState => {
+                const nextTags = Object.assign([], prevState.tags);
+                nextTags.removeIf(t => t === tag)
+                return {
+                    tags: nextTags
+                }
+            }
+        );
     }
 
     async handleSubmit(event) {
@@ -331,6 +373,21 @@ class TaskEditView extends React.Component {
                             disabled: this.state.showRemoteDescription,
                         }
                     )
+                )
+            )
+        );
+
+        formGroups.push(
+            div({className:"form-group row", key: "tags-input"},
+                label({key: "label", htmlFor: "tags-input", className: "col-12 col-form-label text-light"}, "Tags"),
+                e(
+                    TagInput,
+                    {
+                        currentTags: this.state.tags,
+                        allTags: [],
+                        addTag: tag => {},
+                        removeTag: this.removeTag
+                    }
                 )
             )
         );

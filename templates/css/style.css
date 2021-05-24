@@ -45,3 +45,17 @@ table td.right, table th.right{
     display: inline;
     margin: 0 10px;
 }
+
+.tags-input-field {
+    height: auto;
+    padding: 0;
+}
+
+.btn-tag {
+    margin: 10px 10px 10px 10px;
+    cursor: pointer;
+}
+
+.btn-tag > i {
+    margin-left: 10px;
+}
