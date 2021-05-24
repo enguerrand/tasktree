@@ -5,22 +5,62 @@ class TagInput extends React.Component {
     // props.removeTag(tag)
     constructor(props) {
         super(props);
+        this.state = {
+            currentInput: ""
+        }
+        this.handleTextInput = this.handleTextInput.bind(this);
+        this.handleTextInputEnd = this.handleTextInputEnd.bind(this);
+        this.interceptEnter = this.interceptEnter.bind(this);
+    }
+
+    handleTextInput(event) {
+        const cleaned = event.target.value.toLocaleLowerCase().replace(/[^a-z0-9\s]/g, "");
+        this.setState({
+            currentInput: cleaned
+        });
+    }
+
+    handleTextInputEnd(currentValue) {
+        const cleaned = currentValue.toLocaleLowerCase().replace(/[^a-z0-9\s]/g, "");
+        this.setState({
+            currentInput: ""
+        }, () => this.props.addTag(cleaned));
+    }
+
+    interceptEnter(e) {
+        if(e.nativeEvent.key === "Enter"){
+            e.preventDefault();
+            this.handleTextInputEnd(e.target.value);
+        }
     }
 
     render() {
-        const tagButtons = [];
+        const inlineElements = [];
         for (const tag of this.props.currentTags) {
-            tagButtons.push(
-                div({className: "btn btn-primary btn-tag", key: "tag", onClick: e => this.props.removeTag(tag)},
+            inlineElements.push(
+                div({className: "btn btn-primary btn-tag", key: tag, onClick: e => this.props.removeTag(tag)},
                     tag,
                     i({className: "mdi mdi-close-circle"})
                 )
             )
         }
+        inlineElements.push(
+            input({
+                id: "add-tag-input",
+                key: "add-tag-input",
+                type: "text",
+                className: "add-tag-input",
+                autoComplete: "off",
+                placeholder: "type to add tags...",
+                value: this.state.currentInput,
+                onChange: this.handleTextInput,
+                onKeyPress: this.interceptEnter
+            })
+        )
         return (
             div({className: "col-12"},
                 div({className: "tags-input-field form-control bg-light"},
-                    tagButtons
+                    inlineElements
                 )
             )
         );
@@ -132,6 +172,7 @@ class TaskEditView extends React.Component {
         this.pullRemoteDescription = this.pullRemoteDescription.bind(this);
         this.pushLocalDescription = this.pushLocalDescription.bind(this);
         this.toggleShowRemoteDescription = this.toggleShowRemoteDescription.bind(this);
+        this.addTag = this.addTag.bind(this);
         this.removeTag = this.removeTag.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -205,6 +246,20 @@ class TaskEditView extends React.Component {
                 showRemoteDescription: !prevState.showRemoteDescription
             }
         });
+    }
+
+    addTag(tag) {
+        this.setState(
+            prevState => {
+                const nextTags = Object.assign([], prevState.tags);
+                if (!nextTags.includes(tag)) {
+                    nextTags.push(tag);
+                }
+                return {
+                    tags: nextTags
+                }
+            }
+        );
     }
 
     removeTag(tag) {
@@ -385,7 +440,7 @@ class TaskEditView extends React.Component {
                     {
                         currentTags: this.state.tags,
                         allTags: [],
-                        addTag: tag => {},
+                        addTag: this.addTag,
                         removeTag: this.removeTag
                     }
                 )

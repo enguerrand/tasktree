@@ -52,10 +52,19 @@ table td.right, table th.right{
 }
 
 .btn-tag {
-    margin: 10px 10px 10px 10px;
+    margin: 5px;
     cursor: pointer;
 }
 
 .btn-tag > i {
     margin-left: 10px;
+}
+
+.add-tag-input, .add-tag-input:focus, .add-tag-input:active, .add-tag-input:hover {
+    margin: 10px;
+    border-style: none;
+    border-width: 0;
+    box-shadow: none;
+    background: transparent;
+    outline: 0;
 }
