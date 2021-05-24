@@ -10,7 +10,7 @@ from data_view import DataView, UserView
 from flask import Flask, Response, jsonify, render_template, request, send_from_directory
 from persistence import DB_URL_PROD, Persistence
 
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 API_BASE_URL = "/api/"
 API_BASE_USERS = API_BASE_URL + "users/"
 API_BASE_LISTS = API_BASE_URL + "lists/"

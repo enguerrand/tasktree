@@ -2,17 +2,19 @@ import os
 from datetime import datetime
 from typing import List, Optional
 
+from dotenv import load_dotenv
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy import DateTime, ForeignKey, and_, create_engine, Table, Column, Integer, String, delete
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 Base = declarative_base()
 
-DB_NAME = "tasktree.db"
+DB_LOCATION = os.environ.get("DB_LOCATION")
 DB_URL_DEV = "sqlite+pysqlite:///:memory:"
-DB_URL_PROD = "sqlite+pysqlite:///%s" % DB_NAME
+DB_URL_PROD = "sqlite+pysqlite:///%s" % DB_LOCATION
 
 
 association_table_user_x_task_list = Table(
@@ -322,7 +324,7 @@ class Persistence:
 
 
 if __name__ == "__main__":
-    os.remove(DB_NAME)
+    os.remove(DB_LOCATION)
     persistence = Persistence(DB_URL_PROD)
     persistence.create()
     # FIXME remove test code
