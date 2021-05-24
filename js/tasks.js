@@ -164,8 +164,8 @@ class TaskEditView extends React.Component {
             header = "Edit task";
             initialTitle = this.props.task.title;
             initialDescription = this.props.task.description;
-            remoteTitle = this.props.task.conflicting_title;
-            remoteDescription = this.props.task.conflicting_description;
+            remoteTitle = this.props.task.conflictingTitle;
+            remoteDescription = this.props.task.conflictingDescription;
             initialDue = this.props.task.due;
             initialTags = this.props.task.tags;
         }
@@ -553,6 +553,7 @@ class TasksView extends React.Component {
         for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
             let tasks = taskList.tasks;
             for (const [taskId, task] of Object.entries(tasks)) {
+                const actionButtonColorType = hasConflicts(task) ? "danger" : "primary";
                 rows.push(
                     // TODO add conflict hints
                     tr({key: taskId},
@@ -565,7 +566,7 @@ class TasksView extends React.Component {
                         ),
                         td(
                             {key: "action", className: "right align-middle"},
-                            button({className: "btn btn-primary", onClick: (event) => this.editTask(event, task, taskList)}, i({className: "mdi mdi-pencil-outline"}))
+                            button({className: "btn btn-" + actionButtonColorType, onClick: (event) => this.editTask(event, task, taskList)}, i({className: "mdi mdi-pencil-outline"}))
                         )
                     )
                 );

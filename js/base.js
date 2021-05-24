@@ -100,6 +100,10 @@ function deepCopy(source) {
     return JSON.parse(JSON.stringify(source));
 }
 
+function hasConflicts(task) {
+    return !isNull(task.conflictingTitle) || !isNull(task.conflictingDescription);
+}
+
 Array.prototype.removeIf = function(predicate) {
     let i = this.length;
     while (i--) {

@@ -48,9 +48,9 @@ class TaskView:
         return {
             "id": self.task.id,
             "title": self.title,
-            "conflicting_title": self.conflicting_title,
+            "conflictingTitle": self.conflicting_title,
             "description": self.description,
-            "conflicting_description": self.conflicting_description,
+            "conflictingDescription": self.conflicting_description,
             "created": self.task.created,
             "due": self.task.due,
             "completed": self.task.completed,
