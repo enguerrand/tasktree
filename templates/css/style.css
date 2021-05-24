@@ -46,7 +46,7 @@ table td.right, table th.right{
     margin: 0 10px;
 }
 
-.tags-input-field {
+.tags-input-field, .tags-available-field {
     height: auto;
     padding: 0;
 }

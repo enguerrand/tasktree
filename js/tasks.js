@@ -11,6 +11,7 @@ class TagInput extends React.Component {
         this.handleTextInput = this.handleTextInput.bind(this);
         this.handleTextInputEnd = this.handleTextInputEnd.bind(this);
         this.interceptEnter = this.interceptEnter.bind(this);
+        this.selectOption = this.selectOption.bind(this);
     }
 
     handleTextInput(event) {
@@ -34,11 +35,17 @@ class TagInput extends React.Component {
         }
     }
 
+    selectOption(option) {
+        this.setState({
+            currentInput: ""
+        }, () => this.props.addTag(option));
+    }
+
     render() {
         const inlineElements = [];
         for (const tag of this.props.currentTags) {
             inlineElements.push(
-                div({className: "btn btn-primary btn-tag", key: tag, onClick: e => this.props.removeTag(tag)},
+                div({className: "btn btn-primary btn-tag", key: tag, onClick: () => this.props.removeTag(tag)},
                     tag,
                     i({className: "mdi mdi-close-circle"})
                 )
@@ -57,10 +64,28 @@ class TagInput extends React.Component {
                 onKeyPress: this.interceptEnter
             })
         )
+
+        const tagOptions = [];
+        for (const opt of this.props.allTags) {
+            if (this.props.currentTags.includes(opt)) {
+                continue;
+            }
+            if (opt.includes(this.state.currentInput)) {
+                tagOptions.push(
+                    div({className: "btn btn-secondary btn-tag", key: opt, onClick: () => this.selectOption(opt)},
+                        opt,
+                        i({className: "mdi mdi-plus-circle"})
+                    )
+                )
+            }
+        }
         return (
             div({className: "col-12"},
-                div({className: "tags-input-field form-control bg-light"},
+                div({className: "tags-input-field form-control bg-light", key: "input"},
                     inlineElements
+                ),
+                div({className: "tags-available-field mt-2", key: "options"},
+                    tagOptions
                 )
             )
         );
@@ -432,6 +457,18 @@ class TaskEditView extends React.Component {
             )
         );
 
+
+        const allTags = [];
+        const parentList = this.props.allLists[this.state.parentListId];
+        if (!isNull(parentList)) {
+            for (const [taskId, task] of Object.entries(parentList.tasks)) {
+                for (const tag of task.tags) {
+                    if (!allTags.includes(tag)) {
+                        allTags.push(tag);
+                    }
+                }
+            }
+        }
         formGroups.push(
             div({className:"form-group row", key: "tags-input"},
                 label({key: "label", htmlFor: "tags-input", className: "col-12 col-form-label text-light"}, "Tags"),
@@ -439,7 +476,7 @@ class TaskEditView extends React.Component {
                     TagInput,
                     {
                         currentTags: this.state.tags,
-                        allTags: [],
+                        allTags: allTags,
                         addTag: this.addTag,
                         removeTag: this.removeTag
                     }
