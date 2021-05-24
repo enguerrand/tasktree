@@ -485,33 +485,33 @@ class TaskEditView extends React.Component {
         );
 
         const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
-        formGroups.push(
-            div({className:"form-group row", key: "submit"},
+
+        return [
+            div(
+                {className: "row", key: "form"},
+                div({className: "col-12"},
+                    form(
+                        null,
+                        h2({className: "h3 mb-3 fw-normal text-light"},
+                            this.state.header
+                        ),
+                        formGroups
+                    )
+                )
+            ),
+            div({className:"row floating-form-buttons bg-dark", key: "submit"},
                 div({className: "col-6", key: "cancel"},
                     button({className: "w-100 btn btn-lg btn-secondary", type: "cancel", onClick: this.props.onCancel, key: "cancel"},
                         "Cancel"
                     )
                 ),
                 div({className: "col-6", key: "save"},
-                    button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", disabled: saveDisabled },
+                    button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", disabled: saveDisabled, onClick: this.handleSubmit },
                         "Save"
                     )
                 )
             )
-        );
-
-        return div(
-            {className: "row"},
-            div({className: "col-12"},
-                form(
-                    { onSubmit: this.handleSubmit },
-                    h2({className: "h3 mb-3 fw-normal text-light"},
-                        this.state.header
-                    ),
-                    formGroups
-                )
-            )
-        );
+        ];
     }
 }
 
