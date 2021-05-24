@@ -10,19 +10,20 @@ class ConflictButtonsArea extends React.Component {
 
     render() {
         const conflictButtons = [];
+        const titleToggle = this.props.remoteValueShown ? "Hide remote version" : "Show remote version";
         if (this.props.remoteValueAvailable) {
             let toggleRemoteTitleButton = "mdi mdi-swap-horizontal-circle";
             if (this.props.remoteValueShown) {
                 toggleRemoteTitleButton += " mdi-flip-h";
                 conflictButtons.push(
-                    div({key: "pull-button", className: "conflict-button conflict-button-pull", onClick: this.props.pull},
+                    div({key: "pull-button", className: "conflict-button text-success", onClick: this.props.pull, title: "pull remote version (overwrite my own changes)"},
                         i({
                             className: "mdi mdi-arrow-down-circle"
                         })
                     )
                 );
                 conflictButtons.push(
-                    div({key: "push-button", className: "conflict-button conflict-button-push", onClick: this.props.push},
+                    div({key: "push-button", className: "conflict-button text-primary", onClick: this.props.push, title: "push local version (overwrite remote changes)"},
                         i({
                             className: "mdi mdi-arrow-up-circle"
                         })
@@ -30,7 +31,7 @@ class ConflictButtonsArea extends React.Component {
                 );
             }
             conflictButtons.push(
-                div({key: "toggle-button", className: "conflict-button conflict-button-toggle", onClick: this.props.toggle},
+                div({key: "toggle-button", className: "conflict-button text-danger", onClick: this.props.toggle, title: titleToggle},
                     i({
                         className: toggleRemoteTitleButton
                     })

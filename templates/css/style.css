@@ -34,7 +34,7 @@ table td.right, table th.right{
 
 .conflict-button-area {
     position: absolute;
-    right: 25px;
+    right: 15px;
     top: 0;
 }
 
@@ -46,16 +46,4 @@ table td.right, table th.right{
     font-size: 1.5rem;
     display: inline;
     margin: 0 10px;
-}
-
-.conflict-button-pull {
-    color: green;
-}
-
-.conflict-button-push {
-    color: blue;
-}
-
-.conflict-button-toggle {
-    color: red;
 }
