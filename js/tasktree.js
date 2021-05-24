@@ -84,12 +84,16 @@ class TaskTreeApp extends React.Component {
                                 let tasks;
                                 if (isNull(current)) {
                                     tasks = deepCopy(remoteTasks);
+                                    for (const [taskId, task] of Object.entries(tasks)) {
+                                        task.synced = true;
+                                    }
                                 } else {
                                     tasks = current.tasks;
                                     for (const task of remoteList.tasks) {
                                         const currentTask = current.tasks[task.id];
                                         if (isNull(currentTask) || currentTask.synced) {
                                             tasks[task.id] = task;
+                                            tasks[task.id].synced = true;
                                         } else {
                                             tasks[task.id] = currentTask;
                                         }
@@ -151,7 +155,7 @@ class TaskTreeApp extends React.Component {
         console.log("task updated: " + JSON.stringify(task));
         this.setState(
             immer.produce(draftState => {
-                draftState.taskLists[taskList.id].tasks[task.id] = task;
+                draftState.taskLists[taskList.id].tasks[task.id] = deepCopy(task);
             }), this.writeUnsyncedLists
         );
     }
