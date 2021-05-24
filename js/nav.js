@@ -30,6 +30,7 @@ class NavItem extends React.Component {
 }
 
 class NavBar extends React.Component {
+    // props.online
     // props.currentCategory
     // props.setCategory(category)
     constructor(props) {
@@ -51,6 +52,15 @@ class NavBar extends React.Component {
                 )
             );
         }
+        let onlineIndicatorClass = "online-indicator";
+        let onlineIndicatorIconName;
+        if (this.props.online) {
+            onlineIndicatorClass += " text-success";
+            onlineIndicatorIconName = "lan-connect";
+        } else {
+            onlineIndicatorClass += " text-secondary";
+            onlineIndicatorIconName = "lan-disconnect";
+        }
         return div({className: "row"},
             div({className: "col-12"},
                 e('nav', { className: "navbar navbar-expand navbar-dark bg-dark"},
@@ -58,6 +68,17 @@ class NavBar extends React.Component {
                         ul({className: "navbar-nav mr-auto mt-2 mt-lg-0"},
                             navItems
                         )
+                    )
+                ),
+                div(
+                    {
+                        key: "online-indicator",
+                        className: onlineIndicatorClass,
+                    },
+                    i(
+                        {
+                            className: "mdi mdi-" + onlineIndicatorIconName
+                        }
                     )
                 )
             )

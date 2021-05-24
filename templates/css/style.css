@@ -68,3 +68,10 @@ table td.right, table th.right{
     background: transparent;
     outline: 0;
 }
+
+.online-indicator {
+    position: absolute;
+    top: 15px;
+    right: 40px;
+    font-size: 1.4rem;
+}

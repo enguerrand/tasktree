@@ -191,6 +191,7 @@ class TaskTreeApp extends React.Component {
             return [
                 e(NavBar, {
                     key: "navbar",
+                    online: this.state.online,
                     currentCategory: this.state.currentCategory,
                     setCategory: cat => this.setState({
                         currentCategory: cat
