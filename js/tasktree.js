@@ -37,20 +37,21 @@ class TaskTreeApp extends React.Component {
         const asyncRequests = [];
         for (const [listId, localList] of Object.entries(this.state.taskLists)) {
             if (localList.synced) {
-                continue;
+                asyncRequests.push(this.writeUnsyncedTasks(localList));
+            } else {
+                asyncRequests.push(
+                    sendTaskList(localList).then(success => {
+                        if (success) {
+                            this.setState(
+                                immer.produce(draftState => {
+                                    draftState.taskLists[listId].synced = true;
+                                })
+                            );
+                            this.writeUnsyncedTasks(localList);
+                        }
+                    })
+                );
             }
-            asyncRequests.push(
-                sendTaskList(localList).then(success => {
-                    if (success) {
-                        this.setState(
-                            immer.produce(draftState => {
-                                draftState.taskLists[listId].synced = true;
-                            })
-                        );
-                        this.writeUnsyncedTasks(localList);
-                    }
-                })
-            );
         }
         await Promise.all(asyncRequests);
         await this.fetchLists();
