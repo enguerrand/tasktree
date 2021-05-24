@@ -1,4 +1,4 @@
-const BASE_URL = window.location.href;
+const BASE_URL = window.location.protocol + "//" + window.location.host;
 const API_URL = BASE_URL + '/api';
 const API_URL_USERS = API_URL + '/users';
 const API_URL_LISTS = API_URL + '/lists';
