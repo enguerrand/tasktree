@@ -51,7 +51,7 @@ class ListEditView extends React.Component {
         return [
             div(
                 {className: "row", key: "form"},
-                div({className: "col-12"},
+                div({className: "col-12 space-below"},
                     form(
                         null,
                         h2({className: "h3 mb-3 fw-normal text-light"},
