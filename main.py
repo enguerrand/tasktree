@@ -64,7 +64,16 @@ def logged_in_user():
     return {
         "id": current_user.id,
         "username": current_user.username,
+        "settings": current_user.settings
     }
+
+
+@app.route(API_BASE_USERS + "current/settings", methods=["PUT"])
+@login_required
+def store_user_settings():
+    data_view = DataView(persistence, current_user)
+    data_view.store_settings(request.json)
+    return success()
 
 
 @app.route(API_BASE_LISTS)

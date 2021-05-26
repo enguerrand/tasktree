@@ -464,7 +464,6 @@ class TaskEditView extends React.Component {
             )
         );
 
-
         const allTags = [];
         const parentList = this.props.allLists[this.state.parentListId];
         if (!isNull(parentList) && this.props.activeListIds.includes(String(parentList.id))) {

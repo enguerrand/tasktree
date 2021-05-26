@@ -1,4 +1,5 @@
 import datetime
+import json
 from unittest import TestCase
 
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -42,6 +43,9 @@ class TestPersistence(TestCase):
         self.persistence.create_user(USER_A_NAME, USER_A_PSWD)
         self.persistence.create_user(USER_B_NAME, USER_B_PSWD)
         self.user_a = self.persistence.get_user_by_name(USER_A_NAME)
+        self.persistence.store_user_settings(
+            self.user_a.id, {"settingKey1": "settingVal1", "settingKey2": "settingVal2"}
+        )
         self.user_b = self.persistence.get_user_by_name(USER_B_NAME)
         self.persistence.create_or_replace_task_list(TASK_LIST_1_ID, TASK_LIST_1_TITLE, self.user_a.id)
         self.persistence.create_or_replace_task_list(TASK_LIST_2_ID, TASK_LIST_2_TITLE, self.user_b.id)
@@ -55,9 +59,7 @@ class TestPersistence(TestCase):
 
     def test_string_repr(self):
         self.assertEqual("User(id=None, username='a', password=***)", str(persistence.User(username="a", password="b")))
-        self.assertEqual(
-            "TaskList(id=None, title='a')", str(persistence.TaskList(title="a"))
-        )
+        self.assertEqual("TaskList(id=None, title='a')", str(persistence.TaskList(title="a")))
         self.assertEqual(
             "Task(id=None, task_list_id=None, title='a', description=None, created=None, due=None, completed=None)",
             str(persistence.Task(title="a")),
@@ -332,3 +334,8 @@ class TestPersistence(TestCase):
         )
         self.assertTrue(task1 in list_1.tasks)
         self.assertFalse(task1 in shared_list.tasks)
+
+    def test_get_user_settings(self):
+        settings = json.loads(self.user_a.settings)
+        self.assertEqual("settingVal1", settings["settingKey1"])
+        self.assertEqual("settingVal2", settings["settingKey2"])

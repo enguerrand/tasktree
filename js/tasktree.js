@@ -10,9 +10,11 @@ class TaskTreeApp extends React.Component {
         };
         this.createListId = this.createListId.bind(this);
         this.createTaskId = this.createTaskId.bind(this);
+        this.storeUserSettings = this.storeUserSettings.bind(this);
         this.onLoginReply = this.onLoginReply.bind(this);
         this.writeUnsyncedLists = this.writeUnsyncedLists.bind(this);
         this.writeUnsyncedTasks = this.writeUnsyncedTasks.bind(this);
+        this.writeAll = this.writeAll.bind(this);
         this.fetchAll = this.fetchAll.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
@@ -169,8 +171,13 @@ class TaskTreeApp extends React.Component {
             online: online
         })
         if (online) {
-            this.writeUnsyncedLists();
+            this.writeAll();
         }
+    }
+
+    async writeAll() {
+        this.writeUnsyncedLists();
+        this.storeUserSettings();
     }
 
     async setListActive(listId, active) {
@@ -184,7 +191,14 @@ class TaskTreeApp extends React.Component {
             return {
                 activeListIds: newLists
             }
-        })
+        }, this.storeUserSettings)
+    }
+
+    async storeUserSettings() {
+        const settings = {
+            activeListIds: Object.assign([], this.state.activeListIds)
+        };
+        return sendSettings(settings);
     }
 
     async componentDidMount() {
@@ -194,8 +208,10 @@ class TaskTreeApp extends React.Component {
         jsonResult.handle(
             currentUser => {
                 if (currentUser !== null && currentUser.username !== null && currentUser.username !== undefined) {
+                    const parsedSettings = readSettings(currentUser);
                     this.setState({
-                        loggedInUser: currentUser.username
+                        loggedInUser: currentUser.username,
+                        activeListIds: parsedSettings.activeListIds
                     }, this.fetchAll);
                 }
             },

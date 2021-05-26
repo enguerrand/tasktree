@@ -1,3 +1,5 @@
+import json
+from json import JSONDecodeError
 from typing import List
 
 from flask_login import UserMixin
@@ -9,9 +11,14 @@ class UserView(UserMixin):
     def __init__(self, user: User):
         self.id = user.id
         self.username = user.username
+        try:
+            self.settings = json.loads(user.settings)
+        except JSONDecodeError as e:
+            print(f"json decode error while decoding settings of user {user.id}: {e}")
+            self.settings = {}
 
     def as_dict(self):
-        return {"id": self.id, "username": self.username}
+        return {"id": self.id, "username": self.username, "settings": self.settings}
 
 
 class ListView:
@@ -68,6 +75,9 @@ class DataView:
 
     def get_users(self) -> List[UserView]:
         return [UserView(user).as_dict() for user in self.persistence.get_users()]
+
+    def store_settings(self, settings):
+        self.persistence.store_user_settings(self.viewing_user.id, settings)
 
     def get_task_list(self, task_list_id: int) -> ListView:
         self.persistence.get_task_conflicts()

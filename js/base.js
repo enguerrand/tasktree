@@ -66,6 +66,10 @@ async function sendJson(url, method, json) {
     }
 }
 
+async function sendSettings(settingsJson) {
+    return sendJson(API_URL_USERS + "/current/settings", "put", settingsJson);
+}
+
 // todo: detect permission error and create new random id?
 async function sendTaskList(taskList) {
     return sendJson(API_URL_LISTS + '/' + taskList.id, 'put', {
@@ -102,6 +106,16 @@ function deepCopy(source) {
 
 function hasConflicts(task) {
     return !isNull(task.conflictingTitle) || !isNull(task.conflictingDescription);
+}
+
+function readSettings(currentUserJson) {
+    let activeListIds = currentUserJson?.settings?.activeListIds;
+    if (isNull(activeListIds)) {
+        activeListIds = [];
+    }
+    return {
+        activeListIds: activeListIds
+    }
 }
 
 Array.prototype.removeIf = function(predicate) {

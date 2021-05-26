@@ -1,10 +1,11 @@
+import json
 import os
 from datetime import datetime
 from typing import List, Optional
 
 from dotenv import load_dotenv
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from sqlalchemy import DateTime, ForeignKey, and_, create_engine, Table, Column, Integer, String, delete
+from sqlalchemy import DateTime, ForeignKey, Text, and_, create_engine, Table, Column, Integer, String, delete
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
@@ -39,6 +40,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(30), unique=True, nullable=False)
     password = Column(String, nullable=False)
+    settings = Column(Text, nullable=False, default="{}")
     task_lists = relationship("TaskList", secondary=association_table_user_x_task_list, back_populates="users")
 
     def __repr__(self):
@@ -139,6 +141,11 @@ class Persistence:
         if not pbkdf2_sha256.verify(password, user.password):
             return None
         return user
+
+    def store_user_settings(self, user_id: int, settings):
+        user = self.get_user(user_id)
+        user.settings = json.dumps(settings)
+        self.session.commit()
 
     def create_or_replace_task_list(self, id: int, title: str, requesting_user_id: int):
         existing_list = self.session.query(TaskList).join(TaskList.users).filter(TaskList.id == id).one_or_none()
