@@ -85,6 +85,8 @@ class ListEditView extends React.Component {
 
 class ListsView extends React.Component {
     // prop.taskLists
+    // prop.activeListIds
+    // prop.setListActive(id, active)
     // prop.onListUpdatedLocally(taskList)
     // props.createListId
     constructor(props) {
@@ -116,10 +118,19 @@ class ListsView extends React.Component {
     renderListsTable() {
         let rows = [];
         for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
+            const listActive = this.props.activeListIds.includes(taskListId);
+            const activationToggle = button(
+                {
+                    className: "btn btn-secondary",
+                    onClick: () => this.props.setListActive(taskListId, !listActive)
+                },
+                i({className: "mdi mdi-" + (listActive ? "check" : "checkbox-blank-outline")})
+            );
             rows.push(
                 tr({key: taskListId},
                     // th({key: "id", scope: "row", className: "align-middle"}, taskListId),
-                    td({key: "title", className: "align-middle"}, taskList.title),
+                    td({key: "active", className: "align-middle"}, activationToggle),
+                    td({key: "title", className: "align-middle" + (listActive ? "" : " text-secondary")}, taskList.title),
                     td(
                         {key: "action", className: "right align-middle"},
                         button({className: "btn btn-primary", onClick: (event) => this.editList(event, taskList)}, i({className: "mdi mdi-pencil-outline"}))
@@ -131,6 +142,7 @@ class ListsView extends React.Component {
             thead({key: "head"},
                 tr(null,
                     // th({key: "id", scope: "col", className: "align-middle"}, "ID"),
+                    th({key: "active", scope: "col", className: "align-middle"}, "ACTIVE"),
                     th({key: "title", scope: "col", className: "align-middle"}, "TITLE"),
                     th({key: "action", scope: "col", className: "right align-middle"}, "ACTION")
                 )

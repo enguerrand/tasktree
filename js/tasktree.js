@@ -4,6 +4,7 @@ class TaskTreeApp extends React.Component {
         this.state = {
             loggedInUser: null,
             taskLists: {},
+            activeListIds: [],
             online: true,
             currentCategory: CATEGORY_ID_TASKS
         };
@@ -17,6 +18,7 @@ class TaskTreeApp extends React.Component {
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
         this.onTaskUpdatedLocally = this.onTaskUpdatedLocally.bind(this);
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
+        this.setListActive = this.setListActive.bind(this);
     }
 
     // TODO generate truly unique ids
@@ -171,6 +173,20 @@ class TaskTreeApp extends React.Component {
         }
     }
 
+    async setListActive(listId, active) {
+        this.setState(prevState => {
+            const newLists = Object.assign([], prevState.activeListIds);
+            if (active && !newLists.includes(listId)) {
+                newLists.push(listId);
+            } else if (!active) {
+                newLists.removeIf(id => id === listId);
+            }
+            return {
+                activeListIds: newLists
+            }
+        })
+    }
+
     async componentDidMount() {
         window.addEventListener('online', this.updateOnlineStatus);
         window.addEventListener('offline', this.updateOnlineStatus);
@@ -206,6 +222,8 @@ class TaskTreeApp extends React.Component {
                     key: "main-view",
                     category: this.state.currentCategory,
                     taskLists: this.state.taskLists,
+                    activeListIds: this.state.activeListIds,
+                    setListActive: this.setListActive,
                     onListUpdatedLocally: this.onListUpdatedLocally,
                     onTaskUpdatedLocally: this.onTaskUpdatedLocally,
                     createListId: this.createListId,

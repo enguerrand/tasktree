@@ -1,5 +1,7 @@
 class MainView extends React.Component {
     // props.taskLists
+    // props.activeListIds
+    // props.setListActive(id, active)
     // props.category
     // props.onListUpdatedLocally(taskList)
     // props.onTaskUpdatedLocally(task, taskList)
@@ -16,6 +18,8 @@ class MainView extends React.Component {
                 ListsView,
                 {
                     taskLists: this.props.taskLists,
+                    activeListIds: this.props.activeListIds,
+                    setListActive: this.props.setListActive,
                     onListUpdatedLocally: this.props.onListUpdatedLocally,
                     createListId: this.props.createListId
                 }
@@ -25,6 +29,7 @@ class MainView extends React.Component {
                 TasksView,
                 {
                     taskLists: this.props.taskLists,
+                    activeListIds: this.props.activeListIds,
                     onTaskUpdatedLocally: this.props.onTaskUpdatedLocally,
                     createTaskId: this.props.createTaskId
                 }

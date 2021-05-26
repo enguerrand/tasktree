@@ -143,6 +143,7 @@ class TaskEditView extends React.Component {
     // props.editingDone(taskAfterEdit, parentList)
     // props.onCancel
     // props.parentList (only for edit, set to null for create)
+    // props.activeListIds
     // props.createTaskId
     // props.allLists
     constructor(props) {
@@ -466,7 +467,7 @@ class TaskEditView extends React.Component {
 
         const allTags = [];
         const parentList = this.props.allLists[this.state.parentListId];
-        if (!isNull(parentList)) {
+        if (!isNull(parentList) && this.props.activeListIds.includes(String(parentList.id))) {
             for (const [taskId, task] of Object.entries(parentList.tasks)) {
                 for (const tag of task.tags) {
                     if (!allTags.includes(tag)) {
@@ -523,6 +524,7 @@ class TaskEditView extends React.Component {
 
 class TasksView extends React.Component {
     // props.taskLists
+    // props.activeListIds
     // props.createTaskId
     // props.onTaskUpdatedLocally(task, taskList)
     constructor(props) {
@@ -557,11 +559,13 @@ class TasksView extends React.Component {
     renderTasksTable() {
         let rows = [];
         for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
+            if (!this.props.activeListIds.includes(taskListId)) {
+                continue;
+            }
             let tasks = taskList.tasks;
             for (const [taskId, task] of Object.entries(tasks)) {
                 const actionButtonColorType = hasConflicts(task) ? "danger" : "primary";
                 rows.push(
-                    // TODO add conflict hints
                     tr({key: taskId},
                         // th({key: "id", scope: "row", className: "align-middle"}, taskId),
                         td(
@@ -616,6 +620,7 @@ class TasksView extends React.Component {
                     onCancel: () => {
                         this.setState({ editingTask: null, editingList: null, createNew: false });
                     },
+                    activeListIds: this.props.activeListIds,
                     createTaskId: this.props.createTaskId,
                     allLists: this.props.taskLists
                 }
