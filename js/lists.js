@@ -118,7 +118,7 @@ class ListsView extends React.Component {
         for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
             rows.push(
                 tr({key: taskListId},
-                    th({key: "id", scope: "row", className: "align-middle"}, taskListId),
+                    // th({key: "id", scope: "row", className: "align-middle"}, taskListId),
                     td({key: "title", className: "align-middle"}, taskList.title),
                     td(
                         {key: "action", className: "right align-middle"},
@@ -130,7 +130,7 @@ class ListsView extends React.Component {
         const listsTable = table({className: "table table-striped table-dark", key: "table"},
             thead({key: "head"},
                 tr(null,
-                    th({key: "id", scope: "col", className: "align-middle"}, "ID"),
+                    // th({key: "id", scope: "col", className: "align-middle"}, "ID"),
                     th({key: "title", scope: "col", className: "align-middle"}, "TITLE"),
                     th({key: "action", scope: "col", className: "right align-middle"}, "ACTION")
                 )

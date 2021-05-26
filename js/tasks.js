@@ -559,12 +559,14 @@ class TasksView extends React.Component {
                 rows.push(
                     // TODO add conflict hints
                     tr({key: taskId},
-                        th({key: "id", scope: "row", className: "align-middle"}, taskId),
+                        // th({key: "id", scope: "row", className: "align-middle"}, taskId),
                         td(
                             {
                                 key: "title",
                                 className: "align-middle"
-                            }, task.title
+                            },
+                            div({className: "tasks-table-cell-title", key: "title"}, task.title),
+                            div({className: "tasks-table-cell-created text-secondary", key: "created"}, task.created)
                         ),
                         td(
                             {key: "action", className: "right align-middle"},
@@ -577,7 +579,7 @@ class TasksView extends React.Component {
         const tasksTable = table({className: "table table-striped table-dark", key: "table"},
             thead({key: "head"},
                 tr(null,
-                    th({key: "id", scope: "col", className: "align-middle"}, "ID"),
+                    // th({key: "id", scope: "col", className: "align-middle"}, "ID"),
                     th({key: "title", scope: "col", className: "align-middle"}, "TITLE"),
                     th({key: "action", scope: "col", className: "right align-middle"}, "ACTION")
                 )

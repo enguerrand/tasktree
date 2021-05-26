@@ -89,3 +89,10 @@ table td.right, table th.right{
 .space-below {
     margin-bottom: 85px;
 }
+
+.tasks-table-cell-title {
+}
+
+.tasks-table-cell-created {
+    font-size: 0.9rem;
+}
