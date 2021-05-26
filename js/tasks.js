@@ -92,6 +92,65 @@ class TagInput extends React.Component {
     }
 }
 
+class CreateTaskInput extends React.Component {
+    // props.openEditView(initialTitle)
+    // props.trySmartSubmitUsingTitle(title)
+    constructor(props) {
+        super(props);
+        this.state = {
+            currentInput: ""
+        }
+        this.handleTextInput = this.handleTextInput.bind(this);
+        this.interceptEnter = this.interceptEnter.bind(this);
+    }
+
+    handleTextInput(event) {
+        this.setState({
+            currentInput: event.target.value
+        });
+    }
+
+    interceptEnter(e) {
+        if(e.nativeEvent.key === "Enter"){
+            e.preventDefault();
+            const titleToUse = e.target.value;
+            if (this.state.currentInput.length === 0) {
+                return;
+            }
+            this.setState({
+                currentInput: ""
+            }, () => this.props.trySmartSubmitUsingTitle(titleToUse));
+        }
+    }
+
+    render() {
+        return div({className: "task-input-row"},
+            input({
+                key: "input",
+                type: "text",
+                autoComplete: "off",
+                placeholder: "type to add a new task...",
+                value: this.state.currentInput,
+                onChange: this.handleTextInput,
+                onKeyPress: this.interceptEnter
+            }),
+            button({
+                key: "addButton",
+                className: "btn btn-primary",
+                disabled: this.state.currentInput === 0,
+                onClick:  (event) => {
+                    event.preventDefault();
+                    const usingTitle = this.state.currentInput;
+                    this.setState({
+                        currentInput: ""
+                    }, () => this.props.openEditView(usingTitle));
+                }
+            }, i({className: "mdi mdi-plus"}))
+        );
+    }
+
+}
+
 class ConflictButtonsArea extends React.Component {
     // props.toggle
     // props.pull
@@ -140,6 +199,7 @@ class ConflictButtonsArea extends React.Component {
 
 class TaskEditView extends React.Component {
     // props.task
+    // props.requestedNewTitle
     // props.editingDone(taskAfterEdit, parentList)
     // props.onCancel
     // props.parentList (only for edit, set to null for create)
@@ -157,7 +217,7 @@ class TaskEditView extends React.Component {
         let initialTags;
         if (isNull(this.props.task)) {
             header = "Create task";
-            initialTitle = "";
+            initialTitle = this.props.requestedNewTitle;
             initialDescription = "";
             initialDue = null;
             initialTags = [];
@@ -535,14 +595,15 @@ class TasksView extends React.Component {
         this.renderTasksTable = this.renderTasksTable.bind(this);
         this.addTask = this.addTask.bind(this);
         this.editTask = this.editTask.bind(this);
+        this.sendEditedTask = this.sendEditedTask.bind(this);
+        this.trySmartSubmitUsingTitle = this.trySmartSubmitUsingTitle.bind(this);
     }
 
-    addTask(event, taskLists) {
-        event.preventDefault();
+    addTask(taskLists, usingTitle) {
         this.setState({
             editingTask: null,
             editingList: null,
-            createNew: true,
+            createNewWithTitle: isNull(usingTitle) ? "" : usingTitle,
         });
     }
 
@@ -551,12 +612,55 @@ class TasksView extends React.Component {
         this.setState({
             editingTask: task,
             editingList: taskList,
-            createNew: false,
+            createNewWithTitle: null,
         });
+    }
+
+    async trySmartSubmitUsingTitle(title) {
+        let parentList;
+        if (Object.keys(this.props.taskLists).length === 1) {
+            parentList = this.props.taskLists[Object.keys(this.props.taskLists)[0]];
+        } else if (this.props.activeListIds.length === 1) {
+            parentList = this.props.taskLists[this.props.activeListIds[0]];
+        } else {
+            parentList = null;
+        }
+        if (isNull(parentList)) {
+            return this.addTask(this.props.taskLists, title);
+        } else {
+            return this.sendEditedTask({
+                id: this.props.createTaskId(),
+                title: title,
+                description: "",
+                due: null,
+                tags: [],
+                synced: false
+            }, parentList);
+        }
+    }
+
+    async sendEditedTask(taskAfterEdit, parentList) {
+        await this.props.onTaskUpdatedLocally(taskAfterEdit, parentList);
+        this.setState({editingTask: null, editingList: null, createNewWithTitle: null});
     }
 
     renderTasksTable() {
         let rows = [];
+        rows.push(
+            tr({key: "add-task"},
+                td({colSpan: 2},
+                    e(
+                        CreateTaskInput,
+                        {
+                            trySmartSubmitUsingTitle: this.trySmartSubmitUsingTitle,
+                            openEditView: (usingTitle) => {
+                                return this.addTask(this.props.taskLists, usingTitle);
+                            }
+                        }
+                    )
+                ),
+            )
+        );
         for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
             if (!this.props.activeListIds.includes(taskListId)) {
                 continue;
@@ -595,29 +699,24 @@ class TasksView extends React.Component {
         )
         return div({ className: "row" },
             div({ className: "col-12" },
-                tasksTable,
-                button({
-                    key: "addButton",
-                    className: "btn btn-primary",
-                    onClick:  event => this.addTask(event, this.props.taskLists)
-                }, "+")
+                tasksTable
             )
         );
     }
 
     render() {
-        if (this.state.createNew || !isNull(this.state.editingTask)) {
+        if (!isNull(this.state.createNewWithTitle) || !isNull(this.state.editingTask)) {
             return e(
                 TaskEditView,
                 {
                     task: this.state.editingTask,
+                    requestedNewTitle: this.state.createNewWithTitle,
                     parentList: this.state.editingList,
                     editingDone: async (taskAfterEdit, parentList) => {
-                        await this.props.onTaskUpdatedLocally(taskAfterEdit, parentList);
-                        this.setState({ editingTask: null, editingList: null, createNew: false });
+                        await this.sendEditedTask(taskAfterEdit, parentList);
                     },
                     onCancel: () => {
-                        this.setState({ editingTask: null, editingList: null, createNew: false });
+                        this.setState({ editingTask: null, editingList: null, createNewWithTitle: null });
                     },
                     activeListIds: this.props.activeListIds,
                     createTaskId: this.props.createTaskId,

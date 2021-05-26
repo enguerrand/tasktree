@@ -95,3 +95,15 @@ table td.right, table th.right{
 .tasks-table-cell-created {
     font-size: 0.9rem;
 }
+
+.task-input-row {
+    display: flex;
+}
+
+.task-input-row > input {
+    flex-grow: 1.0;
+}
+
+.task-input-row > button {
+    margin-left: 10px;
+}
