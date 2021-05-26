@@ -169,9 +169,13 @@ class TaskEditView extends React.Component {
             initialDue = this.props.task.due;
             initialTags = this.props.task.tags;
         }
-        let parentListId = null;
+        let parentListId;
         if (!isNull(this.props.parentList)) {
             parentListId = this.props.parentList.id;
+        } else if (Object.keys(props.allLists).length === 1) {
+            parentListId = Object.keys(props.allLists)[0];
+        } else {
+            parentListId = null;
         }
         this.state = {
             header: header,
