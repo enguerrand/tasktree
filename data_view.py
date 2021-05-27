@@ -58,9 +58,9 @@ class TaskView:
             "conflictingTitle": self.conflicting_title,
             "description": self.description,
             "conflictingDescription": self.conflicting_description,
-            "created": self.task.created,
-            "due": self.task.due,
-            "completed": self.task.completed,
+            "created": self.task.created.timestamp() * 1000,
+            "due": nullable_date_to_timestamp(self.task.due),
+            "completed": nullable_date_to_timestamp(self.task.completed),
             "tags": self.tags,
         }
 
@@ -131,3 +131,10 @@ class DataView:
                 if remove_tag_candidate not in next_tags:
                     self.persistence.remove_tag(requesting_user_id, task_id, remove_tag_candidate)
             # TODO: dependencies
+
+
+def nullable_date_to_timestamp(nullable_date):
+    if nullable_date is None:
+        return None
+    else:
+        return nullable_date.timestamp() * 1000

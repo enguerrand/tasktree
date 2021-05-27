@@ -678,7 +678,7 @@ class TasksView extends React.Component {
                                 className: "align-middle"
                             },
                             div({className: "tasks-table-cell-title", key: "title"}, task.title),
-                            div({className: "tasks-table-cell-created text-secondary", key: "created"}, task.created)
+                            div({className: "tasks-table-cell-created text-secondary", key: "created"}, new Date(task.created).toLocaleString(LOCALE))
                         ),
                         td(
                             {key: "action", className: "right align-middle"},

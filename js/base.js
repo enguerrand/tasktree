@@ -7,6 +7,7 @@ const CATEGORY_ID_TASKS = "TASKS";
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_AUTHORIZED = 401;
 const CSRF_TOKEN = document.head.querySelector("[name=csrf-token][content]").content;
+const LOCALE = navigator.language
 
 class JsonResult {
     constructor(success, payload) {
