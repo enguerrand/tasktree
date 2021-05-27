@@ -46,7 +46,7 @@ def login():
     authenticated_user = persistence.get_authenticated_user_by_name(username, password)
     if authenticated_user is not None:
         me = UserView(authenticated_user)
-        login_user(me)
+        login_user(me, remember=True)
         return jsonify({"status": 200})
     else:
         return jsonify({"status": 401, "reason": "Username or Password Error"})
