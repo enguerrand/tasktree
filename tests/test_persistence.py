@@ -149,7 +149,16 @@ class TestPersistence(TestCase):
         new_title = "new title"
         new_description = "next desc"
         self.persistence.update_task(
-            TASK_ID_1, TASK_1_TITLE, None, TASK_1_DESCRIPTION, new_title, None, new_description, self.user_a.id
+            TASK_ID_1,
+            TASK_1_TITLE,
+            None,
+            TASK_1_DESCRIPTION,
+            False,
+            new_title,
+            None,
+            new_description,
+            False,
+            self.user_a.id,
         )
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(new_title, updated.title)
@@ -160,7 +169,16 @@ class TestPersistence(TestCase):
         new_title = "new title"
         new_description = "next desc"
         self.persistence.update_task(
-            TASK_ID_1, "out of sync", None, TASK_1_DESCRIPTION, new_title, None, new_description, self.user_a.id
+            TASK_ID_1,
+            "out of sync",
+            None,
+            TASK_1_DESCRIPTION,
+            False,
+            new_title,
+            None,
+            new_description,
+            False,
+            self.user_a.id,
         )
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
@@ -173,7 +191,7 @@ class TestPersistence(TestCase):
         new_title = "new title"
         new_description = "next desc"
         self.persistence.update_task(
-            TASK_ID_1, TASK_1_TITLE, None, "out of sync", new_title, None, new_description, self.user_a.id
+            TASK_ID_1, TASK_1_TITLE, None, "out of sync", False, new_title, None, new_description, False, self.user_a.id
         )
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(new_title, updated.title)
@@ -186,7 +204,16 @@ class TestPersistence(TestCase):
         new_title = "new title"
         new_description = "next desc"
         self.persistence.update_task(
-            TASK_ID_1, "out of sync", None, "out of sync", new_title, None, new_description, self.user_a.id
+            TASK_ID_1,
+            "out of sync",
+            None,
+            "out of sync",
+            False,
+            new_title,
+            None,
+            new_description,
+            False,
+            self.user_a.id,
         )
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
@@ -199,7 +226,16 @@ class TestPersistence(TestCase):
         new_title = "new title"
         new_description = "next desc"
         self.persistence.update_task(
-            TASK_ID_1, "out of sync", None, "out of sync", new_title, None, new_description, self.user_a.id
+            TASK_ID_1,
+            "out of sync",
+            None,
+            "out of sync",
+            False,
+            new_title,
+            None,
+            new_description,
+            False,
+            self.user_a.id,
         )
         updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertEqual(TASK_1_TITLE, updated.title)
@@ -207,6 +243,40 @@ class TestPersistence(TestCase):
         conflict = self.persistence.get_task_conflicts_as_map(self.user_a.id).get(TASK_ID_1)
         self.assertEqual(new_title, conflict.title)
         self.assertEqual(new_description, conflict.description)
+
+    def test_update_task_completed(self):
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.persistence.update_task(
+            TASK_ID_1,
+            task1.title,
+            task1.due,
+            task1.description,
+            False,
+            task1.title,
+            task1.due,
+            task1.description,
+            True,
+            self.user_a.id,
+        )
+        updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertTrue(updated.completed)
+
+    def test_update_task_completed_no_change(self):
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.persistence.update_task(
+            TASK_ID_1,
+            task1.title,
+            task1.due,
+            task1.description,
+            True,
+            task1.title,
+            task1.due,
+            task1.description,
+            True,
+            self.user_a.id,
+        )
+        updated = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertFalse(updated.completed)
 
     def test_update_task_due_conflict_present_is_none(self):
         task1 = self.persistence.get_task(self.user_a.id, 1)
@@ -233,9 +303,11 @@ class TestPersistence(TestCase):
             task1.title,
             None,
             task1.description,
+            False,
             task1.title,
             some_time_stamp,
             task1.description,
+            False,
             self.user_a.id,
         )
         self.assertEqual(some_time_stamp, self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
@@ -244,7 +316,7 @@ class TestPersistence(TestCase):
         new_title = task.title
         new_description = task.description
         self.persistence.update_task(
-            task.id, task.title, prev, task.description, new_title, req, new_description, self.user_a.id
+            task.id, task.title, prev, task.description, False, new_title, req, new_description, False, self.user_a.id
         )
         updated = self.persistence.get_task(self.user_a.id, task.id)
         self.assertEqual(expect, updated.due)
@@ -344,11 +416,3 @@ class TestPersistence(TestCase):
         settings = json.loads(self.user_a.settings)
         self.assertEqual("settingVal1", settings["settingKey1"])
         self.assertEqual("settingVal2", settings["settingKey2"])
-
-    def test_task_completion(self):
-        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
-        self.assertFalse(task1.completed)  # just to check test setup
-        self.persistence.complete_task(self.user_a.id, task1.id)
-        self.assertTrue(task1.completed)
-        self.persistence.un_complete_task(self.user_a.id, task1.id)
-        self.assertFalse(task1.completed)

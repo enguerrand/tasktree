@@ -216,12 +216,14 @@ class TaskEditView extends React.Component {
         let remoteDescription;
         let initialDue;
         let initialTags;
+        let completed;
         if (isNull(this.props.task)) {
             header = "Create task";
             initialTitle = this.props.requestedNewTitle;
             initialDescription = "";
             initialDue = null;
             initialTags = [];
+            completed = false;
         } else {
             header = "Edit task";
             initialTitle = this.props.task.title;
@@ -230,6 +232,7 @@ class TaskEditView extends React.Component {
             remoteDescription = this.props.task.conflictingDescription;
             initialDue = this.props.task.due;
             initialTags = this.props.task.tags;
+            completed = this.props.task.completed;
         }
         let parentListId;
         if (!isNull(this.props.parentList)) {
@@ -252,6 +255,7 @@ class TaskEditView extends React.Component {
             due: initialDue,
             tags: initialTags,
             parentListId: parentListId,
+            completed: completed,
             listDropDownVisible: false,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
@@ -377,6 +381,7 @@ class TaskEditView extends React.Component {
             description: this.state.description,
             due: this.state.due,
             tags: this.state.tags,
+            completed: this.state.completed,
             synced: false
         }
         if (isNull(this.props.task)) {

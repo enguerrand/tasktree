@@ -188,6 +188,7 @@ class Persistence:
         title: str,
         due=None,
         description=None,
+        completed=False,
         prereq_task_ids=(),
         depending_task_ids=(),
         tags=(),
@@ -195,7 +196,7 @@ class Persistence:
         task_list = self.get_task_list(requesting_user_id, task_list_id)
         prereq = self.query_tasks(requesting_user_id).filter(Task.id.in_(prereq_task_ids)).all()
         dependents = self.query_tasks(requesting_user_id).filter(Task.id.in_(depending_task_ids)).all()
-        task = Task(id=id, title=title, due=due, description=description, task_list=task_list)
+        task = Task(id=id, title=title, due=due, description=description, completed=completed, task_list=task_list)
         task.prerequisites.extend(prereq)
         task.depending_tasks.extend(dependents)
         for t in tags:
@@ -239,13 +240,16 @@ class Persistence:
         prev_title: str,
         prev_due: DateTime,
         prev_description: str,
+        prev_completed: bool,
         next_title: str,
         next_due: DateTime,
         next_description: str,
+        next_completed: bool,
         requesting_user_id: int,
     ):
         task = self.get_task(requesting_user_id, task_id)
         task.due = self.merge_date(task.due, prev_due, next_due)
+        task.completed = self.merge_completed(task.completed, prev_completed, next_completed)
         self.session.execute(
             delete(TaskConflict)
             .where(and_(TaskConflict.user_id == requesting_user_id, TaskConflict.task_id == task.id))
@@ -271,16 +275,6 @@ class Persistence:
                     user_id=requesting_user_id, task_id=task.id, title=conflict_title, description=conflict_description
                 )
             )
-        self.session.commit()
-
-    def complete_task(self, requesting_user_id: int, task_id: int):
-        to_complete = self.get_task(requesting_user_id, task_id)
-        to_complete.completed = True
-        self.session.commit()
-
-    def un_complete_task(self, requesting_user_id: int, task_id: int):
-        to_un_complete = self.get_task(requesting_user_id, task_id)
-        to_un_complete.completed = False
         self.session.commit()
 
     def get_tags(self, requesting_user_id: int, task_id: int) -> List[Tag]:
@@ -329,6 +323,11 @@ class Persistence:
             return old
         else:
             return wanted_new
+
+    def merge_completed(self, current_completed, prev_completed, next_completed):
+        if next_completed == prev_completed:
+            return current_completed
+        return next_completed
 
 
 if __name__ == "__main__":

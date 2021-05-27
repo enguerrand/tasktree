@@ -60,7 +60,7 @@ class TaskView:
             "conflictingDescription": self.conflicting_description,
             "created": self.task.created.timestamp() * 1000,
             "due": nullable_date_to_timestamp(self.task.due),
-            "completed": nullable_date_to_timestamp(self.task.completed),
+            "completed": self.task.completed,
             "tags": self.tags,
         }
 
@@ -109,6 +109,7 @@ class DataView:
                 next_task["title"],
                 next_task["due"],
                 next_task["description"],
+                next_task["completed"],
                 # TODO: dependencies
                 tags=tuple(next_tags)
             )
@@ -118,9 +119,11 @@ class DataView:
                 prev_task["title"],
                 prev_task["due"],
                 prev_task["description"],
+                prev_task["completed"],
                 next_task["title"],
                 next_task["due"],
                 next_task["description"],
+                next_task["completed"],
                 requesting_user_id
             )
             prev_tags = prev_task["tags"]
