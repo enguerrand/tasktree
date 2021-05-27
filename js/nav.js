@@ -39,6 +39,21 @@ class NavBar extends React.Component {
 
     render() {
         const navItems = [];
+        navItems.push(
+            li(
+                {
+                    key: "logout",
+                    className: "logout-button text-light"
+                },
+                i(
+                    {
+                        className: "mdi mdi-logout-variant mdi-flip-h",
+                        onClick: logout
+                    },
+                    this.props.category
+                )
+            )
+        );
         for (const category of [CATEGORY_ID_LISTS, CATEGORY_ID_TASKS]) {
             navItems.push(
                 e(

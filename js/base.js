@@ -66,6 +66,10 @@ async function sendJson(url, method, json) {
     }
 }
 
+async function logout() {
+    return getJson(BASE_URL + "/logout").then(() => location.reload());
+}
+
 async function sendSettings(settingsJson) {
     return sendJson(API_URL_USERS + "/current/settings", "put", settingsJson);
 }

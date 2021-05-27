@@ -5,6 +5,7 @@ from flask_login import LoginManager, current_user, login_required, login_user, 
 from flask_talisman import Talisman
 from flask_wtf import CSRFProtect
 from sqlalchemy.exc import NoResultFound
+from werkzeug.exceptions import abort
 
 from data_view import DataView, UserView
 from flask import Flask, Response, jsonify, render_template, request, send_from_directory
@@ -49,7 +50,7 @@ def login():
         login_user(me, remember=True)
         return jsonify({"status": 200})
     else:
-        return jsonify({"status": 401, "reason": "Username or Password Error"})
+        abort(401)
 
 
 @app.route("/logout", methods=["GET", "POST"])

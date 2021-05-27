@@ -15,6 +15,12 @@ table td.right, table th.right{
     text-align: right;
 }
 
+.login-form-error-message {
+    text-align: center;
+    font-weight: bold;
+    padding: 0 0 10px 0;
+}
+
 .navbar {
     margin-bottom: 20px;
 }
@@ -106,4 +112,11 @@ table td.right, table th.right{
 
 .task-input-row > button {
     margin-left: 10px;
+}
+
+.logout-button {
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
 }

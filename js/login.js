@@ -1,6 +1,7 @@
 class LoginForm extends React.Component {
 
     // props.onServerReply(sentUsername, loginSuccess)
+    // props.errorMessage
     constructor(props) {
         super(props);
         this.state = {
@@ -31,6 +32,7 @@ class LoginForm extends React.Component {
     }
 
     render() {
+
         return div(
             {className: "row"},
             div({className: "col-12"},
@@ -46,6 +48,9 @@ class LoginForm extends React.Component {
                     div({className: "form-floating"},
                         input({type: "password", className: "form-control", id: "password-input", placeholder: "Password", value: this.state.password, onChange: this.handlePasswordChange}),
                         label({htmlFor: "password-input", className: "text-light"}, "Password")
+                    ),
+                    div({className: "login-form-error-message text-danger" },
+                        this.props.errorMessage
                     ),
                     button({className: "w-100 btn btn-lg btn-primary", type: "submit"},
                         "Sign in"

@@ -2,6 +2,7 @@ class TaskTreeApp extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            authorizationError: null,
             loggedInUser: null,
             taskLists: {},
             activeListIds: [],
@@ -140,9 +141,9 @@ class TaskTreeApp extends React.Component {
 
     async onLoginReply(sentUsername, authorizationSuccess) {
         if (authorizationSuccess) {
-            this.setState({loggedInUser: sentUsername}, this.fetchAll);
+            this.setState({loggedInUser: sentUsername, authorizationError: null}, this.fetchAll);
         } else {
-            this.setState({loggedInUser: null});
+            this.setState({loggedInUser: null, authorizationError: "Access denied!"});
         }
     }
 
@@ -223,7 +224,7 @@ class TaskTreeApp extends React.Component {
 
     render() {
         if (this.state.loggedInUser === null) {
-            return e(LoginForm, {onServerReply: this.onLoginReply});
+            return e(LoginForm, {onServerReply: this.onLoginReply, errorMessage: this.state.authorizationError});
         } else {
             return [
                 e(NavBar, {
