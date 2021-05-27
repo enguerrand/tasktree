@@ -224,16 +224,21 @@ class TestPersistence(TestCase):
     def test_update_task_due_conflict_none_requested(self):
         self.date_conflicts(task=self.task_due_at_ten, prev=DATE_TIME_09, req=None, expect=DATE_TIME_10)
 
-    def test_task_completion(self):
-        self.assertIsNone(self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
-        self.persistence.complete_task(self.user_a.id, TASK_ID_1)
-        self.assertIsNotNone(self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
-
-    def test_task_un_completion(self):
-        self.persistence.complete_task(self.user_a.id, TASK_ID_1)
-        self.assertIsNotNone(self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
-        self.persistence.un_complete_task(self.user_a.id, TASK_ID_1)
-        self.assertIsNone(self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
+    def test_task_set_due(self):
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertIsNone(task1.due)
+        some_time_stamp = datetime.datetime.fromtimestamp(10)
+        self.persistence.update_task(
+            TASK_ID_1,
+            task1.title,
+            None,
+            task1.description,
+            task1.title,
+            some_time_stamp,
+            task1.description,
+            self.user_a.id,
+        )
+        self.assertEqual(some_time_stamp, self.persistence.get_task(self.user_a.id, TASK_ID_1).due)
 
     def date_conflicts(self, task, prev, req, expect):
         new_title = task.title
@@ -339,3 +344,11 @@ class TestPersistence(TestCase):
         settings = json.loads(self.user_a.settings)
         self.assertEqual("settingVal1", settings["settingKey1"])
         self.assertEqual("settingVal2", settings["settingKey2"])
+
+    def test_task_completion(self):
+        task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
+        self.assertFalse(task1.completed)  # just to check test setup
+        self.persistence.complete_task(self.user_a.id, task1.id)
+        self.assertTrue(task1.completed)
+        self.persistence.un_complete_task(self.user_a.id, task1.id)
+        self.assertFalse(task1.completed)

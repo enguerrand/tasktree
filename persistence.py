@@ -5,12 +5,12 @@ from typing import List, Optional
 
 from dotenv import load_dotenv
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-from sqlalchemy import DateTime, ForeignKey, Text, and_, create_engine, Table, Column, Integer, String, delete
+from sqlalchemy import Boolean, DateTime, ForeignKey, Text, and_, create_engine, Table, Column, Integer, String, delete
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 Base = declarative_base()
 
 DB_LOCATION = os.environ.get("DB_LOCATION")
@@ -66,7 +66,7 @@ class Task(Base):
     title = Column(String, nullable=False)
     created = Column("created", DateTime, nullable=False, default=datetime.utcnow)
     due = Column("due", DateTime, nullable=True)
-    completed = Column("completed", DateTime, nullable=True)
+    completed = Column("completed", Boolean, nullable=False, default=False)
     description = Column(String, nullable=False, default="")
     task_list_id = Column(Integer, ForeignKey("task_list.id"))
     tags = relationship("Tag", backref="task", cascade="all, delete")
@@ -219,7 +219,9 @@ class Persistence:
         return self.query_task_conflicts(requesting_user_id).all()
 
     def get_task_conflicts_as_map(self, requesting_user_id: int):
-        task_ids_with_conflict = [(conflict.task_id, conflict) for conflict in self.get_task_conflicts(requesting_user_id)]
+        task_ids_with_conflict = [
+            (conflict.task_id, conflict) for conflict in self.get_task_conflicts(requesting_user_id)
+        ]
         return dict(task_ids_with_conflict)
 
     def move_task_to_list(self, requesting_user_id: int, task_id: int, from_task_list_id: int, to_task_list_id: int):
@@ -273,13 +275,12 @@ class Persistence:
 
     def complete_task(self, requesting_user_id: int, task_id: int):
         to_complete = self.get_task(requesting_user_id, task_id)
-        if to_complete.due is None:
-            to_complete.due = datetime.utcnow()
+        to_complete.completed = True
         self.session.commit()
 
     def un_complete_task(self, requesting_user_id: int, task_id: int):
         to_un_complete = self.get_task(requesting_user_id, task_id)
-        to_un_complete.due = None
+        to_un_complete.completed = False
         self.session.commit()
 
     def get_tags(self, requesting_user_id: int, task_id: int) -> List[Tag]:
