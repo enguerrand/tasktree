@@ -127,6 +127,7 @@ class CreateTaskInput extends React.Component {
         return div({className: "task-input-row"},
             input({
                 key: "input",
+                className: "form-control",
                 type: "text",
                 autoComplete: "off",
                 placeholder: "type to add a new task...",
