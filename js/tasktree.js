@@ -12,11 +12,11 @@ class TaskTreeApp extends React.Component {
         this.createListId = this.createListId.bind(this);
         this.createTaskId = this.createTaskId.bind(this);
         this.storeUserSettings = this.storeUserSettings.bind(this);
+        this.fetchUserSettings = this.fetchUserSettings.bind(this);
         this.onLoginReply = this.onLoginReply.bind(this);
         this.writeUnsyncedLists = this.writeUnsyncedLists.bind(this);
         this.writeUnsyncedTasks = this.writeUnsyncedTasks.bind(this);
         this.writeAll = this.writeAll.bind(this);
-        this.fetchAll = this.fetchAll.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
         this.onTaskUpdatedLocally = this.onTaskUpdatedLocally.bind(this);
@@ -135,13 +135,9 @@ class TaskTreeApp extends React.Component {
         );
     }
 
-    async fetchAll() {
-        this.fetchLists();
-    }
-
     async onLoginReply(sentUsername, authorizationSuccess) {
         if (authorizationSuccess) {
-            this.setState({loggedInUser: sentUsername, authorizationError: null}, this.fetchAll);
+            this.setState({loggedInUser: sentUsername, authorizationError: null}, this.fetchUserSettings);
         } else {
             this.setState({loggedInUser: null, authorizationError: "Access denied!"});
         }
@@ -202,9 +198,7 @@ class TaskTreeApp extends React.Component {
         return sendSettings(settings);
     }
 
-    async componentDidMount() {
-        window.addEventListener('online', this.updateOnlineStatus);
-        window.addEventListener('offline', this.updateOnlineStatus);
+    async fetchUserSettings() {
         const jsonResult = await getJson(API_URL_USERS + '/current');
         jsonResult.handle(
             currentUser => {
@@ -213,13 +207,19 @@ class TaskTreeApp extends React.Component {
                     this.setState({
                         loggedInUser: currentUser.username,
                         activeListIds: parsedSettings.activeListIds
-                    }, this.fetchAll);
+                    }, this.fetchLists);
                 }
             },
             errorMessage => {
                 console.log(errorMessage);
             }
         );
+    }
+
+    async componentDidMount() {
+        window.addEventListener('online', this.updateOnlineStatus);
+        window.addEventListener('offline', this.updateOnlineStatus);
+        this.fetchUserSettings();
     }
 
     render() {
