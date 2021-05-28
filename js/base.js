@@ -125,6 +125,16 @@ function readSettings(currentUserJson) {
     }
 }
 
+function nowUtc() {
+    let now = new Date();
+    return now.getTime() + now.getTimezoneOffset()*60*1000;
+}
+
+function formatDate(timestampUtc) {
+    const dateUtc = new Date(timestampUtc);
+    return new Date(dateUtc.getTime() - dateUtc.getTimezoneOffset()*60*1000).toLocaleString(LOCALE);
+}
+
 function findUrls(input) {
     const re = /https?:\/\/[^\s$.?#].[^\s]*/g;
     const urls = [];

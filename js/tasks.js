@@ -372,9 +372,13 @@ class TaskEditView extends React.Component {
     async handleSubmit(event) {
         event.preventDefault();
         const prevTask = deepCopy(this.props.task);
+        let created;
         if (!isNull(prevTask)) {
             prevTask.title = this.state.previousTitle;
             prevTask.description = this.state.previousDescription;
+            created = this.props.task.created;
+        } else {
+            created = nowUtc();
         }
         const taskAfterEdit = {
             title: this.state.title,
@@ -382,7 +386,8 @@ class TaskEditView extends React.Component {
             due: this.state.due,
             tags: this.state.tags,
             completed: this.state.completed,
-            synced: false
+            synced: false,
+            created: created
         }
         if (isNull(this.props.task)) {
             taskAfterEdit.id = this.props.createTaskId();
@@ -657,11 +662,13 @@ class TasksView extends React.Component {
         } else {
             return this.sendEditedTask({
                 id: this.props.createTaskId(),
+                created: nowUtc(),
                 title: title,
                 description: "",
                 due: null,
                 tags: [],
-                synced: false
+                synced: false,
+                completed: false
             }, parentList);
         }
     }
@@ -704,7 +711,7 @@ class TasksView extends React.Component {
                                 className: "align-middle"
                             },
                             div({className: "tasks-table-cell-title", key: "title"}, task.title),
-                            div({className: "tasks-table-cell-created text-secondary", key: "created"}, new Date(task.created).toLocaleString(LOCALE))
+                            div({className: "tasks-table-cell-created text-secondary", key: "created"}, formatDate(task.created))
                         ),
                         td(
                             {key: "action", className: "right align-middle"},
