@@ -530,6 +530,27 @@ class TaskEditView extends React.Component {
             )
         );
 
+        const urls = findUrls(this.state.title + " " + this.state.description);
+        const urlElemens = [];
+        for (const url of urls){
+            urlElemens.push(div({key: url},
+                a({href: url}, url)
+            ));
+        }
+        if (urls.length > 0) {
+            formGroups.push(
+                div({className:"form-group row", key: "urls"},
+                    label({key: "label", className: "col-12 col-form-label text-light"}, "Links"),
+                    div({
+                            key: "links",
+                            className: "col-12 url-section"
+                        },
+                        urlElemens
+                    )
+                )
+            );
+        }
+
         const allTags = [];
         const parentList = this.props.allLists[this.state.parentListId];
         if (!isNull(parentList) && this.props.activeListIds.includes(String(parentList.id))) {

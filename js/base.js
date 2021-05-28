@@ -125,6 +125,23 @@ function readSettings(currentUserJson) {
     }
 }
 
+function findUrls(input) {
+    const re = /https?:\/\/[^\s$.?#].[^\s]*/g;
+    const urls = [];
+    let m;
+    do {
+        m = re.exec(input);
+        if (m) {
+            const url = m[0];
+            console.log(m[0]);
+            if (!urls.includes(url)) {
+                urls.push(url);
+            }
+        }
+    } while (m);
+    return urls;
+}
+
 Array.prototype.removeIf = function(predicate) {
     let i = this.length;
     while (i--) {
