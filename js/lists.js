@@ -60,9 +60,6 @@ class ListEditView extends React.Component {
                         div({className:"form-floating"},
                             input({type: "text", className: "form-control", id: "title-input", placeholder: "Title", value: this.state.title, onChange: this.handleTitleChange}),
                             label({htmlFor: "title-input", className: "text-light"}, "Title")
-                        ),
-                        button({className: "w-100 btn btn-lg btn-primary", type: "submit"},
-                            "Save"
                         )
                     )
                 )
