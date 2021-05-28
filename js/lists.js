@@ -58,7 +58,15 @@ class ListEditView extends React.Component {
                             this.state.header
                         ),
                         div({className:"form-floating"},
-                            input({type: "text", className: "form-control", id: "title-input", placeholder: "Title", value: this.state.title, onChange: this.handleTitleChange}),
+                            input({
+                                type: "text",
+                                className: "form-control",
+                                id: "title-input",
+                                placeholder: "Title",
+                                autoComplete: "off",
+                                value: this.state.title,
+                                onChange: this.handleTitleChange
+                            }),
                             label({htmlFor: "title-input", className: "text-light"}, "Title")
                         )
                     )

@@ -435,6 +435,7 @@ class TaskEditView extends React.Component {
                         type: "text",
                         className: "form-control",
                         placeholder: "Title",
+                        autoComplete: "off",
                         value: this.state.showRemoteTitle ? this.state.remoteTitle : this.state.title,
                         onChange: this.handleTitleChange,
                         disabled: this.state.showRemoteTitle
