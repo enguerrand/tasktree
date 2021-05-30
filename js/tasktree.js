@@ -158,6 +158,10 @@ class TaskTreeApp extends React.Component {
         this.setState(
             immer.produce(draftState => {
                 draftState.taskLists[taskList.id] = taskList;
+                const editedListId = String(taskList.id);
+                if (!draftState.activeListIds.includes(editedListId)) {
+                    draftState.activeListIds.push(editedListId);
+                }
             }), this.writeUnsyncedLists
         );
     }
@@ -208,8 +212,14 @@ class TaskTreeApp extends React.Component {
     }
 
     async storeUserSettings() {
+        const activeListIds = [];
+        for (const taskListId of Object.keys(this.state.taskLists)) {
+            if (this.state.activeListIds.includes(taskListId)) {
+                activeListIds.push(taskListId);
+            }
+        }
         const settings = {
-            activeListIds: Object.assign([], this.state.activeListIds),
+            activeListIds: activeListIds,
             tasksSortingKey: this.state.tasksSortingKey,
         };
         const success = await sendSettings(settings);
