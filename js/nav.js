@@ -71,15 +71,19 @@ class NavBar extends React.Component {
         let onlineIndicatorClass = "online-indicator";
         let onlineIndicatorIconName;
         if (this.props.online) {
+            onlineIndicatorIconName = "lan-connect";
             if (this.props.synced) {
                 onlineIndicatorClass += " text-success";
             } else {
                 onlineIndicatorClass += " text-danger";
             }
-            onlineIndicatorIconName = "lan-connect";
         } else {
-            onlineIndicatorClass += " text-danger";
             onlineIndicatorIconName = "lan-disconnect";
+            if (this.props.synced) {
+                onlineIndicatorClass += " text-warning";
+            } else {
+                onlineIndicatorClass += " text-danger";
+            }
         }
         return div({className: "row"},
             div({className: "col-12"},
