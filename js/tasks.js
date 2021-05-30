@@ -628,6 +628,7 @@ class TasksView extends React.Component {
         this.renderTasksTable = this.renderTasksTable.bind(this);
         this.addTask = this.addTask.bind(this);
         this.editTask = this.editTask.bind(this);
+        this.toggleTaskComplete = this.toggleTaskComplete.bind(this);
         this.onTaskEdited = this.onTaskEdited.bind(this);
         this.trySmartSubmitUsingTitle = this.trySmartSubmitUsingTitle.bind(this);
     }
@@ -647,6 +648,14 @@ class TasksView extends React.Component {
             editingList: taskList,
             createNewWithTitle: null,
         });
+    }
+
+    async toggleTaskComplete(event, task, taskList) {
+        event.preventDefault();
+        const taskAfterEdit = deepCopy(task);
+        taskAfterEdit.completed = !taskAfterEdit.completed;
+        taskAfterEdit.synced = false;
+        await this.props.onTaskUpdatedLocally(taskAfterEdit, taskList);
     }
 
     async trySmartSubmitUsingTitle(title) {
@@ -702,21 +711,26 @@ class TasksView extends React.Component {
             }
             let tasks = taskList.tasks;
             for (const [taskId, task] of Object.entries(tasks)) {
-                const actionButtonColorType = hasConflicts(task) ? "danger" : "primary";
+                const actionButtonColorType = task.completed ? "secondary" : "primary";
+                const titleColorClass = hasConflicts(task) ? "text-danger" : "";
                 rows.push(
                     tr({key: taskId},
                         // th({key: "id", scope: "row", className: "align-middle"}, taskId),
                         td(
                             {
                                 key: "title",
-                                className: "align-middle"
+                                className: "align-middle tasks-table-main-cell",
+                                onClick: (event) => this.editTask(event, task, taskList)
                             },
-                            div({className: "tasks-table-cell-title", key: "title"}, task.title),
-                            div({className: "tasks-table-cell-created text-secondary", key: "created"}, formatDate(task.created))
+                            div({className: titleColorClass, key: "title"}, task.title),
+                            div({className: "task-detail-info text-secondary", key: "created"}, formatDate(task.created))
                         ),
                         td(
                             {key: "action", className: "right align-middle"},
-                            button({className: "btn btn-" + actionButtonColorType, onClick: (event) => this.editTask(event, task, taskList)}, i({className: "mdi mdi-pencil-outline"}))
+                            button({
+                                className: "btn btn-" + actionButtonColorType,
+                                onClick: (event) => this.toggleTaskComplete(event, task, taskList)
+                            }, i({className: "mdi mdi-" + (task.completed ? "repeat" : "check")}))
                         )
                     )
                 );

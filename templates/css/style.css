@@ -101,10 +101,11 @@ table td.right, table th.right{
     margin-bottom: 85px;
 }
 
-.tasks-table-cell-title {
+.tasks-table-main-cell {
+    cursor: pointer;
 }
 
-.tasks-table-cell-created {
+.tasks-table-main-cell .task-detail-info {
     font-size: 0.9rem;
 }
 
