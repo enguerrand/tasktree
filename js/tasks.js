@@ -400,6 +400,9 @@ class TaskEditView extends React.Component {
 
         const parentList = this.props.allLists[this.state.parentListId];
         if (!isNull(parentList)) {
+            // noinspection UnnecessaryLocalVariableJS
+            const success = await sendTask(taskAfterEdit, parentList, prevTask); // this explicit sending is needed for proper conflict resolution handling
+            taskAfterEdit.synced = success;
             this.props.editingDone(taskAfterEdit, parentList);
         }
     }
