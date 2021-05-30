@@ -189,6 +189,7 @@ class TasksListSubmenu extends React.Component {
 class CreateTaskInput extends React.Component {
     // props.openEditView(initialTitle)
     // props.trySmartSubmitUsingTitle(title)
+    // props.inputCallBack(currentInput)
     constructor(props) {
         super(props);
         this.state = {
@@ -199,8 +200,10 @@ class CreateTaskInput extends React.Component {
     }
 
     handleTextInput(event) {
+        let currentInput = event.target.value;
+        this.props.inputCallBack(currentInput);
         this.setState({
-            currentInput: event.target.value
+            currentInput: currentInput
         });
     }
 
@@ -211,6 +214,7 @@ class CreateTaskInput extends React.Component {
             if (this.state.currentInput.length === 0) {
                 return;
             }
+            this.props.inputCallBack("");
             this.setState({
                 currentInput: ""
             }, () => this.props.trySmartSubmitUsingTitle(titleToUse));
@@ -236,6 +240,7 @@ class CreateTaskInput extends React.Component {
                 onClick:  (event) => {
                     event.preventDefault();
                     const usingTitle = this.state.currentInput;
+                    this.props.inputCallBack("");
                     this.setState({
                         currentInput: ""
                     }, () => this.props.openEditView(usingTitle));
@@ -715,11 +720,13 @@ class TasksView extends React.Component {
     // props.onTaskUpdatedLocally(task, taskList)
     // props.sortingKey
     // props.setCurrentSortingKey(sortKey)
+    // props.currentFilterString
     constructor(props) {
         super(props);
         this.state = {
             editingTask: null,
             editingList: null,
+            currentFilterString: "",
         }
         this.renderTasksTable = this.renderTasksTable.bind(this);
         this.addTask = this.addTask.bind(this);
@@ -795,7 +802,8 @@ class TasksView extends React.Component {
                             trySmartSubmitUsingTitle: this.trySmartSubmitUsingTitle,
                             openEditView: (usingTitle) => {
                                 return this.addTask(this.props.taskLists, usingTitle);
-                            }
+                            },
+                            inputCallBack: text => this.setState({currentFilterString: text}),
                         }
                     )
                 ),
@@ -806,9 +814,14 @@ class TasksView extends React.Component {
                 continue;
             }
             let tasks = taskList.tasks;
+            const currentFilter = this.state.currentFilterString;
             for (const [taskId, task] of Object.entries(tasks)) {
+                if (currentFilter.length > 0 && !task.title.includes(currentFilter)) {
+                    continue;
+                }
                 const actionButtonColorType = task.completed ? "secondary" : "primary";
                 const titleColorClass = hasConflicts(task) ? "text-danger" : "";
+
                 const sortKeyValue = extractSortKey(this.props.sortingKey, task) || 0;
                 rows.push(
                     tr({key: taskId, "data-sort-key-value": sortKeyValue},
