@@ -58,7 +58,7 @@ class TagInput extends React.Component {
                 type: "text",
                 className: "add-tag-input",
                 autoComplete: "off",
-                placeholder: "type to add tags...",
+                placeholder: S["tasks.form.tags.hint"],
                 value: this.state.currentInput,
                 onChange: this.handleTextInput,
                 onKeyPress: this.interceptEnter
@@ -130,7 +130,7 @@ class CreateTaskInput extends React.Component {
                 className: "form-control",
                 type: "text",
                 autoComplete: "off",
-                placeholder: "type to add a new task...",
+                placeholder: S["tasks.table.input.hint"],
                 value: this.state.currentInput,
                 onChange: this.handleTextInput,
                 onKeyPress: this.interceptEnter
@@ -218,14 +218,14 @@ class TaskEditView extends React.Component {
         let initialTags;
         let completed;
         if (isNull(this.props.task)) {
-            header = "Create task";
+            header = S["tasks.form.title.create"];
             initialTitle = this.props.requestedNewTitle;
             initialDescription = "";
             initialDue = null;
             initialTags = [];
             completed = false;
         } else {
-            header = "Edit task";
+            header = S["tasks.form.title.edit"];
             initialTitle = this.props.task.title;
             initialDescription = this.props.task.description;
             remoteTitle = this.props.task.conflictingTitle;
@@ -412,7 +412,7 @@ class TaskEditView extends React.Component {
         let currentlySelectedList = this.props.allLists[this.state.parentListId];
         formGroups.push(
             div({className:"form-group row", key: "titleInput"},
-                label({key: "label", htmlFor: "title-input", className: "col-6 col-form-label text-light"}, "Title"),
+                label({key: "label", htmlFor: "title-input", className: "col-6 col-form-label text-light"}, S["label.title"]),
                 div({
                     key: "conflict-buttons",
                     className: "col-6"
@@ -434,7 +434,7 @@ class TaskEditView extends React.Component {
                         key: "title-input",
                         type: "text",
                         className: "form-control",
-                        placeholder: "Title",
+                        placeholder: S["label.title"],
                         autoComplete: "off",
                         value: this.state.showRemoteTitle ? this.state.remoteTitle : this.state.title,
                         onChange: this.handleTitleChange,
@@ -453,7 +453,7 @@ class TaskEditView extends React.Component {
             }
             let buttonTitle;
             if (isNull(currentlySelectedList)) {
-                buttonTitle = "Choose a List ...";
+                buttonTitle = S["tasks.form.list.hint"];
             } else {
                 buttonTitle = currentlySelectedList.title;
             }
@@ -476,7 +476,7 @@ class TaskEditView extends React.Component {
             }
             formGroups.push(
                 div({className:"form-group row", key: "listChoice"},
-                    label({key: "label", htmlFor: "list-input", className: "col-12 col-form-label text-light"}, "Task List"),
+                    label({key: "label", htmlFor: "list-input", className: "col-12 col-form-label text-light"}, S["tasks.form.list"]),
                     div({className: classDropdown, key: "input"},
                         button({
                             key: "button",
@@ -503,7 +503,7 @@ class TaskEditView extends React.Component {
 
         formGroups.push(
             div({className:"form-group row", key: "descriptionInput"},
-                label({key: "label", htmlFor: "description-input", className: "col-6 col-form-label text-light"}, "Description"),
+                label({key: "label", htmlFor: "description-input", className: "col-6 col-form-label text-light"}, S["tasks.form.description"]),
                 div({
                         key: "conflict-buttons",
                         className: "col-6"
@@ -546,7 +546,7 @@ class TaskEditView extends React.Component {
         if (urls.length > 0) {
             formGroups.push(
                 div({className:"form-group row", key: "urls"},
-                    label({key: "label", className: "col-12 col-form-label text-light"}, "Links"),
+                    label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.links"]),
                     div({
                             key: "links",
                             className: "col-12 url-section"
@@ -570,7 +570,7 @@ class TaskEditView extends React.Component {
         }
         formGroups.push(
             div({className:"form-group row", key: "tags-input"},
-                label({key: "label", htmlFor: "tags-input", className: "col-12 col-form-label text-light"}, "Tags"),
+                label({key: "label", htmlFor: "tags-input", className: "col-12 col-form-label text-light"}, S["tasks.form.tags"]),
                 e(
                     TagInput,
                     {
@@ -601,12 +601,12 @@ class TaskEditView extends React.Component {
             div({className:"row floating-form-buttons bg-dark", key: "submit"},
                 div({className: "col-6", key: "cancel"},
                     button({className: "w-100 btn btn-lg btn-secondary", type: "cancel", onClick: this.props.onCancel, key: "cancel"},
-                        "Cancel"
+                        S["label.cancel"]
                     )
                 ),
                 div({className: "col-6", key: "save"},
                     button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", disabled: saveDisabled, onClick: this.handleSubmit },
-                        "Save"
+                        S["label.save"]
                     )
                 )
             )
@@ -740,8 +740,8 @@ class TasksView extends React.Component {
             thead({key: "head"},
                 tr(null,
                     // th({key: "id", scope: "col", className: "align-middle"}, "ID"),
-                    th({key: "title", scope: "col", className: "align-middle"}, "TITLE"),
-                    th({key: "action", scope: "col", className: "right align-middle"}, "ACTION")
+                    th({key: "title", scope: "col", className: "align-middle"}, S["tasks.table.header.title"]),
+                    th({key: "action", scope: "col", className: "right align-middle"}, S["tasks.table.header.action"])
                 )
             ),
             tbody({key: "body"}, rows)

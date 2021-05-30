@@ -9,10 +9,10 @@ class ListEditView extends React.Component {
         let header;
         let initialTitle;
         if (isNull(this.props.taskList)) {
-            header = "Create list";
+            header = S["lists.form.title.create"];
             initialTitle = "";
         } else {
-            header = "Edit list";
+            header = S["lists.form.title.edit"];
             initialTitle = this.props.taskList.title;
         }
         this.state = {
@@ -62,12 +62,12 @@ class ListEditView extends React.Component {
                                 type: "text",
                                 className: "form-control",
                                 id: "title-input",
-                                placeholder: "Title",
+                                placeholder: S["label.title"],
                                 autoComplete: "off",
                                 value: this.state.title,
                                 onChange: this.handleTitleChange
                             }),
-                            label({htmlFor: "title-input", className: "text-light"}, "Title")
+                            label({htmlFor: "title-input", className: "text-light"}, S["label.title"])
                         )
                     )
                 )
@@ -75,12 +75,12 @@ class ListEditView extends React.Component {
             div({className:"row floating-form-buttons bg-dark", key: "submit"},
                 div({className: "col-6", key: "cancel"},
                     button({className: "w-100 btn btn-lg btn-secondary", type: "cancel", onClick: this.props.onCancel, key: "cancel"},
-                        "Cancel"
+                        S["label.cancel"]
                     )
                 ),
                 div({className: "col-6", key: "save"},
                     button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", onClick: this.handleSubmit },
-                        "Save"
+                        S["label.save"]
                     )
                 )
             )
@@ -147,9 +147,9 @@ class ListsView extends React.Component {
             thead({key: "head"},
                 tr(null,
                     // th({key: "id", scope: "col", className: "align-middle"}, "ID"),
-                    th({key: "active", scope: "col", className: "align-middle"}, "ACTIVE"),
-                    th({key: "title", scope: "col", className: "align-middle"}, "TITLE"),
-                    th({key: "action", scope: "col", className: "right align-middle"}, "ACTION")
+                    th({key: "active", scope: "col", className: "align-middle"}, S["lists.table.header.active"]),
+                    th({key: "title", scope: "col", className: "align-middle"}, S["lists.table.header.title"]),
+                    th({key: "action", scope: "col", className: "right align-middle"}, S["lists.table.header.action"])
                 )
             ),
             tbody({key: "body"}, rows)

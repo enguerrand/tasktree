@@ -22,7 +22,7 @@ class NavItem extends React.Component {
                         className: "nav-link",
                         onClick: () => this.props.setCategory(this.props.category)
                     },
-                    this.props.category
+                    S["nav.item." + this.props.category]
                 )
             )
         );
