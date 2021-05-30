@@ -18,6 +18,11 @@ const TRANSL_EN_US = {
     "tasks.table.input.hint": "Search or create...",
     "tasks.table.header.action": "ACTION",
     "tasks.table.header.title": "TITLE",
+    "tasks.table.sort": "Sort by",
+    "tasks.table.sort.due": "Due",
+    "tasks.table.sort.dependencies": "Dependencies",
+    "tasks.table.sort.newest": "Newest",
+    "tasks.table.sort.oldest": "Oldest",
     "nav.item.lists": "LISTS",
     "nav.item.tasks": "TASKS",
 };
@@ -41,6 +46,11 @@ const TRANSL_DE_DE = {
     "tasks.table.input.hint": "Suche oder erstelle...",
     "tasks.table.header.action": "AKTION",
     "tasks.table.header.title": "TITEL",
+    "tasks.table.sort": "Sortiere nach",
+    "tasks.table.sort.due": "Fälligkeit",
+    "tasks.table.sort.dependencies": "Abhängigkeiten",
+    "tasks.table.sort.newest": "Neueste",
+    "tasks.table.sort.oldest": "Älteste",
     "nav.item.lists": "LISTEN",
     "nav.item.tasks": "AUFGABEN",
 };

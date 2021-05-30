@@ -22,10 +22,6 @@ table td.right, table th.right{
     padding: 0 0 10px 0;
 }
 
-.navbar {
-    margin-bottom: 20px;
-}
-
 .navbar-nav > .nav-item {
     padding-right: 15px;
     padding-left: 15px;
@@ -33,6 +29,17 @@ table td.right, table th.right{
 
 .navbar-nav > .nav-item > a {
     cursor: pointer;
+}
+
+.task-submenu {
+    transition: max-height 0.25s ease-in;
+    max-height: 2000px;
+}
+
+.task-submenu.collapsed {
+    transition: max-height 0.15s ease-out;
+    overflow: hidden;
+    max-height: 0;
 }
 
 .floating-form-buttons {
@@ -126,4 +133,19 @@ table td.right, table th.right{
     display: flex;
     align-items: center;
     cursor: pointer;
+}
+
+.sort-key-selection {
+    display: flex;
+    align-items: center;
+}
+
+.sort-key-selection > label {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.sort-key-selection > div {
+    padding-left: 0;
+    padding-right: 0;
 }

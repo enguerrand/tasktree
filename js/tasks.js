@@ -1,3 +1,27 @@
+const SORT_KEY_NEWEST = "newest";
+const SORT_KEY_OLDEST = "oldest";
+const SORT_KEY_DUE = "due";
+const SORT_KEY_DEPENDENCIES = "dependencies";
+const SORT_KEY_DEFAULT = SORT_KEY_NEWEST;
+
+function extractSortKey(sortKey, task) {
+    switch (sortKey) {
+        case SORT_KEY_DUE: {
+            return task.due;
+        }
+        case SORT_KEY_NEWEST: {
+            return -task.created;
+        }
+        case SORT_KEY_OLDEST: {
+            return task.created;
+        }
+        case SORT_KEY_DEPENDENCIES: {
+            // TODO
+            return task.id;
+        }
+    }
+}
+
 class TagInput extends React.Component {
     // props.currentTags
     // props.allTags
@@ -87,6 +111,81 @@ class TagInput extends React.Component {
                 div({className: "tags-available-field mt-2", key: "options"},
                     tagOptions
                 )
+            )
+        );
+    }
+}
+
+class SortInputButton extends React.Component {
+    // props.sortKey
+    // props.currentKey
+    // props.setCurrentSortKey
+
+    render() {
+        const colorClassName = this.props.sortKey === this.props.currentKey ? "primary" : "secondary";
+        return (
+            button({
+                type: "button",
+                className: "btn btn-"+colorClassName,
+                onClick: event => this.props.setCurrentSortKey(this.props.sortKey)
+            }, S["tasks.table.sort." + this.props.sortKey])
+        );
+    }
+}
+
+class SortInput extends React.Component {
+    // props.currentKey
+    // props.setCurrentSortKey(sortKey)
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            div({className: "sort-key-selection"},
+                label({key: "label", className: "text-light"}, S["tasks.table.sort"]),
+                div({key: "buttons", className: "btn-group col-8", role: "group"},
+                    e(SortInputButton, {sortKey: SORT_KEY_NEWEST, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
+                    e(SortInputButton, {sortKey: SORT_KEY_OLDEST, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
+                    e(SortInputButton, {sortKey: SORT_KEY_DUE, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
+                )
+            )
+        );
+    }
+}
+
+class TasksListSubmenu extends React.Component {
+    // props.currentKey
+    // props.setCurrentSortKey(sortKey)
+    constructor(props) {
+        super(props);
+        this.state = {
+            subMenuExpanded: false,
+        }
+        this.toggleSubmenuExpanded = this.toggleSubmenuExpanded.bind(this);
+    }
+
+    toggleSubmenuExpanded() {
+        this.setState(prevState => {
+            return {
+                subMenuExpanded: !prevState.subMenuExpanded
+            }
+        })
+    }
+
+    render() {
+        return (
+            div({className: "mb-3"},
+                e('nav', {className: "navbar navbar-dark bg-dark"},
+                    button({className:"navbar-toggler", type:"button", onClick: this.toggleSubmenuExpanded},
+                        i({className:"mdi mdi-menu"})
+                    )
+                ),
+                div({className: "task-submenu" + (this.state.subMenuExpanded ? " " : " collapsed")},
+                    div({className: "bg-dark p-3"},
+                        e(SortInput,{ currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey})
+                    )
+                ),
             )
         );
     }
@@ -623,7 +722,8 @@ class TasksView extends React.Component {
         super(props);
         this.state = {
             editingTask: null,
-            editingList: null
+            editingList: null,
+            sortingKey: SORT_KEY_DEFAULT,
         }
         this.renderTasksTable = this.renderTasksTable.bind(this);
         this.addTask = this.addTask.bind(this);
@@ -691,7 +791,7 @@ class TasksView extends React.Component {
     renderTasksTable() {
         let rows = [];
         rows.push(
-            tr({key: "add-task"},
+            tr({key: "add-task", sortKey: Number.NEGATIVE_INFINITY},
                 td({colSpan: 2},
                     e(
                         CreateTaskInput,
@@ -713,8 +813,9 @@ class TasksView extends React.Component {
             for (const [taskId, task] of Object.entries(tasks)) {
                 const actionButtonColorType = task.completed ? "secondary" : "primary";
                 const titleColorClass = hasConflicts(task) ? "text-danger" : "";
+                const sortKeyValue = extractSortKey(this.state.sortingKey, task) || 0;
                 rows.push(
-                    tr({key: taskId},
+                    tr({key: taskId, sortKeyValue: sortKeyValue},
                         // th({key: "id", scope: "row", className: "align-middle"}, taskId),
                         td(
                             {
@@ -736,6 +837,7 @@ class TasksView extends React.Component {
                 );
             }
         }
+        rows.sort((r1, r2) => r1.props.sortKeyValue - r2.props.sortKeyValue);
         const tasksTable = table({className: "table table-striped table-dark", key: "table"},
             thead({key: "head"},
                 tr(null,
@@ -746,7 +848,7 @@ class TasksView extends React.Component {
             ),
             tbody({key: "body"}, rows)
         )
-        return div({ className: "row" },
+        return div({ className: "row", key: "tasks-table" },
             div({ className: "col-12" },
                 tasksTable
             )
@@ -773,7 +875,14 @@ class TasksView extends React.Component {
                 }
             );
         } else {
-            return this.renderTasksTable();
+            return [
+                e(TasksListSubmenu, {
+                    key: "submenu",
+                    currentKey: this.state.sortingKey,
+                    setCurrentSortKey: (sortingKey) => this.setState({sortingKey: sortingKey}),
+                }),
+                this.renderTasksTable(),
+            ];
         }
     }
 }

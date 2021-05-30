@@ -87,8 +87,8 @@ class NavBar extends React.Component {
             }
         }
         return div({className: "row"},
-            div({className: "col-12"},
-                e('nav', { className: "navbar navbar-expand navbar-dark bg-dark"},
+            div({className: "col-12 mb-3"},
+                e('nav', { className: "navbar navbar-expand navbar-dark bg-dark main-nav"},
                     div({className: "collapse navbar-collapse"},
                         ul({className: "navbar-nav mr-auto mt-2 mt-lg-0"},
                             navItems
