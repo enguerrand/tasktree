@@ -400,9 +400,6 @@ class TaskEditView extends React.Component {
 
         const parentList = this.props.allLists[this.state.parentListId];
         if (!isNull(parentList)) {
-            // noinspection UnnecessaryLocalVariableJS
-            const success = await sendTask(taskAfterEdit, parentList, prevTask);
-            taskAfterEdit.synced = success;
             this.props.editingDone(taskAfterEdit, parentList);
         }
     }
@@ -628,7 +625,7 @@ class TasksView extends React.Component {
         this.renderTasksTable = this.renderTasksTable.bind(this);
         this.addTask = this.addTask.bind(this);
         this.editTask = this.editTask.bind(this);
-        this.sendEditedTask = this.sendEditedTask.bind(this);
+        this.onTaskEdited = this.onTaskEdited.bind(this);
         this.trySmartSubmitUsingTitle = this.trySmartSubmitUsingTitle.bind(this);
     }
 
@@ -661,7 +658,7 @@ class TasksView extends React.Component {
         if (isNull(parentList)) {
             return this.addTask(this.props.taskLists, title);
         } else {
-            return this.sendEditedTask({
+            return this.onTaskEdited({
                 id: this.props.createTaskId(),
                 created: nowUtc(),
                 title: title,
@@ -674,7 +671,7 @@ class TasksView extends React.Component {
         }
     }
 
-    async sendEditedTask(taskAfterEdit, parentList) {
+    async onTaskEdited(taskAfterEdit, parentList) {
         await this.props.onTaskUpdatedLocally(taskAfterEdit, parentList);
         this.setState({editingTask: null, editingList: null, createNewWithTitle: null});
     }
@@ -748,7 +745,7 @@ class TasksView extends React.Component {
                     requestedNewTitle: this.state.createNewWithTitle,
                     parentList: this.state.editingList,
                     editingDone: async (taskAfterEdit, parentList) => {
-                        await this.sendEditedTask(taskAfterEdit, parentList);
+                        await this.onTaskEdited(taskAfterEdit, parentList);
                     },
                     onCancel: () => {
                         this.setState({ editingTask: null, editingList: null, createNewWithTitle: null });

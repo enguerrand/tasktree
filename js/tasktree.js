@@ -7,6 +7,8 @@ class TaskTreeApp extends React.Component {
             taskLists: {},
             activeListIds: [],
             online: true,
+            listsSynced: true,
+            settingsSynced: true,
             currentCategory: CATEGORY_ID_TASKS
         };
         this.createListId = this.createListId.bind(this);
@@ -69,7 +71,13 @@ class TaskTreeApp extends React.Component {
                 continue;
             }
             asyncRequests.push(
-                sendTask(localTask, taskList, taskList.remoteTasks[taskId])
+                sendTask(localTask, taskList, taskList.remoteTasks[taskId]).then(success => {
+                    this.setState(
+                        immer.produce(draftState => {
+                            draftState.taskLists[taskList.id].tasks[taskId].synced = success
+                        })
+                    )
+                })
             )
         }
         await Promise.all(asyncRequests);
@@ -195,7 +203,11 @@ class TaskTreeApp extends React.Component {
         const settings = {
             activeListIds: Object.assign([], this.state.activeListIds)
         };
-        return sendSettings(settings);
+        const success = await sendSettings(settings);
+        this.setState({
+            settingsSynced: success
+        });
+        return success;
     }
 
     async fetchUserSettings() {
@@ -222,6 +234,29 @@ class TaskTreeApp extends React.Component {
         this.fetchUserSettings();
     }
 
+    async componentDidUpdate() {
+        let listsSynced = true;
+        listsLoop:
+            for (const [listId, taskList] of Object.entries(this.state.taskLists)) {
+                if (!taskList.synced) {
+                    listsSynced = false;
+                    break;
+                }
+                for (const [taskId, task] of Object.entries(taskList.tasks)) {
+                    if (!task.synced) {
+                        listsSynced = false;
+                        break listsLoop;
+                    }
+                }
+            }
+
+        if (this.state.listsSynced !== listsSynced) {
+            this.setState({
+                listsSynced: listsSynced
+            });
+        }
+    }
+
     render() {
         if (this.state.loggedInUser === null) {
             return e(LoginForm, {onServerReply: this.onLoginReply, errorMessage: this.state.authorizationError});
@@ -230,6 +265,7 @@ class TaskTreeApp extends React.Component {
                 e(NavBar, {
                     key: "navbar",
                     online: this.state.online,
+                    synced: this.state.listsSynced && this.state.settingsSynced,
                     currentCategory: this.state.currentCategory,
                     setCategory: cat => this.setState({
                         currentCategory: cat

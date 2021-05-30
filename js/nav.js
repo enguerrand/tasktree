@@ -31,6 +31,7 @@ class NavItem extends React.Component {
 
 class NavBar extends React.Component {
     // props.online
+    // props.synced
     // props.currentCategory
     // props.setCategory(category)
     constructor(props) {
@@ -70,10 +71,14 @@ class NavBar extends React.Component {
         let onlineIndicatorClass = "online-indicator";
         let onlineIndicatorIconName;
         if (this.props.online) {
-            onlineIndicatorClass += " text-success";
+            if (this.props.synced) {
+                onlineIndicatorClass += " text-success";
+            } else {
+                onlineIndicatorClass += " text-danger";
+            }
             onlineIndicatorIconName = "lan-connect";
         } else {
-            onlineIndicatorClass += " text-secondary";
+            onlineIndicatorClass += " text-danger";
             onlineIndicatorIconName = "lan-disconnect";
         }
         return div({className: "row"},
