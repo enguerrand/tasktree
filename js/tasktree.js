@@ -273,6 +273,7 @@ class TaskTreeApp extends React.Component {
                     key: "navbar",
                     online: this.state.online,
                     synced: this.state.listsSynced && this.state.settingsSynced,
+                    syncAction: this.writeAll,
                     currentCategory: this.state.currentCategory,
                     setCategory: cat => this.setState({
                         currentCategory: cat

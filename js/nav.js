@@ -32,6 +32,7 @@ class NavItem extends React.Component {
 class NavBar extends React.Component {
     // props.online
     // props.synced
+    // props.syncAction
     // props.currentCategory
     // props.setCategory(category)
     constructor(props) {
@@ -98,6 +99,7 @@ class NavBar extends React.Component {
                     {
                         key: "online-indicator",
                         className: onlineIndicatorClass,
+                        onClick: this.props.syncAction
                     },
                     i(
                         {
