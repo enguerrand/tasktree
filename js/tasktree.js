@@ -231,6 +231,10 @@ class TaskTreeApp extends React.Component {
     async componentDidMount() {
         window.addEventListener('online', this.updateOnlineStatus);
         window.addEventListener('offline', this.updateOnlineStatus);
+        window.addEventListener("beforeunload", function(event) {
+            event.preventDefault();
+            return event.returnValue = "There are unsaved changes. Are you sure?";
+        });
         this.fetchUserSettings();
     }
 
