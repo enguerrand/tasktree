@@ -6,7 +6,9 @@ class MainView extends React.Component {
     // props.onListUpdatedLocally(taskList)
     // props.onTaskUpdatedLocally(task, taskList)
     // props.createListId
-    // props.createTaskId
+    // props.tasksSortingKey
+    // props.setCurrentSortingKey(sortKey)
+    // props.onTaskUpdatedLocally(task, taskList)
     constructor(props) {
         super(props);
         this.state = {};
@@ -31,7 +33,9 @@ class MainView extends React.Component {
                     taskLists: this.props.taskLists,
                     activeListIds: this.props.activeListIds,
                     onTaskUpdatedLocally: this.props.onTaskUpdatedLocally,
-                    createTaskId: this.props.createTaskId
+                    createTaskId: this.props.createTaskId,
+                    sortingKey: this.props.tasksSortingKey,
+                    setCurrentSortKey: this.props.setCurrentSortKey
                 }
             );
         } else {

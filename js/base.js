@@ -8,6 +8,11 @@ const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_AUTHORIZED = 401;
 const CSRF_TOKEN = document.head.querySelector("[name=csrf-token][content]").content;
 const LOCALE = navigator.language
+const SORT_KEY_NEWEST = "newest";
+const SORT_KEY_OLDEST = "oldest";
+const SORT_KEY_DUE = "due";
+const SORT_KEY_DEPENDENCIES = "dependencies";
+const SORT_KEY_DEFAULT = SORT_KEY_NEWEST;
 
 class JsonResult {
     constructor(success, payload) {
@@ -113,16 +118,6 @@ function deepCopy(source) {
 
 function hasConflicts(task) {
     return !isNull(task.conflictingTitle) || !isNull(task.conflictingDescription);
-}
-
-function readSettings(currentUserJson) {
-    let activeListIds = currentUserJson?.settings?.activeListIds;
-    if (isNull(activeListIds)) {
-        activeListIds = [];
-    }
-    return {
-        activeListIds: activeListIds
-    }
 }
 
 function nowUtc() {

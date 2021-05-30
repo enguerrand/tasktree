@@ -1,8 +1,3 @@
-const SORT_KEY_NEWEST = "newest";
-const SORT_KEY_OLDEST = "oldest";
-const SORT_KEY_DUE = "due";
-const SORT_KEY_DEPENDENCIES = "dependencies";
-const SORT_KEY_DEFAULT = SORT_KEY_NEWEST;
 
 function extractSortKey(sortKey, task) {
     switch (sortKey) {
@@ -718,12 +713,13 @@ class TasksView extends React.Component {
     // props.activeListIds
     // props.createTaskId
     // props.onTaskUpdatedLocally(task, taskList)
+    // props.sortingKey
+    // props.setCurrentSortingKey(sortKey)
     constructor(props) {
         super(props);
         this.state = {
             editingTask: null,
             editingList: null,
-            sortingKey: SORT_KEY_DEFAULT,
         }
         this.renderTasksTable = this.renderTasksTable.bind(this);
         this.addTask = this.addTask.bind(this);
@@ -791,7 +787,7 @@ class TasksView extends React.Component {
     renderTasksTable() {
         let rows = [];
         rows.push(
-            tr({key: "add-task", sortKey: Number.NEGATIVE_INFINITY},
+            tr({key: "add-task", "data-sort-key-value": Number.NEGATIVE_INFINITY},
                 td({colSpan: 2},
                     e(
                         CreateTaskInput,
@@ -813,9 +809,9 @@ class TasksView extends React.Component {
             for (const [taskId, task] of Object.entries(tasks)) {
                 const actionButtonColorType = task.completed ? "secondary" : "primary";
                 const titleColorClass = hasConflicts(task) ? "text-danger" : "";
-                const sortKeyValue = extractSortKey(this.state.sortingKey, task) || 0;
+                const sortKeyValue = extractSortKey(this.props.sortingKey, task) || 0;
                 rows.push(
-                    tr({key: taskId, sortKeyValue: sortKeyValue},
+                    tr({key: taskId, "data-sort-key-value": sortKeyValue},
                         // th({key: "id", scope: "row", className: "align-middle"}, taskId),
                         td(
                             {
@@ -837,7 +833,7 @@ class TasksView extends React.Component {
                 );
             }
         }
-        rows.sort((r1, r2) => r1.props.sortKeyValue - r2.props.sortKeyValue);
+        rows.sort((r1, r2) => r1.props["data-sort-key-value"] - r2.props["data-sort-key-value"]);
         const tasksTable = table({className: "table table-striped table-dark", key: "table"},
             thead({key: "head"},
                 tr(null,
@@ -878,8 +874,8 @@ class TasksView extends React.Component {
             return [
                 e(TasksListSubmenu, {
                     key: "submenu",
-                    currentKey: this.state.sortingKey,
-                    setCurrentSortKey: (sortingKey) => this.setState({sortingKey: sortingKey}),
+                    currentKey: this.props.sortingKey,
+                    setCurrentSortKey: this.props.setCurrentSortKey,
                 }),
                 this.renderTasksTable(),
             ];

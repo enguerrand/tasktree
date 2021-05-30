@@ -9,7 +9,8 @@ class TaskTreeApp extends React.Component {
             online: true,
             listsSynced: true,
             settingsSynced: true,
-            currentCategory: CATEGORY_ID_TASKS
+            currentCategory: CATEGORY_ID_TASKS,
+            tasksSortingKey: SORT_KEY_DEFAULT,
         };
         this.createListId = this.createListId.bind(this);
         this.createTaskId = this.createTaskId.bind(this);
@@ -24,6 +25,7 @@ class TaskTreeApp extends React.Component {
         this.onTaskUpdatedLocally = this.onTaskUpdatedLocally.bind(this);
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
         this.setListActive = this.setListActive.bind(this);
+        this.setTasksSortingKey = this.setTasksSortingKey.bind(this);
     }
 
     // TODO generate truly unique ids
@@ -199,9 +201,16 @@ class TaskTreeApp extends React.Component {
         }, this.storeUserSettings)
     }
 
+    async setTasksSortingKey(sortingKey) {
+        this.setState({
+            tasksSortingKey: sortingKey
+        }, this.storeUserSettings);
+    }
+
     async storeUserSettings() {
         const settings = {
-            activeListIds: Object.assign([], this.state.activeListIds)
+            activeListIds: Object.assign([], this.state.activeListIds),
+            tasksSortingKey: this.state.tasksSortingKey,
         };
         const success = await sendSettings(settings);
         this.setState({
@@ -215,10 +224,10 @@ class TaskTreeApp extends React.Component {
         jsonResult.handle(
             currentUser => {
                 if (currentUser !== null && currentUser.username !== null && currentUser.username !== undefined) {
-                    const parsedSettings = readSettings(currentUser);
                     this.setState({
                         loggedInUser: currentUser.username,
-                        activeListIds: parsedSettings.activeListIds
+                        activeListIds: currentUser.settings?.activeListIds || [],
+                        tasksSortingKey: currentUser.settings?.tasksSortingKey || SORT_KEY_DEFAULT,
                     }, this.fetchLists);
                 }
             },
@@ -288,7 +297,9 @@ class TaskTreeApp extends React.Component {
                     onListUpdatedLocally: this.onListUpdatedLocally,
                     onTaskUpdatedLocally: this.onTaskUpdatedLocally,
                     createListId: this.createListId,
-                    createTaskId: this.createTaskId
+                    createTaskId: this.createTaskId,
+                    tasksSortingKey: this.state.tasksSortingKey,
+                    setCurrentSortKey: this.setTasksSortingKey,
                 })
             ];
         }
