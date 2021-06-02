@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from flask_talisman import Talisman
 from flask_wtf import CSRFProtect
+from flask_wtf.csrf import CSRFError
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import abort
 
@@ -20,6 +21,7 @@ persistence = Persistence(DB_URL_PROD)
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+app.config["WTF_CSRF_TIME_LIMIT"] = None
 app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
@@ -144,6 +146,11 @@ def serve_assets(path):
 @app.errorhandler(NoResultFound)
 def handle_no_result_found(nrf):
     return "not found!", 404
+
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return e.description, 419
 
 
 @app.errorhandler(PermissionError)
