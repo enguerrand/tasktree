@@ -154,6 +154,10 @@ class TasksListSubmenu extends React.Component {
     // props.setCurrentSortKey(sortKey)
     // props.showCompletedTasks
     // props.toggleShowCompletedTasks
+    // props.allTags
+    // props.filterTags
+    // props.addFilterTag(tag)
+    // props.removeFilterTag(tag)
     constructor(props) {
         super(props);
         this.state = {
@@ -187,8 +191,17 @@ class TasksListSubmenu extends React.Component {
                     )
                 ),
                 div({className: "task-submenu" + (this.state.subMenuExpanded ? " " : " collapsed")},
-                    div({className: "bg-dark p-3"},
-                        e(SortInput, {key: "sort", currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey})
+                    div({className: "bg-dark pl-3 pr-3"},
+                        e(SortInput, {key: "sort", currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
+                        div({key: "tags", className: "tasks-table-submenu-form"},
+                            e(TagInput, {
+                                key: "tags",
+                                currentTags: this.props.filterTags,
+                                allTags: this.props.allTags,
+                                addTag: this.props.addFilterTag,
+                                removeTag: this.props.removeFilterTag,
+                            })
+                        )
                     )
                 ),
             )
@@ -729,6 +742,9 @@ class TasksView extends React.Component {
     // props.currentFilterString
     // props.showCompletedTasks
     // props.toggleShowCompletedTasks
+    // props.filterTags
+    // props.addFilterTag(tag)
+    // props.removeFilterTag(tag)
     constructor(props) {
         super(props);
         this.state = {
@@ -823,39 +839,45 @@ class TasksView extends React.Component {
             }
             let tasks = taskList.tasks;
             const currentFilter = this.state.currentFilterString;
-            for (const [taskId, task] of Object.entries(tasks)) {
-                if (task.completed && !this.props.showCompletedTasks) {
-                    continue;
-                }
-                if (currentFilter.length > 0 && !task.title.includes(currentFilter)) {
-                    continue;
-                }
-                const actionButtonColorType = task.completed ? "secondary" : "primary";
-                const titleColorClass = hasConflicts(task) ? "text-danger" : "";
+            tasksLoop:
+                for (const [taskId, task] of Object.entries(tasks)) {
+                    if (task.completed && !this.props.showCompletedTasks) {
+                        continue;
+                    }
+                    if (currentFilter.length > 0 && !task.title.includes(currentFilter)) {
+                        continue;
+                    }
+                    for (const filterTag of this.props.filterTags) {
+                        if (!task.tags.includes(filterTag)) {
+                            continue tasksLoop;
+                        }
+                    }
+                    const actionButtonColorType = task.completed ? "secondary" : "primary";
+                    const titleColorClass = hasConflicts(task) ? "text-danger" : "";
 
-                const sortKeyValue = extractSortKey(this.props.sortingKey, task) || 0;
-                rows.push(
-                    tr({key: taskId, "data-sort-key-value": sortKeyValue},
-                        // th({key: "id", scope: "row", className: "align-middle"}, taskId),
-                        td(
-                            {
-                                key: "title",
-                                className: "align-middle tasks-table-main-cell",
-                                onClick: (event) => this.editTask(event, task, taskList)
-                            },
-                            div({className: titleColorClass, key: "title"}, task.title),
-                            div({className: "task-detail-info text-secondary", key: "created"}, formatDate(task.created))
-                        ),
-                        td(
-                            {key: "action", className: "right align-middle"},
-                            button({
-                                className: "btn btn-" + actionButtonColorType,
-                                onClick: (event) => this.toggleTaskComplete(event, task, taskList)
-                            }, i({className: "mdi mdi-" + (task.completed ? "checkbox-blank-outline" : "check")}))
+                    const sortKeyValue = extractSortKey(this.props.sortingKey, task) || 0;
+                    rows.push(
+                        tr({key: taskId, "data-sort-key-value": sortKeyValue},
+                            // th({key: "id", scope: "row", className: "align-middle"}, taskId),
+                            td(
+                                {
+                                    key: "title",
+                                    className: "align-middle tasks-table-main-cell",
+                                    onClick: (event) => this.editTask(event, task, taskList)
+                                },
+                                div({className: titleColorClass, key: "title"}, task.title),
+                                div({className: "task-detail-info text-secondary", key: "created"}, formatDate(task.created))
+                            ),
+                            td(
+                                {key: "action", className: "right align-middle"},
+                                button({
+                                    className: "btn btn-" + actionButtonColorType,
+                                    onClick: (event) => this.toggleTaskComplete(event, task, taskList)
+                                }, i({className: "mdi mdi-" + (task.completed ? "checkbox-blank-outline" : "check")}))
+                            )
                         )
-                    )
-                );
-            }
+                    );
+                }
         }
         rows.sort((r1, r2) => r1.props["data-sort-key-value"] - r2.props["data-sort-key-value"]);
         const tasksTable = table({className: "table table-striped table-dark", key: "table"},
@@ -876,6 +898,18 @@ class TasksView extends React.Component {
     }
 
     render() {
+        const allTags = [];
+        for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
+            if (this.props.activeListIds.includes(taskListId)) {
+                for (const [taskId, task] of Object.entries(taskList.tasks)) {
+                    for (const tag of task.tags) {
+                        if (!allTags.includes(tag)) {
+                            allTags.push(tag);
+                        }
+                    }
+                }
+            }
+        }
         if (!isNull(this.state.createNewWithTitle) || !isNull(this.state.editingTask)) {
             return e(
                 TaskEditView,
@@ -902,6 +936,10 @@ class TasksView extends React.Component {
                     setCurrentSortKey: this.props.setCurrentSortKey,
                     showCompletedTasks: this.props.showCompletedTasks,
                     toggleShowCompletedTasks: this.props.toggleShowCompletedTasks,
+                    filterTags: this.props.filterTags,
+                    allTags: allTags,
+                    addFilterTag: this.props.addFilterTag,
+                    removeFilterTag: this.props.removeFilterTag,
                 }),
                 this.renderTasksTable(),
             ];

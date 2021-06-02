@@ -12,6 +12,7 @@ class TaskTreeApp extends React.Component {
             currentCategory: CATEGORY_ID_TASKS,
             tasksSortingKey: SORT_KEY_DEFAULT,
             showCompletedTasks: false,
+            filterTags: [],
         };
         this.createListId = this.createListId.bind(this);
         this.createTaskId = this.createTaskId.bind(this);
@@ -28,6 +29,8 @@ class TaskTreeApp extends React.Component {
         this.setListActive = this.setListActive.bind(this);
         this.setTasksSortingKey = this.setTasksSortingKey.bind(this);
         this.toggleShowCompletedTasks = this.toggleShowCompletedTasks.bind(this);
+        this.addFilterTag = this.addFilterTag.bind(this);
+        this.removeFilterTag = this.removeFilterTag.bind(this);
     }
 
     // TODO generate truly unique ids
@@ -215,6 +218,28 @@ class TaskTreeApp extends React.Component {
         }, this.storeUserSettings);
     }
 
+    async addFilterTag(tag) {
+        this.setState(prevState => {
+            const nextFilterTags = Object.assign([], prevState.filterTags);
+            if (!nextFilterTags.includes(tag)) {
+                nextFilterTags.push(tag);
+            }
+            return {
+                filterTags: nextFilterTags
+            }
+        }, this.storeUserSettings)
+    }
+
+    async removeFilterTag(tag) {
+        this.setState(prevState => {
+            const nextFilterTags = Object.assign([], prevState.filterTags);
+            nextFilterTags.removeIf(t => t === tag);
+            return {
+                filterTags: nextFilterTags
+            }
+        }, this.storeUserSettings)
+    }
+
     async setTasksSortingKey(sortingKey) {
         this.setState({
             tasksSortingKey: sortingKey
@@ -232,6 +257,7 @@ class TaskTreeApp extends React.Component {
             activeListIds: activeListIds,
             tasksSortingKey: this.state.tasksSortingKey,
             showCompletedTasks: this.state.showCompletedTasks,
+            filterTags: this.state.filterTags,
         };
         const success = await sendSettings(settings);
         this.setState({
@@ -250,6 +276,7 @@ class TaskTreeApp extends React.Component {
                         activeListIds: currentUser.settings?.activeListIds || [],
                         tasksSortingKey: currentUser.settings?.tasksSortingKey || SORT_KEY_DEFAULT,
                         showCompletedTasks: currentUser.settings?.showCompletedTasks || false,
+                        filterTags: currentUser.settings?.filterTags || [],
                     }, this.fetchLists);
                 }
             },
@@ -324,6 +351,9 @@ class TaskTreeApp extends React.Component {
                     setCurrentSortKey: this.setTasksSortingKey,
                     showCompletedTasks: this.state.showCompletedTasks,
                     toggleShowCompletedTasks: this.toggleShowCompletedTasks,
+                    filterTags: this.state.filterTags,
+                    addFilterTag: this.addFilterTag,
+                    removeFilterTag: this.removeFilterTag,
                 })
             ];
         }

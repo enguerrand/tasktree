@@ -138,6 +138,8 @@ table td.right, table th.right{
 .tasks-table-submenu-form {
     display: flex;
     align-items: center;
+    padding: 10px 0;
+    margin: 5px 0;
 }
 
 .tasks-table-submenu-form > label {

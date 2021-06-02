@@ -11,6 +11,9 @@ class MainView extends React.Component {
     // props.onTaskUpdatedLocally(task, taskList)
     // props.showCompletedTasks
     // props.toggleShowCompletedTasks
+    // props.filterTags
+    // props.addFilterTag(tag)
+    // props.removeFilterTag(tag)
     constructor(props) {
         super(props);
         this.state = {};
@@ -40,6 +43,9 @@ class MainView extends React.Component {
                     setCurrentSortKey: this.props.setCurrentSortKey,
                     showCompletedTasks: this.props.showCompletedTasks,
                     toggleShowCompletedTasks: this.props.toggleShowCompletedTasks,
+                    filterTags: this.props.filterTags,
+                    addFilterTag: this.props.addFilterTag,
+                    removeFilterTag: this.props.removeFilterTag,
                 }
             );
         } else {
