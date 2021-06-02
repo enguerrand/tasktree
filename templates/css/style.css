@@ -135,17 +135,17 @@ table td.right, table th.right{
     cursor: pointer;
 }
 
-.sort-key-selection {
+.tasks-table-submenu-form {
     display: flex;
     align-items: center;
 }
 
-.sort-key-selection > label {
+.tasks-table-submenu-form > label {
     flex-grow: 1;
     margin-bottom: 0;
 }
 
-.sort-key-selection > div {
+.tasks-table-submenu-form > div {
     padding-left: 0;
     padding-right: 0;
 }

@@ -137,7 +137,7 @@ class SortInput extends React.Component {
 
     render() {
         return (
-            div({className: "sort-key-selection"},
+            div({className: "tasks-table-submenu-form"},
                 label({key: "label", className: "text-light"}, S["tasks.table.sort"]),
                 div({key: "buttons", className: "btn-group col-8", role: "group"},
                     e(SortInputButton, {sortKey: SORT_KEY_NEWEST, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
@@ -152,6 +152,8 @@ class SortInput extends React.Component {
 class TasksListSubmenu extends React.Component {
     // props.currentKey
     // props.setCurrentSortKey(sortKey)
+    // props.showCompletedTasks
+    // props.toggleShowCompletedTasks
     constructor(props) {
         super(props);
         this.state = {
@@ -172,13 +174,21 @@ class TasksListSubmenu extends React.Component {
         return (
             div({className: "mb-3"},
                 e('nav', {className: "navbar navbar-dark bg-dark"},
-                    button({className:"navbar-toggler", type:"button", onClick: this.toggleSubmenuExpanded},
+                    button({key: "toggle", className:"navbar-toggler", type:"button", onClick: this.toggleSubmenuExpanded},
                         i({className:"mdi mdi-menu"})
+                    ),
+                    button({
+                            key: "showCompleted",
+                            className:"navbar-toggler" + (this.props.showCompletedTasks ? " bg-secondary" : ""),
+                            type: "button",
+                            onClick: this.props.toggleShowCompletedTasks
+                        },
+                        i({className: "mdi mdi-eye"})
                     )
                 ),
                 div({className: "task-submenu" + (this.state.subMenuExpanded ? " " : " collapsed")},
                     div({className: "bg-dark p-3"},
-                        e(SortInput,{ currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey})
+                        e(SortInput, {key: "sort", currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey})
                     )
                 ),
             )
@@ -717,6 +727,8 @@ class TasksView extends React.Component {
     // props.sortingKey
     // props.setCurrentSortingKey(sortKey)
     // props.currentFilterString
+    // props.showCompletedTasks
+    // props.toggleShowCompletedTasks
     constructor(props) {
         super(props);
         this.state = {
@@ -812,6 +824,9 @@ class TasksView extends React.Component {
             let tasks = taskList.tasks;
             const currentFilter = this.state.currentFilterString;
             for (const [taskId, task] of Object.entries(tasks)) {
+                if (task.completed && !this.props.showCompletedTasks) {
+                    continue;
+                }
                 if (currentFilter.length > 0 && !task.title.includes(currentFilter)) {
                     continue;
                 }
@@ -885,6 +900,8 @@ class TasksView extends React.Component {
                     key: "submenu",
                     currentKey: this.props.sortingKey,
                     setCurrentSortKey: this.props.setCurrentSortKey,
+                    showCompletedTasks: this.props.showCompletedTasks,
+                    toggleShowCompletedTasks: this.props.toggleShowCompletedTasks,
                 }),
                 this.renderTasksTable(),
             ];

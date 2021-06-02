@@ -11,6 +11,7 @@ class TaskTreeApp extends React.Component {
             settingsSynced: true,
             currentCategory: CATEGORY_ID_TASKS,
             tasksSortingKey: SORT_KEY_DEFAULT,
+            showCompletedTasks: false,
         };
         this.createListId = this.createListId.bind(this);
         this.createTaskId = this.createTaskId.bind(this);
@@ -26,6 +27,7 @@ class TaskTreeApp extends React.Component {
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
         this.setListActive = this.setListActive.bind(this);
         this.setTasksSortingKey = this.setTasksSortingKey.bind(this);
+        this.toggleShowCompletedTasks = this.toggleShowCompletedTasks.bind(this);
     }
 
     // TODO generate truly unique ids
@@ -205,6 +207,14 @@ class TaskTreeApp extends React.Component {
         }, this.storeUserSettings)
     }
 
+    async toggleShowCompletedTasks() {
+        this.setState(prevState => {
+            return {
+                showCompletedTasks: !prevState.showCompletedTasks
+            }
+        }, this.storeUserSettings);
+    }
+
     async setTasksSortingKey(sortingKey) {
         this.setState({
             tasksSortingKey: sortingKey
@@ -221,6 +231,7 @@ class TaskTreeApp extends React.Component {
         const settings = {
             activeListIds: activeListIds,
             tasksSortingKey: this.state.tasksSortingKey,
+            showCompletedTasks: this.state.showCompletedTasks,
         };
         const success = await sendSettings(settings);
         this.setState({
@@ -238,6 +249,7 @@ class TaskTreeApp extends React.Component {
                         loggedInUser: currentUser.username,
                         activeListIds: currentUser.settings?.activeListIds || [],
                         tasksSortingKey: currentUser.settings?.tasksSortingKey || SORT_KEY_DEFAULT,
+                        showCompletedTasks: currentUser.settings?.showCompletedTasks || false,
                     }, this.fetchLists);
                 }
             },
@@ -310,6 +322,8 @@ class TaskTreeApp extends React.Component {
                     createTaskId: this.createTaskId,
                     tasksSortingKey: this.state.tasksSortingKey,
                     setCurrentSortKey: this.setTasksSortingKey,
+                    showCompletedTasks: this.state.showCompletedTasks,
+                    toggleShowCompletedTasks: this.toggleShowCompletedTasks,
                 })
             ];
         }
