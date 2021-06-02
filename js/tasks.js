@@ -851,7 +851,7 @@ class TasksView extends React.Component {
                             button({
                                 className: "btn btn-" + actionButtonColorType,
                                 onClick: (event) => this.toggleTaskComplete(event, task, taskList)
-                            }, i({className: "mdi mdi-" + (task.completed ? "repeat" : "check")}))
+                            }, i({className: "mdi mdi-" + (task.completed ? "checkbox-blank-outline" : "check")}))
                         )
                     )
                 );
