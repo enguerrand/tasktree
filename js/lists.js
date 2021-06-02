@@ -6,16 +6,20 @@ class ListEditView extends React.Component {
     // props.createListId
     constructor(props) {
         super(props);
+        let listId;
         let header;
         let initialTitle;
         if (isNull(this.props.taskList)) {
+            listId = this.props.createListId(),
             header = S["lists.form.title.create"];
             initialTitle = "";
         } else {
+            listId = this.props.taskList.id;
             header = S["lists.form.title.edit"];
             initialTitle = this.props.taskList.title;
         }
         this.state = {
+            listId: listId,
             header: header,
             title: initialTitle
         }
@@ -29,16 +33,14 @@ class ListEditView extends React.Component {
 
     async handleSubmit(event) {
         event.preventDefault();
-        const title = this.state.title;
         const listAfterEdit = {
-            title: title,
+            id: this.state.listId,
+            title: this.state.title,
             synced: false
         }
         if (isNull(this.props.taskList)) {
-            listAfterEdit.id = this.props.createListId();
             listAfterEdit.tasks = {};
         } else {
-            listAfterEdit.id = this.props.taskList.id;
             listAfterEdit.tasks = this.props.taskList.tasks;
         }
 

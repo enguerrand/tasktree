@@ -308,6 +308,7 @@ class TaskEditView extends React.Component {
     // props.allLists
     constructor(props) {
         super(props);
+        let taskId;
         let header;
         let initialTitle;
         let remoteTitle;
@@ -317,6 +318,7 @@ class TaskEditView extends React.Component {
         let initialTags;
         let completed;
         if (isNull(this.props.task)) {
+            taskId = this.props.createTaskId();
             header = S["tasks.form.title.create"];
             initialTitle = this.props.requestedNewTitle;
             initialDescription = "";
@@ -324,6 +326,7 @@ class TaskEditView extends React.Component {
             initialTags = [];
             completed = false;
         } else {
+            taskId = this.props.task.id;
             header = S["tasks.form.title.edit"];
             initialTitle = this.props.task.title;
             initialDescription = this.props.task.description;
@@ -342,6 +345,7 @@ class TaskEditView extends React.Component {
             parentListId = null;
         }
         this.state = {
+            taskId: taskId,
             header: header,
             previousTitle: initialTitle,
             title: initialTitle,
@@ -480,6 +484,7 @@ class TaskEditView extends React.Component {
             created = nowUtc();
         }
         const taskAfterEdit = {
+            id: this.state.taskId,
             title: this.state.title,
             description: this.state.description,
             due: this.state.due,
@@ -488,15 +493,6 @@ class TaskEditView extends React.Component {
             synced: false,
             created: created
         }
-        if (isNull(this.props.task)) {
-            taskAfterEdit.id = this.props.createTaskId();
-        } else {
-            taskAfterEdit.id = this.props.task.id;
-            if (!isNull(this.props.task.id)) {
-                taskAfterEdit.id = this.props.task.id;
-            }
-        }
-
         const parentList = this.props.allLists[this.state.parentListId];
         if (!isNull(parentList)) {
             // noinspection UnnecessaryLocalVariableJS
