@@ -20,6 +20,7 @@ function extractSortKey(sortKey, task) {
 class TagInput extends React.Component {
     // props.currentTags
     // props.allTags
+    // props.inputHint
     // props.addTag(tag)
     // props.removeTag(tag)
     constructor(props) {
@@ -77,7 +78,7 @@ class TagInput extends React.Component {
                 type: "text",
                 className: "add-tag-input",
                 autoComplete: "off",
-                placeholder: S["tasks.form.tags.hint"],
+                placeholder: this.props.inputHint,
                 value: this.state.currentInput,
                 onChange: this.handleTextInput,
                 onKeyPress: this.interceptEnter
@@ -202,9 +203,11 @@ class TasksListSubmenu extends React.Component {
                 div({className: "task-submenu" + (this.state.subMenuExpanded ? " " : " collapsed")},
                     div({className: "bg-dark pl-3 pr-3"},
                         e(SortInput, {key: "sort", currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
-                        div({key: "tags", className: "tasks-table-submenu-form"},
+                        div({key: "tags", className: "tasks-table-submenu-form row"},
+                            label({key: "label", className: "text-light col-12 pl-0"}, S["tasks.submenu.tag.filter.label"]),
                             e(TagInput, {
                                 key: "tags",
+                                inputHint: S["tasks.submenu.tag.filter.hint"],
                                 currentTags: this.props.filterTags,
                                 allTags: this.props.allTags,
                                 addTag: this.props.addFilterTag,
@@ -701,6 +704,7 @@ class TaskEditView extends React.Component {
                 e(
                     TagInput,
                     {
+                        inputHint: S["tasks.form.tags.hint"],
                         currentTags: this.state.tags,
                         allTags: allTags,
                         addTag: this.addTag,
