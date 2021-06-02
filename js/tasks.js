@@ -175,11 +175,20 @@ class TasksListSubmenu extends React.Component {
     }
 
     render() {
+        const tagListItems = [];
+        for (const tag of this.props.filterTags) {
+            tagListItems.push(li({className: "bg-secondary"},
+                tag
+            ));
+        }
         return (
             div({className: "mb-3"},
-                e('nav', {className: "navbar navbar-dark bg-dark"},
+                e('nav', {className: "navbar navbar-dark bg-dark tasks-submenu-navbar"},
                     button({key: "toggle", className:"navbar-toggler", type:"button", onClick: this.toggleSubmenuExpanded},
                         i({className:"mdi mdi-menu"})
+                    ),
+                    div({key: "filterTags", className: "current-tag-filters-readonly"},
+                        ul({className: "text-light"}, tagListItems)
                     ),
                     button({
                             key: "showCompleted",

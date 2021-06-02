@@ -31,6 +31,30 @@ table td.right, table th.right{
     cursor: pointer;
 }
 
+.current-tag-filters-readonly {
+    flex-grow: 1;
+    padding: 0 5px;
+}
+
+.current-tag-filters-readonly > ul {
+    list-style-type: none;
+    display: inline;
+    padding: 0;
+}
+
+.current-tag-filters-readonly > ul > li {
+    display: inline-block;
+    padding: 0 2px;
+    margin: 2px;
+    border-radius: .25rem;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.tasks-submenu-navbar {
+    flex-wrap: nowrap;
+}
+
 .task-submenu {
     transition: max-height 0.25s ease-in;
     max-height: 2000px;
