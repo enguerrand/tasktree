@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from flask_talisman import Talisman
 from flask_wtf import CSRFProtect
-from flask_wtf.csrf import CSRFError
+from flask_wtf.csrf import CSRFError, generate_csrf
 from sqlalchemy.exc import NoResultFound
 from werkzeug.exceptions import abort
 
@@ -69,6 +69,14 @@ def logged_in_user():
         "username": current_user.username,
         "settings": current_user.settings
     }
+
+
+@app.route(API_BASE_URL + "csrf", methods=["GET"])
+@login_required
+def renew_csrf():
+    return jsonify({
+        "token": generate_csrf()
+    })
 
 
 @app.route(API_BASE_USERS + "current/settings", methods=["PUT"])

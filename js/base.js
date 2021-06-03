@@ -2,17 +2,18 @@ const BASE_URL = window.location.protocol + "//" + window.location.host;
 const API_URL = BASE_URL + '/api';
 const API_URL_USERS = API_URL + '/users';
 const API_URL_LISTS = API_URL + '/lists';
+const API_URL_CSRF = API_URL + '/csrf';
 const CATEGORY_ID_LISTS = "lists";
 const CATEGORY_ID_TASKS = "tasks";
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_AUTHORIZED = 401;
-const CSRF_TOKEN = document.head.querySelector("[name=csrf-token][content]").content;
 const LOCALE = navigator.language
 const SORT_KEY_NEWEST = "newest";
 const SORT_KEY_OLDEST = "oldest";
 const SORT_KEY_DUE = "due";
 const SORT_KEY_DEPENDENCIES = "dependencies";
 const SORT_KEY_DEFAULT = SORT_KEY_NEWEST;
+let csrf_token = document.head.querySelector("[name=csrf-token][content]").content;
 
 class JsonResult {
     constructor(success, payload) {
@@ -39,10 +40,7 @@ class JsonResult {
 async function getJson(url) {
     try {
         const response = await fetch(url, {
-            method: 'get',
-            headers: {
-                'X-CSRFToken': CSRF_TOKEN,
-            },
+            method: 'get'
         });
         if (!response.ok) {
             return new JsonResult(false, response.statusText);
@@ -62,14 +60,26 @@ async function sendJson(url, method, json) {
             headers: {
                 'Accept': 'application/json, text/plain, */*',
                 'Content-Type': 'application/json',
-                'X-CSRFToken': CSRF_TOKEN,
+                'X-CSRFToken': csrf_token,
             },
             body: JSON.stringify(json)
         });
+        if (response.status === 419) {
+            renewCsrf();
+        }
         return response.ok;
     } catch (e) {
         return false;
     }
+}
+
+function renewCsrf() {
+    getJson(API_URL_CSRF).then(response => {
+        const token = response?.payload?.token;
+        if (!isNull(token)) {
+            csrf_token = token;
+        }
+    });
 }
 
 async function logout() {
