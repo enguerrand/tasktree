@@ -193,7 +193,7 @@ class TasksListSubmenu extends React.Component {
                     ),
                     button({
                             key: "showCompleted",
-                            className:"navbar-toggler" + (this.props.showCompletedTasks ? " bg-secondary" : ""),
+                            className:"navbar-toggler" + (this.props.showCompletedTasks ? " bg-secondary text-light" : ""),
                             type: "button",
                             onClick: this.props.toggleShowCompletedTasks
                         },
