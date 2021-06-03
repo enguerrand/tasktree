@@ -178,13 +178,13 @@ class TasksListSubmenu extends React.Component {
     render() {
         const tagListItems = [];
         for (const tag of this.props.filterTags) {
-            tagListItems.push(li({className: "bg-secondary"},
+            tagListItems.push(li({key: tag, className: "bg-secondary"},
                 tag
             ));
         }
         return (
             div({className: "mb-3"},
-                e('nav', {className: "navbar navbar-dark bg-dark tasks-submenu-navbar"},
+                e('nav', {key: "nav", className: "navbar navbar-dark bg-dark tasks-submenu-navbar"},
                     button({key: "toggle", className:"navbar-toggler", type:"button", onClick: this.toggleSubmenuExpanded},
                         i({className:"mdi mdi-menu"})
                     ),
@@ -200,7 +200,7 @@ class TasksListSubmenu extends React.Component {
                         i({className: "mdi mdi-eye"})
                     )
                 ),
-                div({className: "task-submenu" + (this.state.subMenuExpanded ? " " : " collapsed")},
+                div({key: "sub", className: "task-submenu" + (this.state.subMenuExpanded ? " " : " collapsed")},
                     div({className: "bg-dark pl-3 pr-3"},
                         e(SortInput, {key: "sort", currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
                         div({key: "tags", className: "tasks-table-submenu-form row"},
