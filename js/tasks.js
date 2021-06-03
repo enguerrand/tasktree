@@ -816,7 +816,7 @@ class TasksView extends React.Component {
                 title: title,
                 description: "",
                 due: null,
-                tags: [],
+                tags: this.props.filterTags,
                 synced: false,
                 completed: false
             }, parentList);
