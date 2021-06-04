@@ -26,6 +26,7 @@ class TaskTreeApp extends React.Component {
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
         this.onTaskUpdatedLocally = this.onTaskUpdatedLocally.bind(this);
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
+        this.beforeUnload = this.beforeUnload.bind(this);
         this.setListActive = this.setListActive.bind(this);
         this.setTasksSortingKey = this.setTasksSortingKey.bind(this);
         this.toggleShowCompletedTasks = this.toggleShowCompletedTasks.bind(this);
@@ -286,17 +287,27 @@ class TaskTreeApp extends React.Component {
         );
     }
 
+    async beforeUnload(event) {
+        if (this.state.listsSynced && this.state.settingsSynced) {
+            return null;
+        }
+        event.preventDefault();
+        return event.returnValue = "There are unsaved changes. Are you sure?";
+    }
+
     async componentDidMount() {
         window.addEventListener('online', this.updateOnlineStatus);
         window.addEventListener('offline', this.updateOnlineStatus);
-        window.addEventListener("beforeunload", function(event) {
-            if (this.state.listsSynced && this.state.settingsSynced) {
-                return null;
-            }
-            event.preventDefault();
-            return event.returnValue = "There are unsaved changes. Are you sure?";
-        });
+        window.addEventListener('focus', this.writeAll);
+        window.addEventListener("beforeunload", this.beforeUnload);
         this.fetchUserSettings();
+    }
+
+    async componentWillUnmount() {
+        window.removeEventListener('online', this.updateOnlineStatus);
+        window.removeEventListener('offline', this.updateOnlineStatus);
+        window.removeEventListener('focus', this.writeAll);
+        window.removeEventListener("beforeunload", this.beforeUnload);
     }
 
     async componentDidUpdate() {
