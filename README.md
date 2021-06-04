@@ -11,6 +11,7 @@ mkdir -p /opt/venvs
 cd /opt/venvs
 git clone https://github.com/enguerrand/tasktree.git
 cd tasktree
+./fetch-assets.sh prod
 mkdir venv
 virtualenv -p /usr/bin/python3 venv
 source venv/bin/activate
