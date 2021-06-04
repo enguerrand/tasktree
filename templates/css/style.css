@@ -176,3 +176,14 @@ table td.right, table th.right{
     padding-left: 0;
     padding-right: 0;
 }
+
+.radio-list-options {
+    margin-top: 10px;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+.radio-list-options > div {
+    padding: 10px;
+    cursor: pointer;
+}
