@@ -706,6 +706,7 @@ class TaskEditView extends React.Component {
                 e(
                     RadioList,
                     {
+                        currentSelection: this.state.parentListId,
                         availableOptions: availableOptions,
                         handleSelection: selection => {
                             this.setState({

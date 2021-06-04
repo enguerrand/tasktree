@@ -187,3 +187,7 @@ table td.right, table th.right{
     padding: 10px;
     cursor: pointer;
 }
+
+#modal-glasspane {
+    background: rgba(0,0,0,0.7);
+}

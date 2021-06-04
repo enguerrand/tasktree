@@ -43,6 +43,7 @@ class ModalDialog extends React.Component {
 }
 
 class RadioList extends React.Component {
+    // props.currentSelection
     // props.handleSelection(selectedOptionId)
     // props.availableOptions  --> each option has property id and label
     constructor(props) {
@@ -61,9 +62,17 @@ class RadioList extends React.Component {
     render() {
         const optionsList = [];
         let optionIndex = 0;
+        let currentFilterInput = this.state.currentFilterInput;
         for (const option of this.props.availableOptions) {
-            if (option.label.includes(this.state.currentFilterInput)) {
-                const optionClassSuffix = optionIndex % 2 === 0 ? "secondary" : "dark";
+            if (option.label.toLowerCase().includes(currentFilterInput.toLowerCase())) {
+                let optionClassSuffix;
+                if (option.id === this.props.currentSelection) {
+                    optionClassSuffix = "primary";
+                } else if (optionIndex % 2 === 0) {
+                    optionClassSuffix = "secondary";
+                } else {
+                    optionClassSuffix = "dark";
+                }
 
                 optionsList.push(
                     div({
@@ -84,8 +93,9 @@ class RadioList extends React.Component {
                         className: "form-control",
                         type: "text",
                         autoComplete: "false",
+                        autoFocus: "true",
                         placeholder: S["radio.list.filter.hint"],
-                        value: this.state.currentFilterInput,
+                        value: currentFilterInput,
                         onChange: this.handleTextInput
                     })
                 ),
