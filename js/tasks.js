@@ -394,7 +394,7 @@ class TaskEditView extends React.Component {
             tags: initialTags,
             parentListId: parentListId,
             completed: completed,
-            listDropDownVisible: false,
+            listChoiceModalVisible: false,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
         this.pullRemoteTitle = this.pullRemoteTitle.bind(this);
@@ -575,12 +575,6 @@ class TaskEditView extends React.Component {
         );
 
         if (isNull(this.props.parentList)) {
-            let classDropdown = "col-12 dropdown ";
-            let classDropdownMenu = "dropdown-menu";
-            if (this.state.listDropDownVisible) {
-                classDropdown = classDropdown + " show";
-                classDropdownMenu = classDropdownMenu + " show";
-            }
             let buttonTitle;
             if (isNull(currentlySelectedList)) {
                 buttonTitle = S["tasks.form.list.hint"];
@@ -588,44 +582,20 @@ class TaskEditView extends React.Component {
                 buttonTitle = currentlySelectedList.title;
             }
 
-            const choices = [];
-            for (const [listId, taskList] of Object.entries(this.props.allLists)) {
-                choices.push(
-                    a(
-                        {
-                            className: "dropdown-item",
-                            key: listId,
-                            onClick: () => this.setState({
-                                parentListId: listId,
-                                listDropDownVisible: false
-                            })
-                        },
-                        taskList.title
-                    )
-                );
-            }
             formGroups.push(
                 div({className:"form-group row", key: "listChoice"},
                     label({key: "label", htmlFor: "list-input", className: "col-12 col-form-label text-light"}, S["tasks.form.list"]),
-                    div({className: classDropdown, key: "input"},
+                    div({className: "col-12", key: "button"},
                         button({
-                            key: "button",
                             type: "button",
-                            className: "btn btn-secondary dropdown-toggle",
+                            className: "btn btn-secondary",
                             id: "list-input",
-                            value: this.state.parentListId,
                             onClick: () => {
-                                this.setState(prevState => {
-                                    return {
-                                        listDropDownVisible: !prevState.listDropDownVisible
-                                    }
-                                })
-                            },
-                            onChange: this.handleParentListChange
-                        }, buttonTitle),
-                        div({className: classDropdownMenu, "aria-labelledby": "list-input"},
-                            choices
-                        )
+                                this.setState({
+                                    listChoiceModalVisible: true
+                                });
+                            }
+                        }, buttonTitle)
                     )
                 )
             );
@@ -716,6 +686,40 @@ class TaskEditView extends React.Component {
 
         const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
 
+        let listChoiceModal;
+        if (this.state.listChoiceModalVisible) {
+            const availableOptions = [];
+            for (const taskList of Object.values(this.props.allLists)) {
+                availableOptions.push({
+                    id: taskList.id,
+                    label: taskList.title
+                });
+            }
+
+            listChoiceModal = e(
+                ModalDialog,
+                {
+                    key: "modal",
+                    title: S["tasks.form.list.title"],
+                    onCancel: () => this.setState({listChoiceModalVisible: false}),
+                },
+                e(
+                    RadioList,
+                    {
+                        availableOptions: availableOptions,
+                        handleSelection: selection => {
+                            this.setState({
+                                listChoiceModalVisible: false,
+                                parentListId: selection
+                            });
+                        }
+                    }
+                )
+            );
+        } else {
+            listChoiceModal = null;
+        }
+
         return [
             div(
                 {className: "row", key: "form"},
@@ -740,7 +744,8 @@ class TaskEditView extends React.Component {
                         S["label.save"]
                     )
                 )
-            )
+            ),
+            listChoiceModal
         ];
     }
 }
