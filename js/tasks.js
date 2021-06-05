@@ -101,8 +101,26 @@ class TagInput extends React.Component {
         }
         return (
             div({className: "col-12"},
-                div({className: "tags-input-field form-control bg-light", key: "input"},
-                    inlineElements
+                div({className: "clearable-input-wrapper", key: "input"},
+                    div({className: "tags-input-field form-control bg-light", key: "input"},
+                        inlineElements
+                    ),
+                    e(
+                        InputClearButton,
+                        {
+                            key: "clear-button",
+                            onClick: () => {
+                                const toRemove = Object.assign([], this.props.currentTags);
+                                this.setState({
+                                    currentInput: ""
+                                }, () => {
+                                    for (const t of toRemove) {
+                                        this.props.removeTag(t);
+                                    }
+                                });
+                            }
+                        }
+                    )
                 ),
                 div({className: "tags-available-field mt-2", key: "options"},
                     tagOptions
@@ -268,6 +286,13 @@ class CreateTaskInput extends React.Component {
                 onChange: this.handleTextInput,
                 onKeyPress: this.interceptEnter
             }),
+            e(
+                InputClearButton,
+                {
+                    key: "clear-button",
+                    onClick: () => this.setState({currentInput: ""})
+                }
+            ),
             button({
                 key: "addButton",
                 className: "btn btn-primary",
@@ -559,17 +584,26 @@ class TaskEditView extends React.Component {
                     )
                 ),
                 div({key: "input", className: "col-12"},
-                    input({
-                        id: "title-input",
-                        key: "title-input",
-                        type: "text",
-                        className: "form-control",
-                        placeholder: S["label.title"],
-                        autoComplete: "off",
-                        value: this.state.showRemoteTitle ? this.state.remoteTitle : this.state.title,
-                        onChange: this.handleTitleChange,
-                        disabled: this.state.showRemoteTitle
-                    })
+                    div({className: "clearable-input-wrapper"},
+                        input({
+                            id: "title-input",
+                            key: "title-input",
+                            type: "text",
+                            className: "form-control",
+                            placeholder: S["label.title"],
+                            autoComplete: "off",
+                            value: this.state.showRemoteTitle ? this.state.remoteTitle : this.state.title,
+                            onChange: this.handleTitleChange,
+                            disabled: this.state.showRemoteTitle
+                        }),
+                        e(
+                            InputClearButton,
+                            {
+                                key: "clear-button",
+                                onClick: () => this.setState({title: ""})
+                            }
+                        )
+                    )
                 )
             )
         );

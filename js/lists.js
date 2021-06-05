@@ -62,6 +62,7 @@ class ListEditView extends React.Component {
                         div({className:"form-floating"},
                             input({
                                 type: "text",
+                                key: "input",
                                 className: "form-control",
                                 id: "title-input",
                                 placeholder: S["label.title"],
@@ -69,6 +70,13 @@ class ListEditView extends React.Component {
                                 value: this.state.title,
                                 onChange: this.handleTitleChange
                             }),
+                            e(
+                                InputClearButton,
+                                {
+                                    key: "clear-button",
+                                    onClick: () => this.setState({title: ""})
+                                }
+                            ),
                             label({htmlFor: "title-input", className: "text-light"}, S["label.title"])
                         )
                     )

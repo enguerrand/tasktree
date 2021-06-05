@@ -1,3 +1,17 @@
+class InputClearButton extends React.Component {
+    render() {
+        return (
+            button(
+                {
+                    type: "button",
+                    className: "bg-transparent clear-text-input text-secondary"
+                },
+                i({className: "mdi mdi-close-circle-outline", onClick: this.props.onClick})
+            )
+        );
+    }
+}
+
 class ModalDialog extends React.Component {
     // props.title
     // props.onCancel
@@ -90,6 +104,7 @@ class RadioList extends React.Component {
             div({className: "radio-list"},
                 div({key: "filter", className: "radio-list-filter-input"},
                     input({
+                        key: "input",
                         className: "form-control",
                         type: "text",
                         autoComplete: "false",
