@@ -99,6 +99,11 @@ table td.right, table th.right{
     padding: 0;
 }
 
+.tags-input-field {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .btn-tag {
     margin: 5px;
     cursor: pointer;
@@ -115,6 +120,7 @@ table td.right, table th.right{
     box-shadow: none;
     background: transparent;
     outline: 0;
+    flex-grow: 1;
 }
 
 .url-section > div {
