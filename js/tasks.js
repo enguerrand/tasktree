@@ -2,7 +2,7 @@
 function extractSortKey(sortKey, task) {
     switch (sortKey) {
         case SORT_KEY_DUE: {
-            return task.due;
+            return isNull(task.due) ? Number.POSITIVE_INFINITY : task.due;
         }
         case SORT_KEY_NEWEST: {
             return -task.created;
