@@ -51,6 +51,8 @@ class TaskView:
             self.description = conflict.description
             self.conflicting_description = task.description
         self.tags = [t.title for t in self.task.tags]
+        self.prerequisites = [t.id for t in self.task.prerequisites]
+        self.depending_tasks = [t.id for t in self.task.depending_tasks]
 
     def as_dict(self):
         return {
@@ -63,6 +65,8 @@ class TaskView:
             "due": nullable_date_to_timestamp(self.task.due),
             "completed": self.task.completed,
             "tags": self.tags,
+            "prerequisites": self.prerequisites,
+            "dependingTasks": self.depending_tasks,
         }
 
 
@@ -106,6 +110,8 @@ class DataView:
         next_task = json_request["next"]
 
         requesting_user_id = self.viewing_user.id
+        next_prerequisites = next_task["prerequisites"]
+        next_dependencies = next_task["dependingTasks"]
         next_tags = next_task["tags"]
         if prev_task is None:
             self.persistence.create_task(
@@ -116,8 +122,9 @@ class DataView:
                 self.date_from_timestamp(next_task["due"]),
                 next_task["description"],
                 next_task["completed"],
-                # TODO: dependencies
-                tags=tuple(next_tags)
+                prereq_task_ids=tuple(next_prerequisites),
+                depending_task_ids=tuple(next_prerequisites),
+                tags=tuple(next_prerequisites)
             )
         else:
             self.persistence.update_task(
@@ -132,6 +139,7 @@ class DataView:
                 next_task["completed"],
                 requesting_user_id
             )
+
             prev_tags = prev_task["tags"]
             for add_tag_candidate in next_tags:
                 if add_tag_candidate not in prev_tags:
@@ -139,7 +147,22 @@ class DataView:
             for remove_tag_candidate in prev_tags:
                 if remove_tag_candidate not in next_tags:
                     self.persistence.remove_tag(requesting_user_id, task_id, remove_tag_candidate)
-            # TODO: dependencies
+
+            prev_prerequisites = prev_task["prerequisites"]
+            for add_prereq_candidate in next_prerequisites:
+                if add_prereq_candidate not in prev_prerequisites:
+                    self.persistence.add_dependency(requesting_user_id, add_prereq_candidate, task_id)
+            for remove_tag_candidate in prev_prerequisites:
+                if remove_tag_candidate not in next_prerequisites:
+                    self.persistence.remove_dependency(requesting_user_id, remove_tag_candidate, task_id)
+
+            prev_dependencies = prev_task["dependingTasks"]
+            for add_dep_candidate in next_dependencies:
+                if add_dep_candidate not in prev_dependencies:
+                    self.persistence.add_dependency(requesting_user_id, task_id, add_dep_candidate)
+            for remove_dep_candidate in prev_dependencies:
+                if remove_dep_candidate not in next_dependencies:
+                    self.persistence.remove_dependency(requesting_user_id, task_id, remove_dep_candidate)
 
 
 def nullable_date_to_timestamp(nullable_date):

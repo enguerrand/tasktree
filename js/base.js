@@ -104,6 +104,8 @@ async function sendTask(task, taskList, prevTask) {
         description: task.description,
         due: task.due,
         tags: task.tags,
+        prerequisites: task.prerequisites,
+        dependingTasks: task.dependingTasks,
         completed: task.completed,
     }
     if (!isNull(prevTask)) {
@@ -112,6 +114,8 @@ async function sendTask(task, taskList, prevTask) {
             description: prevTask.description,
             due: prevTask.due,
             tags: prevTask.tags,
+            prerequisites: prevTask.prerequisites,
+            dependingTasks: prevTask.dependingTasks,
             completed: prevTask.completed,
         }
     }

@@ -378,6 +378,8 @@ class TaskEditView extends React.Component {
         let initialDescription;
         let remoteDescription;
         let initialTags;
+        let initialPrerequisites;
+        let initialDependingTasks;
         let completed;
         if (isNull(this.props.task)) {
             taskId = this.props.createTaskId();
@@ -394,6 +396,8 @@ class TaskEditView extends React.Component {
             remoteTitle = this.props.task.conflictingTitle;
             remoteDescription = this.props.task.conflictingDescription;
             initialTags = this.props.task.tags;
+            initialPrerequisites = this.props.task.prerequisites;
+            initialDependingTasks = this.props.task.dependingTasks;
             completed = this.props.task.completed;
         }
         let parentListId;
@@ -416,6 +420,8 @@ class TaskEditView extends React.Component {
             remoteDescription: remoteDescription,
             showRemoteDescription: false,
             tags: initialTags,
+            prerequisites: initialPrerequisites,
+            dependingTasks: initialDependingTasks,
             parentListId: parentListId,
             completed: completed,
             listChoiceModalVisible: false,
@@ -571,6 +577,8 @@ class TaskEditView extends React.Component {
             description: this.state.description,
             due: due,
             tags: this.state.tags,
+            prerequisites: this.state.prerequisites,
+            dependingTasks: this.state.dependingTasks,
             completed: this.state.completed,
             synced: false,
             created: created
