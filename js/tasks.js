@@ -290,7 +290,10 @@ class CreateTaskInput extends React.Component {
                 InputClearButton,
                 {
                     key: "clear-button",
-                    onClick: () => this.setState({currentInput: ""})
+                    onClick: () => {
+                        this.props.inputCallBack("");
+                        this.setState({currentInput: ""});
+                    }
                 }
             ),
             button({
