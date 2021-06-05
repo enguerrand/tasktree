@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from json import JSONDecodeError
 from typing import List
 
@@ -95,6 +96,11 @@ class DataView:
         title = json_request["title"]
         self.persistence.create_or_replace_task_list(task_list_id, title, self.viewing_user.id)
 
+    def date_from_timestamp(self, timestamp):
+        if timestamp is None:
+            return None
+        return datetime.fromtimestamp(timestamp / 1000.0)
+
     def create_or_update_task(self, task_list_id: int, task_id: int, json_request):
         prev_task = json_request.get("prev")
         next_task = json_request["next"]
@@ -107,7 +113,7 @@ class DataView:
                 task_id,
                 task_list_id,
                 next_task["title"],
-                next_task["due"],
+                self.date_from_timestamp(next_task["due"]),
                 next_task["description"],
                 next_task["completed"],
                 # TODO: dependencies
@@ -117,11 +123,11 @@ class DataView:
             self.persistence.update_task(
                 task_id,
                 prev_task["title"],
-                prev_task["due"],
+                self.date_from_timestamp(prev_task["due"]),
                 prev_task["description"],
                 prev_task["completed"],
                 next_task["title"],
-                next_task["due"],
+                self.date_from_timestamp(next_task["due"]),
                 next_task["description"],
                 next_task["completed"],
                 requesting_user_id

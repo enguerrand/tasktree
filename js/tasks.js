@@ -377,7 +377,6 @@ class TaskEditView extends React.Component {
         let remoteTitle;
         let initialDescription;
         let remoteDescription;
-        let initialDue;
         let initialTags;
         let completed;
         if (isNull(this.props.task)) {
@@ -385,7 +384,6 @@ class TaskEditView extends React.Component {
             header = S["tasks.form.title.create"];
             initialTitle = this.props.requestedNewTitle;
             initialDescription = "";
-            initialDue = null;
             initialTags = [];
             completed = false;
         } else {
@@ -395,7 +393,6 @@ class TaskEditView extends React.Component {
             initialDescription = this.props.task.description;
             remoteTitle = this.props.task.conflictingTitle;
             remoteDescription = this.props.task.conflictingDescription;
-            initialDue = this.props.task.due;
             initialTags = this.props.task.tags;
             completed = this.props.task.completed;
         }
@@ -418,7 +415,6 @@ class TaskEditView extends React.Component {
             description: initialDescription,
             remoteDescription: remoteDescription,
             showRemoteDescription: false,
-            due: initialDue,
             tags: initialTags,
             parentListId: parentListId,
             completed: completed,
@@ -435,7 +431,11 @@ class TaskEditView extends React.Component {
         this.toggleShowRemoteDescription = this.toggleShowRemoteDescription.bind(this);
         this.addTag = this.addTag.bind(this);
         this.removeTag = this.removeTag.bind(this);
+        this.deriveInitialDue = this.deriveInitialDue.bind(this);
+        this.clearDueDate = this.clearDueDate.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+
+        this.dateInputRef = React.createRef();
     }
 
     handleTitleChange(event) {
@@ -535,6 +535,23 @@ class TaskEditView extends React.Component {
         );
     }
 
+    deriveInitialDue() {
+        let due = this.props.task?.due;
+        if (isNull(due)) {
+            return undefined;
+        } else {
+            try {
+                return new Date(fromUtcTimeStamp(due)).toISOString().substring(0, 10);
+            } catch (e) {
+                return undefined;
+            }
+        }
+    }
+
+    clearDueDate() {
+        this.dateInputRef.current.value = "";
+    }
+
     async handleSubmit(event) {
         event.preventDefault();
         const prevTask = deepCopy(this.props.task);
@@ -546,11 +563,13 @@ class TaskEditView extends React.Component {
         } else {
             created = nowUtc();
         }
+        const dueDate = new Date(this.dateInputRef.current.value);
+        const due = isValidDate(dueDate) ? toUtcTimeStamp(dueDate) : null;
         const taskAfterEdit = {
             id: this.state.taskId,
             title: this.state.title,
             description: this.state.description,
-            due: this.state.due,
+            due: due,
             tags: this.state.tags,
             completed: this.state.completed,
             synced: false,
@@ -720,6 +739,26 @@ class TaskEditView extends React.Component {
                 )
             )
         );
+
+        formGroups.push(
+            div({className:"form-group row", key: "due-input"},
+                label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.due"]),
+                div({className: "col-12", key: "input"},
+                    div({className: "clearable-input-wrapper"},
+                        input({type: "date", className: "form-control", defaultValue: this.deriveInitialDue(), ref: this.dateInputRef}),
+                        e(
+                            InputClearButton,
+                            {
+                                key: "clear-button",
+                                additionalClasses: "clear-date-input",
+                                onClick: this.clearDueDate
+                            }
+                        )
+
+                    )
+                )
+            )
+        )
 
         const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
 

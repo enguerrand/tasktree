@@ -132,7 +132,20 @@ function hasConflicts(task) {
 
 function nowUtc() {
     let now = new Date();
-    return now.getTime() + now.getTimezoneOffset()*60*1000;
+    return toUtcTimeStamp(now);
+}
+
+function fromUtcTimeStamp(timestamp) {
+    let localDate = new Date(timestamp);
+    return new Date(localDate.getTime() - localDate.getTimezoneOffset()*60*1000);
+}
+
+function toUtcTimeStamp(date) {
+    return date.getTime() + date.getTimezoneOffset()*60*1000;
+}
+
+function isValidDate(date) {
+    return date instanceof Date && !isNaN(date);
 }
 
 function formatDate(timestampUtc) {

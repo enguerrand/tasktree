@@ -1,10 +1,11 @@
 class InputClearButton extends React.Component {
     render() {
+        const additionalClasses = isNull(this.props.additionalClasses) ? "" : " " + this.props.additionalClasses;
         return (
             button(
                 {
                     type: "button",
-                    className: "bg-transparent clear-text-input text-secondary"
+                    className: "bg-transparent clear-text-input text-secondary" + additionalClasses
                 },
                 i({className: "mdi mdi-close-circle-outline", onClick: this.props.onClick})
             )

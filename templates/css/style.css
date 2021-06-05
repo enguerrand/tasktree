@@ -211,6 +211,10 @@ button.clear-text-input {
     border-width: 0;
 }
 
+button.clear-text-input.clear-date-input {
+    margin-left: -70px;
+}
+
 button.clear-text-input > i{
     font-size: 1.3rem;
 }
