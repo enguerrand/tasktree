@@ -443,6 +443,8 @@ class TaskEditView extends React.Component {
         this.removeTag = this.removeTag.bind(this);
         this.handleAddPrerequisite = this.handleAddPrerequisite.bind(this);
         this.handleAddDepending = this.handleAddDepending.bind(this);
+        this.removePrerequisite = this.removePrerequisite.bind(this);
+        this.removeDepending = this.removeDepending.bind(this);
         this.getAllTaskOptions = this.getAllTaskOptions.bind(this);
         this.deriveInitialDue = this.deriveInitialDue.bind(this);
         this.clearDueDate = this.clearDueDate.bind(this);
@@ -608,6 +610,26 @@ class TaskEditView extends React.Component {
     handleAddDepending() {
         this.setState({
             dependingChoiceModalVisible: true,
+        });
+    }
+    
+    removePrerequisite(taskId) {
+        this.setState(prev => {
+            let nextPrerequisites = Object.assign([], prev.prerequisites);
+            nextPrerequisites.removeIf(t => t === taskId)
+            return {
+                prerequisites: nextPrerequisites
+            }
+        });
+    }
+    
+    removeDepending(taskId) {
+        this.setState(prev => {
+            let nextDepending = Object.assign([], prev.dependingTasks);
+            nextDepending.removeIf(t => t === taskId)
+            return {
+                dependingTasks: nextDepending
+            }
         });
     }
 
@@ -815,17 +837,28 @@ class TaskEditView extends React.Component {
         const dependingTasks = [];
         const parentListId = this.state.parentListId;
         if (!isNull(parentList)) {
+            let classesTaskBox = "text-light bg-secondary form-control col-8";
             for (const prereqId of this.state.prerequisites){
                 const prereqTask = this.props.allLists[parentListId]?.tasks[prereqId];
                 if (!isNull(prereqTask)) {
                     prerequisites.push(li({
                             key: prereqId,
-                            className: "list-group-item",
+                            className: "row",
                             onClick: () => {
                                 // TODO: open task? or remove prereq?
                             }
                         },
-                        prereqTask.title
+                        div({className: classesTaskBox, key: "task"},
+                            prereqTask.title
+                        ),
+                        button({
+                                key: "remove",
+                                type: "button",
+                                className: "btn btn-secondary col-1 ml-1 mr-1",
+                                onClick: ()=>this.removePrerequisite(prereqTask.id)
+                            },
+                            i({className: "mdi mdi-close"})
+                        )
                     ));
                 }
             }
@@ -834,12 +867,22 @@ class TaskEditView extends React.Component {
                 if (!isNull(dependingTask)) {
                     dependingTasks.push(li({
                             key: dependingId,
-                            className: "list-group-item",
+                            className: "row",
                             onClick: () => {
                                 // TODO: open task? or remove depending?
                             }
                         },
-                        dependingTask.title
+                        div({className: classesTaskBox, key: "task"},
+                            dependingTask.title
+                        ),
+                        button({
+                                key: "remove",
+                                type: "button",
+                                className: "btn btn-secondary col-1 ml-1 mr-1",
+                                onClick: ()=>this.removeDepending(dependingTask.id)
+                            },
+                            i({className: "mdi mdi-close"})
+                        )
                     ));
                 }
             }
@@ -848,13 +891,13 @@ class TaskEditView extends React.Component {
             div({className:"form-group row", key: "prereq-input"},
                 label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.prerequisites"]),
                 div({key: "tasks-list", className: "col-12"},
-                    ul({key: "task-list", className: "list-group related-tasks-list"},
+                    ul({key: "task-list", className: "related-tasks-list"},
                         prerequisites
                     ),
                     button({
                             key: "add-button",
                             type: "button",
-                            className: "btn btn-primary",
+                            className: "btn btn-primary col-1",
                             onClick: this.handleAddPrerequisite,
                             disabled: isNull(this.state.parentListId)
                         },
@@ -868,13 +911,13 @@ class TaskEditView extends React.Component {
             div({className:"form-group row", key: "depending-input"},
                 label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.depending"]),
                 div({key: "tasks-list", className: "col-12"},
-                    ul({key: "task-list", className: "list-group related-tasks-list"},
+                    ul({key: "task-list", className: "related-tasks-list"},
                         dependingTasks
                     ),
                     button({
                             key: "add-button",
                             type: "button",
-                            className: "btn btn-primary",
+                            className: "btn btn-primary col-1",
                             onClick: this.handleAddDepending,
                             disabled: isNull(this.state.parentListId)
                         },
