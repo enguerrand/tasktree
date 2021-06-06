@@ -425,6 +425,8 @@ class TaskEditView extends React.Component {
             parentListId: parentListId,
             completed: completed,
             listChoiceModalVisible: false,
+            prereqChoiceModalVisible: false,
+            dependingChoiceModalVisible: false,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
         this.pullRemoteTitle = this.pullRemoteTitle.bind(this);
@@ -437,6 +439,9 @@ class TaskEditView extends React.Component {
         this.toggleShowRemoteDescription = this.toggleShowRemoteDescription.bind(this);
         this.addTag = this.addTag.bind(this);
         this.removeTag = this.removeTag.bind(this);
+        this.handleAddPrerequisite = this.handleAddPrerequisite.bind(this);
+        this.handleAddDepending = this.handleAddDepending.bind(this);
+        this.getAllTaskOptions = this.getAllTaskOptions.bind(this);
         this.deriveInitialDue = this.deriveInitialDue.bind(this);
         this.clearDueDate = this.clearDueDate.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -592,6 +597,41 @@ class TaskEditView extends React.Component {
         }
     }
 
+    handleAddPrerequisite() {
+        this.setState({
+            prereqChoiceModalVisible: true,
+        });
+    }
+
+    handleAddDepending() {
+        this.setState({
+            dependingChoiceModalVisible: true,
+        });
+    }
+
+    getAllTaskOptions(exceptions) {
+        let allTasks = [];
+        if (isNull(this.state.parentListId)) {
+            return [];
+        }
+
+        const taskList = this.props.allLists[this.state.parentListId];
+        for (const task of Object.values(taskList.tasks)) {
+            if (!task.completed && task.id !== this.state.taskId && !exceptions.includes(task.id)) {
+                allTasks.push({
+                    id: task.id,
+                    label: task.title
+                });
+            }
+        }
+        allTasks.sort(function(a, b){
+            if(a.label.toLowerCase() < b.label.toLowerCase()) { return -1; }
+            if(a.label.toLowerCase() > b.label.toLowerCase()) { return 1; }
+            return 0;
+        })
+        return allTasks;
+    }
+
     render() {
         const formGroups = [];
         let currentlySelectedList = this.props.allLists[this.state.parentListId];
@@ -648,6 +688,7 @@ class TaskEditView extends React.Component {
 
             formGroups.push(
                 div({className:"form-group row", key: "listChoice"},
+                    label({key: "label", htmlFor: "list-input", className: "col-12 col-form-label text-light"}, S["tasks.form.list"]),
                     label({key: "label", htmlFor: "list-input", className: "col-12 col-form-label text-light"}, S["tasks.form.list"]),
                     div({className: "col-12", key: "button"},
                         button({
@@ -748,6 +789,7 @@ class TaskEditView extends React.Component {
             )
         );
 
+
         formGroups.push(
             div({className:"form-group row", key: "due-input"},
                 label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.due"]),
@@ -768,41 +810,156 @@ class TaskEditView extends React.Component {
             )
         )
 
+        const prerequisites = [];
+        const dependingTasks = [];
+        const parentListId = this.state.parentListId;
+        if (!isNull(parentList)) {
+            for (const prereqId of this.state.prerequisites){
+                const prereqTask = this.props.allLists[parentListId]?.tasks[prereqId];
+                if (!isNull(prereqTask)) {
+                    prerequisites.push(li({
+                            key: prereqId,
+                            className: "list-group-item",
+                            onClick: () => {
+                                // TODO: open task? or remove prereq?
+                            }
+                        },
+                        prereqTask.title
+                    ));
+                }
+            }
+            for (const dependingId of this.state.dependingTasks){
+                const dependingTask = this.props.allLists[parentListId]?.tasks[dependingId];
+                if (!isNull(dependingTask)) {
+                    dependingTasks.push(li({
+                            key: dependingId,
+                            className: "list-group-item",
+                            onClick: () => {
+                                // TODO: open task? or remove depending?
+                            }
+                        },
+                        dependingTask.title
+                    ));
+                }
+            }
+        }
+        formGroups.push(
+            div({className:"form-group row", key: "prereq-input"},
+                label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.prerequisites"]),
+                div({key: "tasks-list", className: "col-12"},
+                    ul({key: "task-list", className: "list-group related-tasks-list"},
+                        prerequisites
+                    ),
+                    button({
+                            key: "add-button",
+                            type: "button",
+                            className: "btn btn-primary",
+                            onClick: this.handleAddPrerequisite,
+                            disabled: isNull(this.state.parentListId)
+                        },
+                        "+"
+                    )
+                )
+            )
+        )
+
+        formGroups.push(
+            div({className:"form-group row", key: "depending-input"},
+                label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.depending"]),
+                div({key: "tasks-list", className: "col-12"},
+                    ul({key: "task-list", className: "list-group related-tasks-list"},
+                        dependingTasks
+                    ),
+                    button({
+                            key: "add-button",
+                            type: "button",
+                            className: "btn btn-primary",
+                            onClick: this.handleAddDepending,
+                            disabled: isNull(this.state.parentListId)
+                        },
+                        "+"
+                    )
+                )
+            )
+        )
+
         const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
 
-        let listChoiceModal;
-        if (this.state.listChoiceModalVisible) {
-            const availableOptions = [];
-            for (const taskList of Object.values(this.props.allLists)) {
-                availableOptions.push({
-                    id: taskList.id,
-                    label: taskList.title
-                });
+        let currentModal;
+        if (this.state.listChoiceModalVisible || this.state.prereqChoiceModalVisible || this.state.dependingChoiceModalVisible) {
+            let availableOptions;
+            let title;
+            let currentSelection;
+            let selectionHandler;
+            if (this.state.listChoiceModalVisible) {
+                title = S["tasks.form.list.title"];
+                currentSelection = this.state.parentListId;
+                for (const taskList of Object.values(this.props.allLists)) {
+                    availableOptions.push({
+                        id: taskList.id,
+                        label: taskList.title
+                    });
+                }
+                selectionHandler = selection => {
+                    this.setState({
+                        listChoiceModalVisible: false,
+                        parentListId: selection
+                    });
+                };
+            } else {
+                title = S["tasks.form.task.title"];
+                let exceptions;
+                if (this.state.prereqChoiceModalVisible) {
+                    exceptions = this.state.prerequisites;
+                } else if (this.state.dependingChoiceModalVisible) {
+                    exceptions = this.state.dependingTasks;
+                }
+                availableOptions = this.getAllTaskOptions(exceptions);
+                currentSelection = null;
+                selectionHandler = selection => {
+                    this.setState(prev => {
+                        let nextPrereq = Object.assign([], prev.prerequisites);
+                        let nextDepending = Object.assign([], prev.dependingTasks);
+                        if (prev.prereqChoiceModalVisible) {
+                            nextPrereq.push(selection);
+                        } else if (prev.dependingChoiceModalVisible) {
+                            nextDepending.push(selection);
+                        } else {
+                            console.error("unexpected: don't know if choosing dependency or depending tasks");
+                            return prev;
+                        }
+                        return {
+                            listChoiceModalVisible: false,
+                            prereqChoiceModalVisible: false,
+                            dependingChoiceModalVisible: false,
+                            prerequisites: nextPrereq,
+                            dependingTasks: nextDepending,
+                        }
+                    });
+                };
             }
-
-            listChoiceModal = e(
+            currentModal = e(
                 ModalDialog,
                 {
                     key: "modal",
-                    title: S["tasks.form.list.title"],
-                    onCancel: () => this.setState({listChoiceModalVisible: false}),
+                    title: title,
+                    onCancel: () => this.setState({
+                        listChoiceModalVisible: false,
+                        prereqChoiceModalVisible: false,
+                        dependingChoiceModalVisible: false,
+                    }),
                 },
                 e(
                     RadioList,
                     {
-                        currentSelection: this.state.parentListId,
+                        currentSelection: currentSelection,
                         availableOptions: availableOptions,
-                        handleSelection: selection => {
-                            this.setState({
-                                listChoiceModalVisible: false,
-                                parentListId: selection
-                            });
-                        }
+                        handleSelection: selectionHandler
                     }
                 )
             );
         } else {
-            listChoiceModal = null;
+            currentModal = null;
         }
 
         return [
@@ -830,7 +987,7 @@ class TaskEditView extends React.Component {
                     )
                 )
             ),
-            listChoiceModal
+            currentModal
         ];
     }
 }

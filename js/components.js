@@ -58,7 +58,7 @@ class ModalDialog extends React.Component {
 }
 
 class RadioList extends React.Component {
-    // props.currentSelection
+    // props.currentSelection (optional)
     // props.handleSelection(selectedOptionId)
     // props.availableOptions  --> each option has property id and label
     constructor(props) {
