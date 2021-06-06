@@ -74,10 +74,14 @@ async function sendJson(url, method, json) {
 }
 
 function renewCsrf() {
+    console.log("Attempting to renew outdated csrf token.")
     getJson(API_URL_CSRF).then(response => {
         const token = response?.payload?.token;
         if (!isNull(token)) {
             csrf_token = token;
+            console.log("Token renewed!")
+        } else {
+            console.error("No token received!")
         }
     });
 }
