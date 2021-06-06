@@ -689,7 +689,6 @@ class TaskEditView extends React.Component {
             formGroups.push(
                 div({className:"form-group row", key: "listChoice"},
                     label({key: "label", htmlFor: "list-input", className: "col-12 col-form-label text-light"}, S["tasks.form.list"]),
-                    label({key: "label", htmlFor: "list-input", className: "col-12 col-form-label text-light"}, S["tasks.form.list"]),
                     div({className: "col-12", key: "button"},
                         button({
                             type: "button",
