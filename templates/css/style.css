@@ -204,7 +204,6 @@ table td.right, table th.right{
 
 button.clear-text-input {
     margin-left: -40px;
-    z-index: 100;
     padding: 0;
     outline: 0;
     border-style: none;
@@ -212,7 +211,7 @@ button.clear-text-input {
 }
 
 button.clear-text-input.clear-date-input {
-    margin-left: -70px;
+    margin-left: -60px;
 }
 
 button.clear-text-input > i{
