@@ -387,6 +387,8 @@ class TaskEditView extends React.Component {
             initialTitle = this.props.requestedNewTitle;
             initialDescription = "";
             initialTags = [];
+            initialPrerequisites = [];
+            initialDependingTasks = [];
             completed = false;
         } else {
             taskId = this.props.task.id;
@@ -893,6 +895,7 @@ class TaskEditView extends React.Component {
             if (this.state.listChoiceModalVisible) {
                 title = S["tasks.form.list.title"];
                 currentSelection = this.state.parentListId;
+                availableOptions = [];
                 for (const taskList of Object.values(this.props.allLists)) {
                     availableOptions.push({
                         id: taskList.id,
