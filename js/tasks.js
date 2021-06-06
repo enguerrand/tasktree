@@ -854,7 +854,7 @@ class TaskEditView extends React.Component {
                         button({
                                 key: "remove",
                                 type: "button",
-                                className: "btn btn-secondary col-1 ml-1 mr-1",
+                                className: "btn btn-secondary col-2 col-md-1 ml-1 mr-1",
                                 onClick: ()=>this.removePrerequisite(prereqTask.id)
                             },
                             i({className: "mdi mdi-close"})
@@ -878,7 +878,7 @@ class TaskEditView extends React.Component {
                         button({
                                 key: "remove",
                                 type: "button",
-                                className: "btn btn-secondary col-1 ml-1 mr-1",
+                                className: "btn btn-secondary col-2 col-md-1 ml-1 mr-1",
                                 onClick: ()=>this.removeDepending(dependingTask.id)
                             },
                             i({className: "mdi mdi-close"})
@@ -897,7 +897,7 @@ class TaskEditView extends React.Component {
                     button({
                             key: "add-button",
                             type: "button",
-                            className: "btn btn-primary col-1",
+                            className: "btn btn-primary col-2 col-md-1 ",
                             onClick: this.handleAddPrerequisite,
                             disabled: isNull(this.state.parentListId)
                         },
@@ -917,7 +917,7 @@ class TaskEditView extends React.Component {
                     button({
                             key: "add-button",
                             type: "button",
-                            className: "btn btn-primary col-1",
+                            className: "btn btn-primary col-2 col-md-1",
                             onClick: this.handleAddDepending,
                             disabled: isNull(this.state.parentListId)
                         },
