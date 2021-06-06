@@ -109,7 +109,7 @@ class RadioList extends React.Component {
                         className: "form-control",
                         type: "text",
                         autoComplete: "false",
-                        autoFocus: "true",
+                        autoFocus: true,
                         placeholder: S["radio.list.filter.hint"],
                         value: currentFilterInput,
                         onChange: this.handleTextInput
