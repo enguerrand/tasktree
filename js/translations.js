@@ -1,6 +1,7 @@
 const TRANSL_EN_US = {
     "label.cancel": "Cancel",
     "label.save": "Save",
+    "label.discard.and.continue": "Discard and continue",
     "label.title": "Title",
     "lists.form.title.create": "Create list",
     "lists.form.title.edit": "Edit list",
@@ -32,12 +33,15 @@ const TRANSL_EN_US = {
     "tasks.table.sort.dependencies": "Dependencies",
     "tasks.table.sort.newest": "Newest",
     "tasks.table.sort.oldest": "Oldest",
+    "unsaved.changes": "There are unsaved changes. Really leave this view?",
+    "unsaved.changes.title": "Unsaved changes",
     "nav.item.lists": "LISTS",
     "nav.item.tasks": "TASKS",
 };
 const TRANSL_DE_DE = {
     "label.cancel": "Abbrechen",
     "label.save": "Speichern",
+    "label.discard.and.continue": "Verwerfen und weiter",
     "label.title": "Titel",
     "lists.form.title.create": "Liste erstellen",
     "lists.form.title.edit": "Liste bearbeiten",
@@ -69,6 +73,8 @@ const TRANSL_DE_DE = {
     "tasks.table.sort.dependencies": "Abhängigkeiten",
     "tasks.table.sort.newest": "Neueste",
     "tasks.table.sort.oldest": "Älteste",
+    "unsaved.changes": "Es gibt ungespeicherte Änderungen. Wollen Sie diese Ansicht wirklich verlassen?",
+    "unsaved.changes.title": "Ungespeicherte Änderungen",
     "nav.item.lists": "LISTEN",
     "nav.item.tasks": "AUFGABEN",
 };

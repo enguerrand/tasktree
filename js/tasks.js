@@ -361,17 +361,18 @@ class ConflictButtonsArea extends React.Component {
 }
 
 class TaskEditView extends React.Component {
+    // props.taskId
     // props.task
     // props.requestedNewTitle
     // props.editingDone(taskAfterEdit, parentList)
     // props.onCancel
     // props.parentList (only for edit, set to null for create)
     // props.activeListIds
-    // props.createTaskId
     // props.allLists
+    // props.editTask(task, taskList)
     constructor(props) {
         super(props);
-        let taskId;
+        let taskId = this.props.taskId;
         let header;
         let initialTitle;
         let remoteTitle;
@@ -382,7 +383,6 @@ class TaskEditView extends React.Component {
         let initialDependingTasks;
         let completed;
         if (isNull(this.props.task)) {
-            taskId = this.props.createTaskId();
             header = S["tasks.form.title.create"];
             initialTitle = this.props.requestedNewTitle;
             initialDescription = "";
@@ -391,7 +391,6 @@ class TaskEditView extends React.Component {
             initialDependingTasks = [];
             completed = false;
         } else {
-            taskId = this.props.task.id;
             header = S["tasks.form.title.edit"];
             initialTitle = this.props.task.title;
             initialDescription = this.props.task.description;
@@ -429,6 +428,7 @@ class TaskEditView extends React.Component {
             listChoiceModalVisible: false,
             prereqChoiceModalVisible: false,
             dependingChoiceModalVisible: false,
+            wantedNextTask: null,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
         this.pullRemoteTitle = this.pullRemoteTitle.bind(this);
@@ -449,6 +449,7 @@ class TaskEditView extends React.Component {
         this.deriveInitialDue = this.deriveInitialDue.bind(this);
         this.clearDueDate = this.clearDueDate.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.getCurrentDueInput = this.getCurrentDueInput.bind(this);
 
         this.dateInputRef = React.createRef();
     }
@@ -567,8 +568,32 @@ class TaskEditView extends React.Component {
         this.dateInputRef.current.value = "";
     }
 
-    async handleSubmit(event) {
-        event.preventDefault();
+    goToRelatedTask(taskId){
+        const prevTask = this.props.task;
+        if (
+            this.state.taskId === prevTask.id
+            && this.state.title === prevTask.title
+            && this.state.description === prevTask.description
+            && this.getCurrentDueInput() === prevTask.due
+            && this.state.tags.equals(prevTask.tags)
+            && this.state.prerequisites.equals(prevTask.prerequisites)
+            && this.state.dependingTasks.equals(prevTask.dependingTasks)
+            && this.state.completed === prevTask.completed
+        ) {
+            // FIXME deduplicate
+            const wantedList = this.props.allLists[this.state.parentListId];
+            const wantedTask = wantedList?.tasks[taskId];
+            if (!isNull(wantedList) && !isNull(wantedTask)) {
+                this.props.editTask(deepCopy(wantedTask), wantedList);
+            }
+        } else {
+            this.setState({
+                wantedNextTask: taskId
+            })
+        }
+    }
+
+    async handleSubmit() {
         const prevTask = deepCopy(this.props.task);
         let created;
         if (!isNull(prevTask)) {
@@ -578,8 +603,7 @@ class TaskEditView extends React.Component {
         } else {
             created = nowUtc();
         }
-        const dueDate = new Date(this.dateInputRef.current.value);
-        const due = isValidDate(dueDate) ? toUtcTimeStamp(dueDate) : null;
+        const due = this.getCurrentDueInput();
         const taskAfterEdit = {
             id: this.state.taskId,
             title: this.state.title,
@@ -599,6 +623,11 @@ class TaskEditView extends React.Component {
             taskAfterEdit.synced = success;
             this.props.editingDone(taskAfterEdit, parentList);
         }
+    }
+
+    getCurrentDueInput() {
+        const dueDate = new Date(this.dateInputRef.current.value);
+        return isValidDate(dueDate) ? toUtcTimeStamp(dueDate) : null;
     }
 
     handleAddPrerequisite() {
@@ -845,7 +874,7 @@ class TaskEditView extends React.Component {
                             key: prereqId,
                             className: "row",
                             onClick: () => {
-                                // TODO: open task? or remove prereq?
+                                this.goToRelatedTask(prereqId); // FIXME does this work?
                             }
                         },
                         div({className: classesTaskBox, key: "task"},
@@ -869,7 +898,8 @@ class TaskEditView extends React.Component {
                             key: dependingId,
                             className: "row",
                             onClick: () => {
-                                // TODO: open task? or remove depending?
+                                // TODO: open task if there are no unsaved changes.
+                                // otherwise popup with options "save and continue" or "discard and continue" or "cancel"
                             }
                         },
                         div({className: classesTaskBox, key: "task"},
@@ -930,7 +960,36 @@ class TaskEditView extends React.Component {
         const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
 
         let currentModal;
-        if (this.state.listChoiceModalVisible || this.state.prereqChoiceModalVisible || this.state.dependingChoiceModalVisible) {
+        if (!isNull(this.state.wantedNextTask) && !isNull(this.state.parentListId)) {
+            const wantedList = this.props.allLists[this.state.parentListId];
+            const wantedTask = wantedList?.tasks[this.state.wantedNextTask];
+            if (isNull(wantedList) || isNull(wantedTask)) {
+                currentModal = null;
+            } else {
+                currentModal = e(
+                    ModalDialog,
+                    {
+                        key: "modal",
+                        title: S["unsaved.changes.title"],
+                        saveButtonLabel: S["label.discard.and.continue"],
+                        onCancel: () => this.setState({
+                            wantedNextTask: null,
+                            listChoiceModalVisible: false,
+                            prereqChoiceModalVisible: false,
+                            dependingChoiceModalVisible: false,
+                        }),
+                        onSubmit: () => {
+                            this.setState({
+                                wantedNextTask: null
+                            }, () => this.props.editTask(wantedTask, wantedList))
+                        }
+                    },
+                    div({},
+                        p({}, S["unsaved.changes"])
+                    )
+                );
+            }
+        } else if (this.state.listChoiceModalVisible || this.state.prereqChoiceModalVisible || this.state.dependingChoiceModalVisible) {
             let availableOptions;
             let title;
             let currentSelection;
@@ -1027,7 +1086,16 @@ class TaskEditView extends React.Component {
                     )
                 ),
                 div({className: "col-6", key: "save"},
-                    button({className: "w-100 btn btn-lg btn-primary", type: "submit", key: "submit", disabled: saveDisabled, onClick: this.handleSubmit },
+                    button({
+                            className: "w-100 btn btn-lg btn-primary",
+                            type: "submit",
+                            key: "submit",
+                            disabled: saveDisabled,
+                            onClick: event => {
+                                event.preventDefault();
+                                return this.handleSubmit(event);
+                            }
+                        },
                         S["label.save"]
                     )
                 )
@@ -1073,8 +1141,7 @@ class TasksView extends React.Component {
         });
     }
 
-    editTask(event, task, taskList) {
-        event.preventDefault();
+    editTask(task, taskList) {
         this.setState({
             editingTask: task,
             editingList: taskList,
@@ -1168,7 +1235,10 @@ class TasksView extends React.Component {
                                 {
                                     key: "title",
                                     className: "align-middle tasks-table-main-cell",
-                                    onClick: (event) => this.editTask(event, task, taskList)
+                                    onClick: (event) => {
+                                        event.preventDefault();
+                                        this.editTask(task, taskList);
+                                    }
                                 },
                                 div({className: titleColorClass, key: "title"}, task.title),
                                 div({className: "task-detail-info text-secondary", key: "created"}, formatDate(task.created))
@@ -1216,9 +1286,12 @@ class TasksView extends React.Component {
             }
         }
         if (!isNull(this.state.createNewWithTitle) || !isNull(this.state.editingTask)) {
+            let taskId = this.state.editingTask?.id || this.props.createTaskId();
             return e(
                 TaskEditView,
                 {
+                    taskId: taskId,
+                    key: taskId,
                     task: this.state.editingTask,
                     requestedNewTitle: this.state.createNewWithTitle,
                     parentList: this.state.editingList,
@@ -1229,8 +1302,8 @@ class TasksView extends React.Component {
                         this.setState({ editingTask: null, editingList: null, createNewWithTitle: null });
                     },
                     activeListIds: this.props.activeListIds,
-                    createTaskId: this.props.createTaskId,
-                    allLists: this.props.taskLists
+                    allLists: this.props.taskLists,
+                    editTask: this.editTask,
                 }
             );
         } else {

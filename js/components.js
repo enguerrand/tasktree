@@ -17,6 +17,7 @@ class ModalDialog extends React.Component {
     // props.title
     // props.onCancel
     // props.onSubmit [optional]
+    // props.saveButtonLabel [optional]
     constructor(props) {
         super(props);
         this.handleGlassPaneClick = this.handleGlassPaneClick.bind(this);
@@ -35,7 +36,7 @@ class ModalDialog extends React.Component {
         } else {
             footer = div({className: "modal-footer", key: "footer"},
                 button({key: "cancel", className: "btn btn-secondary", onClick: this.props.onCancel}, S["label.cancel"]),
-                button({key: "ok", className: "btn btn-primary", onClick: this.props.onSubmit}, S["label.save"])
+                button({key: "ok", className: "btn btn-primary", onClick: this.props.onSubmit}, this.props.saveButtonLabel || S["label.save"])
             )
         }
         return (

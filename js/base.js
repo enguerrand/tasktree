@@ -207,3 +207,9 @@ Array.prototype.anyMatch = function(predicate) {
 Array.prototype.noneMatch = function(predicate) {
     return !this.anyMatch(predicate);
 }
+
+Array.prototype.equals = function arrayEquals(other) {
+    return Array.isArray(other) &&
+        this.length === other.length &&
+        this.every((val, index) => val === other[index]);
+}
