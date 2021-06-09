@@ -231,3 +231,7 @@ button.clear-text-input > i{
 .related-tasks-list > li {
     margin: 3px 0;
 }
+
+.task-detail-info > .date-connector {
+    padding: 0 15px;
+}

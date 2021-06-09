@@ -1252,6 +1252,25 @@ class TasksView extends React.Component {
                     const titleColorClass = hasConflicts(task) ? "text-danger" : "";
 
                     const sortKeyValue = extractSortKey(this.props.sortingKey, task) || 0;
+
+                    const dates = [
+                        span({key: "created"}, formatDate(task.created))
+                    ];
+                    if (!isNull(task.due)) {
+                        let dueClass;
+                        const now = nowUtc();
+                        if (task.due < now){
+                            dueClass = "text-danger";
+                        } else if (task.due - now < 3 * 24 * 60 * 60 * 1000) {
+                            dueClass = "text-warning";
+                        } else {
+                            dueClass = "text-success";
+                        }
+
+                        dates.push(span({key: "date-connector", className: "date-connector"}, i({className: "mdi mdi-arrow-right"})));
+                        dates.push(span({key: "due-date", className: dueClass}, formatDate(task.due)));
+                    }
+
                     rows.push(
                         tr({key: taskId, "data-sort-key-value": sortKeyValue},
                             // th({key: "id", scope: "row", className: "align-middle"}, taskId),
@@ -1265,7 +1284,9 @@ class TasksView extends React.Component {
                                     }
                                 },
                                 div({className: titleColorClass, key: "title"}, task.title),
-                                div({className: "task-detail-info text-secondary", key: "created"}, formatDate(task.created))
+                                div({className: "task-detail-info text-secondary", key: "task-detail-info"},
+                                    dates
+                                )
                             ),
                             td(
                                 {key: "action", className: "right align-middle"},

@@ -160,7 +160,7 @@ function isValidDate(date) {
 
 function formatDate(timestampUtc) {
     const dateUtc = new Date(timestampUtc);
-    return new Date(dateUtc.getTime() - dateUtc.getTimezoneOffset()*60*1000).toLocaleString(LOCALE);
+    return new Date(dateUtc.getTime() - dateUtc.getTimezoneOffset()*60*1000).toLocaleDateString(LOCALE);
 }
 
 function findUrls(input) {
