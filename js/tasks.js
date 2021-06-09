@@ -360,6 +360,69 @@ class ConflictButtonsArea extends React.Component {
     }
 }
 
+class TaskRelationShipSection extends React.Component {
+    // props.title
+    // props.parentList
+    // props.parentListId
+    // props.relatedTaskIds
+    // props.handleAdd()
+    // props.handleRemove(id)
+    // props.goToRelatedTask(id)
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const relationShips = [];
+        if (!isNull(this.props.parentListId)) {
+            let classesTaskBox = "text-light bg-secondary form-control col-8";
+            for (const relatedTaskId of this.props.relatedTaskIds){
+                const relatedTask = this.props.parentList.tasks[relatedTaskId];
+                if (!isNull(relatedTask)) {
+                    relationShips.push(li({
+                            key: relatedTaskId,
+                            className: "row",
+                            onClick: () => {
+                                this.props.goToRelatedTask(relatedTaskId);
+                            }
+                        },
+                        div({className: classesTaskBox, key: "task"},
+                            relatedTask.title
+                        ),
+                        button({
+                                key: "remove",
+                                type: "button",
+                                className: "btn btn-secondary col-2 col-md-1 ml-1 mr-1",
+                                onClick: ()=>this.props.handleRemove(relatedTask.id)
+                            },
+                            i({className: "mdi mdi-close"})
+                        )
+                    ));
+                }
+            }
+        }
+
+        return div({className:"form-group row"},
+            label({key: "label", className: "col-12 col-form-label text-light"}, this.props.title),
+            div({key: "tasks-list", className: "col-12"},
+                ul({key: "task-list", className: "related-tasks-list"},
+                    relationShips
+                ),
+                button({
+                        key: "add-button",
+                        type: "button",
+                        className: "btn btn-primary col-2 col-md-1 ",
+                        onClick: this.props.handleAdd,
+                        disabled: isNull(this.props.parentListId)
+                    },
+                    "+"
+                )
+            )
+        )
+    }
+
+}
+
 class TaskEditView extends React.Component {
     // props.taskId
     // props.task
@@ -448,6 +511,8 @@ class TaskEditView extends React.Component {
         this.getAllTaskOptions = this.getAllTaskOptions.bind(this);
         this.deriveInitialDue = this.deriveInitialDue.bind(this);
         this.clearDueDate = this.clearDueDate.bind(this);
+        this.isUnChanged = this.isUnChanged.bind(this);
+        this.goToRelatedTask = this.goToRelatedTask.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.getCurrentDueInput = this.getCurrentDueInput.bind(this);
 
@@ -568,10 +633,9 @@ class TaskEditView extends React.Component {
         this.dateInputRef.current.value = "";
     }
 
-    goToRelatedTask(taskId){
+    isUnChanged() {
         const prevTask = this.props.task;
-        if (
-            this.state.taskId === prevTask.id
+        return this.state.taskId === prevTask.id
             && this.state.title === prevTask.title
             && this.state.description === prevTask.description
             && this.getCurrentDueInput() === prevTask.due
@@ -579,8 +643,12 @@ class TaskEditView extends React.Component {
             && this.state.prerequisites.equals(prevTask.prerequisites)
             && this.state.dependingTasks.equals(prevTask.dependingTasks)
             && this.state.completed === prevTask.completed
+    }
+
+    goToRelatedTask(taskId){
+        if (
+            this.isUnChanged()
         ) {
-            // FIXME deduplicate
             const wantedList = this.props.allLists[this.state.parentListId];
             const wantedTask = wantedList?.tasks[taskId];
             if (!isNull(wantedList) && !isNull(wantedTask)) {
@@ -862,100 +930,37 @@ class TaskEditView extends React.Component {
             )
         )
 
-        const prerequisites = [];
-        const dependingTasks = [];
-        const parentListId = this.state.parentListId;
-        if (!isNull(parentList)) {
-            let classesTaskBox = "text-light bg-secondary form-control col-8";
-            for (const prereqId of this.state.prerequisites){
-                const prereqTask = this.props.allLists[parentListId]?.tasks[prereqId];
-                if (!isNull(prereqTask)) {
-                    prerequisites.push(li({
-                            key: prereqId,
-                            className: "row",
-                            onClick: () => {
-                                this.goToRelatedTask(prereqId); // FIXME does this work?
-                            }
-                        },
-                        div({className: classesTaskBox, key: "task"},
-                            prereqTask.title
-                        ),
-                        button({
-                                key: "remove",
-                                type: "button",
-                                className: "btn btn-secondary col-2 col-md-1 ml-1 mr-1",
-                                onClick: ()=>this.removePrerequisite(prereqTask.id)
-                            },
-                            i({className: "mdi mdi-close"})
-                        )
-                    ));
-                }
-            }
-            for (const dependingId of this.state.dependingTasks){
-                const dependingTask = this.props.allLists[parentListId]?.tasks[dependingId];
-                if (!isNull(dependingTask)) {
-                    dependingTasks.push(li({
-                            key: dependingId,
-                            className: "row",
-                            onClick: () => {
-                                // TODO: open task if there are no unsaved changes.
-                                // otherwise popup with options "save and continue" or "discard and continue" or "cancel"
-                            }
-                        },
-                        div({className: classesTaskBox, key: "task"},
-                            dependingTask.title
-                        ),
-                        button({
-                                key: "remove",
-                                type: "button",
-                                className: "btn btn-secondary col-2 col-md-1 ml-1 mr-1",
-                                onClick: ()=>this.removeDepending(dependingTask.id)
-                            },
-                            i({className: "mdi mdi-close"})
-                        )
-                    ));
-                }
-            }
-        }
         formGroups.push(
-            div({className:"form-group row", key: "prereq-input"},
-                label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.prerequisites"]),
-                div({key: "tasks-list", className: "col-12"},
-                    ul({key: "task-list", className: "related-tasks-list"},
-                        prerequisites
-                    ),
-                    button({
-                            key: "add-button",
-                            type: "button",
-                            className: "btn btn-primary col-2 col-md-1 ",
-                            onClick: this.handleAddPrerequisite,
-                            disabled: isNull(this.state.parentListId)
-                        },
-                        "+"
-                    )
-                )
+            e(
+                TaskRelationShipSection,
+                {
+                    key: "prereq-input",
+                    title: S["tasks.form.prerequisites"],
+                    relatedTaskIds: this.state.prerequisites,
+                    parentList: parentList,
+                    parentListId: this.state.parentListId,
+                    handleAdd:  this.handleAddPrerequisite,
+                    handleRemove: this.removePrerequisite,
+                    goToRelatedTask: this.goToRelatedTask,
+                }
             )
-        )
+        );
 
         formGroups.push(
-            div({className:"form-group row", key: "depending-input"},
-                label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.depending"]),
-                div({key: "tasks-list", className: "col-12"},
-                    ul({key: "task-list", className: "related-tasks-list"},
-                        dependingTasks
-                    ),
-                    button({
-                            key: "add-button",
-                            type: "button",
-                            className: "btn btn-primary col-2 col-md-1",
-                            onClick: this.handleAddDepending,
-                            disabled: isNull(this.state.parentListId)
-                        },
-                        "+"
-                    )
-                )
+            e(
+                TaskRelationShipSection,
+                {
+                    key: "depending-input",
+                    title: S["tasks.form.depending"],
+                    relatedTaskIds: this.state.dependingTasks,
+                    parentList: parentList,
+                    parentListId: this.state.parentListId,
+                    handleAdd:  this.handleAddDepending,
+                    handleRemove: this.removeDepending,
+                    goToRelatedTask: this.goToRelatedTask,
+                }
             )
-        )
+        );
 
         const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
 
