@@ -375,7 +375,7 @@ class TaskRelationShipSection extends React.Component {
     render() {
         const relationShips = [];
         if (!isNull(this.props.parentListId)) {
-            let classesTaskBox = "text-light bg-secondary form-control col-8";
+            let classesTaskBox = "text-light bg-secondary form-control col-9 col-md-8 col-lg-7";
             for (const relatedTaskId of this.props.relatedTaskIds){
                 const relatedTask = this.props.parentList.tasks[relatedTaskId];
                 if (!isNull(relatedTask)) {
