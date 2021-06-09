@@ -139,7 +139,6 @@ class TaskTreeApp extends React.Component {
                         }
                         const remoteIds = lists.map(t => t.id);
                         for (const [listId, taskList] of Object.entries(draftState.taskLists)) {
-                            // FIXME check for undefined?
                             if (taskList.synced && !remoteIds.includes(taskList.id)) {
                                 delete draftState.taskLists[listId];
                             }
