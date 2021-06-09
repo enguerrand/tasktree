@@ -111,7 +111,7 @@ class DataView:
 
         requesting_user_id = self.viewing_user.id
         next_prerequisites = next_task["prerequisites"]
-        next_dependencies = next_task["dependingTasks"]
+        next_depending_tasks = next_task["dependingTasks"]
         next_tags = next_task["tags"]
         if prev_task is None:
             self.persistence.create_task(
@@ -123,8 +123,8 @@ class DataView:
                 next_task["description"],
                 next_task["completed"],
                 prereq_task_ids=tuple(next_prerequisites),
-                depending_task_ids=tuple(next_prerequisites),
-                tags=tuple(next_prerequisites)
+                depending_task_ids=tuple(next_depending_tasks),
+                tags=tuple(next_tags)
             )
         else:
             self.persistence.update_task(
@@ -157,11 +157,11 @@ class DataView:
                     self.persistence.remove_dependency(requesting_user_id, remove_tag_candidate, task_id)
 
             prev_dependencies = prev_task["dependingTasks"]
-            for add_dep_candidate in next_dependencies:
+            for add_dep_candidate in next_depending_tasks:
                 if add_dep_candidate not in prev_dependencies:
                     self.persistence.add_dependency(requesting_user_id, task_id, add_dep_candidate)
             for remove_dep_candidate in prev_dependencies:
-                if remove_dep_candidate not in next_dependencies:
+                if remove_dep_candidate not in next_depending_tasks:
                     self.persistence.remove_dependency(requesting_user_id, task_id, remove_dep_candidate)
 
 
