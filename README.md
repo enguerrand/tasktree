@@ -22,7 +22,8 @@ adduser --system tasktree
 addgroup tasktree
 usermod -aG tasktree tasktree
 mkdir -p /var/tasktree/
-persistence setup /var/tasktree/tasktree.db  # to be implemented
+python3 persistence.py setup
+python3 persistence.py adduser myusername 
 chown -R tasktree:tasktree /var/tasktree/
 chmod 600 /var/tasktree/tasktree.db
 # setup wsgi with webserver

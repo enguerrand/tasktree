@@ -1,12 +1,15 @@
 import json
 import os
+import re
+import sys
 from datetime import datetime
+from getpass import getpass
 from typing import List, Optional
 
 from dotenv import load_dotenv
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy import Boolean, DateTime, ForeignKey, Text, and_, create_engine, Table, Column, Integer, String, delete
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
@@ -16,6 +19,12 @@ Base = declarative_base()
 DB_LOCATION = os.environ.get("DB_LOCATION")
 DB_URL_DEV = "sqlite+pysqlite:///:memory:"
 DB_URL_PROD = "sqlite+pysqlite:///%s" % DB_LOCATION
+
+CMD_CLEAN = "clean"
+CMD_SETUP = "setup"
+CMD_TEST_SETUP = "test-setup"
+CMD_ADDUSER = "adduser"
+CMD_PASSWD = "passwd"
 
 
 association_table_user_x_task_list = Table(
@@ -122,6 +131,11 @@ class Persistence:
         password_hash = pbkdf2_sha256.hash(password)
         user = User(username=username, password=password_hash)
         self.session.add(user)
+        self.session.commit()
+
+    def change_user_password(self, username: str, password: str):
+        user = self.get_user_by_name(username)
+        user.password = pbkdf2_sha256.hash(password)
         self.session.commit()
 
     def get_users(self) -> List[User]:
@@ -330,23 +344,22 @@ class Persistence:
         return next_completed
 
 
-if __name__ == "__main__":
+# FIXME remove test code
+def test_setup(p: Persistence):
     if os.path.exists(DB_LOCATION):
         os.remove(DB_LOCATION)
-    persistence = Persistence(DB_URL_PROD)
-    persistence.create()
-    # FIXME remove test code
-    persistence.create_user("edr", "foobar")
-    persistence.create_user("sdr", "foobar")
-    u = persistence.get_user_by_name("edr")
-    s = persistence.get_user_by_name("sdr")
-    persistence.create_or_replace_task_list(1, "First list", u.id)
-    persistence.create_or_replace_task_list(2, "Second list", u.id)
-    persistence.share_task_list_with(1, s.id, u.id)
+    p.create()
+    p.create_user("edr", "foobar")
+    p.create_user("sdr", "foobar")
+    u = p.get_user_by_name("edr")
+    s = p.get_user_by_name("sdr")
+    p.create_or_replace_task_list(1, "First list", u.id)
+    p.create_or_replace_task_list(2, "Second list", u.id)
+    p.share_task_list_with(1, s.id, u.id)
     task_id = 1
-    for tl in persistence.get_task_lists(u.id):
+    for tl in p.get_task_lists(u.id):
         for i in (1, 2, 3, 4):
-            persistence.create_task(
+            p.create_task(
                 u.id,
                 task_id,
                 tl.id,
@@ -356,8 +369,70 @@ if __name__ == "__main__":
             task_id = task_id + 1
         for task in tl.tasks:
             if task.id % 2 == 0:
-                persistence.add_tag(u.id, task.id, "even")
+                p.add_tag(u.id, task.id, "even")
             else:
-                persistence.add_tag(u.id, task.id, "uneven")
+                p.add_tag(u.id, task.id, "uneven")
             if task.id % 3 == 0:
-                persistence.add_tag(u.id, task.id, "multiple of 3")
+                p.add_tag(u.id, task.id, "multiple of 3")
+
+
+def clean():
+    if os.path.exists(DB_LOCATION):
+        os.remove(DB_LOCATION)
+
+
+def setup(p: Persistence):
+    if os.path.exists(DB_LOCATION):
+        die(f"Cannot run setup: {DB_LOCATION} exists. Run clean first if you want to wipe all data.")
+    p.create()
+
+
+def add_user(p: Persistence, username):
+    if not os.path.exists(DB_LOCATION):
+        die(f"Need to run {CMD_SETUP} before adding users")
+    if not re.compile("^[a-zA-Z0-9]*$").match(username):
+        die(f"Only alphanumerical characters are allowed in username")
+    password = getpass()
+    try:
+        p.create_user(username, password)
+    except IntegrityError:
+        die(f"User {username} does already exists.")
+
+
+def passwd(p: Persistence, username):
+    if not os.path.exists(DB_LOCATION):
+        die(f"Need to run {CMD_SETUP} before adding users")
+    password = getpass()
+    try:
+        p.change_user_password(username, password)
+    except NoResultFound:
+        die(f"User {username} does not exist.")
+
+
+def die(msg):
+    print(msg, file=sys.stderr)
+    exit(1)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) <= 1:
+        die(f"Argument missing: need at least one of {CMD_CLEAN}|{CMD_SETUP}|{CMD_ADDUSER}|{CMD_PASSWD}")
+    persistence = Persistence(DB_URL_PROD)
+    cmd = sys.argv[1]
+    if cmd == CMD_CLEAN:
+        clean()
+    elif cmd == CMD_SETUP:
+        setup(persistence)
+    elif cmd == CMD_ADDUSER:
+        if len(sys.argv) <= 2:
+            die(f"Argument missing: need username!")
+        username = sys.argv[2]
+        add_user(persistence, username)
+    elif cmd == CMD_PASSWD:
+        if len(sys.argv) <= 2:
+            die(f"Argument missing: need username!")
+        username = sys.argv[2]
+        passwd(persistence, username)
+    elif cmd == CMD_TEST_SETUP:  # FIXME: remove test code
+        test_setup(persistence)
+
