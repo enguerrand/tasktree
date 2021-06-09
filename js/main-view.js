@@ -14,24 +14,15 @@ class MainView extends React.Component {
     // props.filterTags
     // props.addFilterTag(tag)
     // props.removeFilterTag(tag)
+    // props.createWithTitle
+    // props.resetCreateWithTitle
     constructor(props) {
         super(props);
         this.state = {};
     }
 
     render() {
-        if (this.props.category === CATEGORY_ID_LISTS) {
-            return e(
-                ListsView,
-                {
-                    taskLists: this.props.taskLists,
-                    activeListIds: this.props.activeListIds,
-                    setListActive: this.props.setListActive,
-                    onListUpdatedLocally: this.props.onListUpdatedLocally,
-                    createListId: this.props.createListId
-                }
-            );
-        } else if (this.props.category === CATEGORY_ID_TASKS) {
+        if (this.props.category === CATEGORY_ID_TASKS || !isNull(this.props.createWithTitle)) {
             return e(
                 TasksView,
                 {
@@ -46,6 +37,19 @@ class MainView extends React.Component {
                     filterTags: this.props.filterTags,
                     addFilterTag: this.props.addFilterTag,
                     removeFilterTag: this.props.removeFilterTag,
+                    createWithTitle: this.props.createWithTitle,
+                    resetCreateWithTitle: this.props.resetCreateWithTitle,
+                }
+            );
+        } else if (this.props.category === CATEGORY_ID_LISTS) {
+            return e(
+                ListsView,
+                {
+                    taskLists: this.props.taskLists,
+                    activeListIds: this.props.activeListIds,
+                    setListActive: this.props.setListActive,
+                    onListUpdatedLocally: this.props.onListUpdatedLocally,
+                    createListId: this.props.createListId
                 }
             );
         } else {

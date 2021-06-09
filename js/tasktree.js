@@ -32,6 +32,7 @@ class TaskTreeApp extends React.Component {
         this.toggleShowCompletedTasks = this.toggleShowCompletedTasks.bind(this);
         this.addFilterTag = this.addFilterTag.bind(this);
         this.removeFilterTag = this.removeFilterTag.bind(this);
+        this.resetCreateWithTitle = this.resetCreateWithTitle.bind(this);
     }
 
     // TODO generate truly unique ids
@@ -299,6 +300,13 @@ class TaskTreeApp extends React.Component {
         window.addEventListener('offline', this.updateOnlineStatus);
         window.addEventListener('focus', this.writeAll);
         window.addEventListener("beforeunload", this.beforeUnload);
+        const queryParams = new URLSearchParams(window.location.search);
+        const createWithTitle = queryParams.get(QUERY_PARAM_CREATE);
+        if (!isNull(createWithTitle) && createWithTitle.length > 0) {
+            this.setState({
+                createWithTitle: createWithTitle
+            });
+        }
         this.fetchUserSettings();
     }
 
@@ -330,6 +338,14 @@ class TaskTreeApp extends React.Component {
                 listsSynced: listsSynced
             });
         }
+    }
+
+    resetCreateWithTitle() {
+        return new Promise((res) => {
+            this.setState({createWithTitle: null},
+                () => res()
+            );
+        });
     }
 
     render() {
@@ -364,6 +380,8 @@ class TaskTreeApp extends React.Component {
                     filterTags: this.state.filterTags,
                     addFilterTag: this.addFilterTag,
                     removeFilterTag: this.removeFilterTag,
+                    createWithTitle: this.state.createWithTitle,
+                    resetCreateWithTitle: this.resetCreateWithTitle,
                 })
             ];
         }

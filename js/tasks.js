@@ -1131,12 +1131,19 @@ class TasksView extends React.Component {
     // props.filterTags
     // props.addFilterTag(tag)
     // props.removeFilterTag(tag)
+    // props.createWithTitle
+    // props.resetCreateWithTitle
     constructor(props) {
         super(props);
         this.state = {
             editingTask: null,
             editingList: null,
             currentFilterString: "",
+            requestedInitialProperties: !isNull(this.props.createWithTitle)
+                ? {
+                    "title": props.createWithTitle,
+                    "tags": []
+                } : undefined
         }
         this.renderTasksTable = this.renderTasksTable.bind(this);
         this.addTask = this.addTask.bind(this);
@@ -1198,6 +1205,7 @@ class TasksView extends React.Component {
     }
 
     async onTaskEdited(taskAfterEdit, parentList) {
+        await this.props.resetCreateWithTitle();
         await this.props.onTaskUpdatedLocally(taskAfterEdit, parentList);
         this.setState({editingTask: null, editingList: null, requestedInitialProperties: null});
     }
