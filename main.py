@@ -94,6 +94,14 @@ def get_lists():
     return jsonify(data_view.get_lists())
 
 
+@app.route(API_BASE_LISTS + "<int:task_list_id>", methods=["DELETE"])
+@login_required
+def delete_task_list(task_list_id: int):
+    data_view = DataView(persistence, current_user)
+    data_view.remove_list(task_list_id)
+    return success()
+
+
 @app.route(API_BASE_LISTS + "<int:task_list_id>", methods=["PUT"])
 @login_required
 def write_task_list(task_list_id: int):

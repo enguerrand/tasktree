@@ -100,6 +100,9 @@ class DataView:
         title = json_request["title"]
         self.persistence.create_or_replace_task_list(task_list_id, title, self.viewing_user.id)
 
+    def remove_list(self, task_list_id: int):
+        self.persistence.remove_task_list(self.viewing_user.id, task_list_id)
+
     def date_from_timestamp(self, timestamp):
         if timestamp is None:
             return None
