@@ -16,6 +16,7 @@ class MainView extends React.Component {
     // props.removeFilterTag(tag)
     // props.createWithTitle
     // props.resetCreateWithTitle
+    // props.deleteTask(task, taskList)
     constructor(props) {
         super(props);
         this.state = {};
@@ -39,6 +40,7 @@ class MainView extends React.Component {
                     removeFilterTag: this.props.removeFilterTag,
                     createWithTitle: this.props.createWithTitle,
                     resetCreateWithTitle: this.props.resetCreateWithTitle,
+                    deleteTask: this.props.deleteTask,
                 }
             );
         } else if (this.props.category === CATEGORY_ID_LISTS) {
@@ -49,7 +51,7 @@ class MainView extends React.Component {
                     activeListIds: this.props.activeListIds,
                     setListActive: this.props.setListActive,
                     onListUpdatedLocally: this.props.onListUpdatedLocally,
-                    createListId: this.props.createListId
+                    createListId: this.props.createListId,
                 }
             );
         } else {

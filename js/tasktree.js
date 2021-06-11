@@ -28,6 +28,7 @@ class TaskTreeApp extends React.Component {
         this.updateOnlineStatus = this.updateOnlineStatus.bind(this);
         this.beforeUnload = this.beforeUnload.bind(this);
         this.setListActive = this.setListActive.bind(this);
+        this.deleteTask = this.deleteTask.bind(this);
         this.setTasksSortingKey = this.setTasksSortingKey.bind(this);
         this.toggleShowCompletedTasks = this.toggleShowCompletedTasks.bind(this);
         this.addFilterTag = this.addFilterTag.bind(this);
@@ -241,6 +242,28 @@ class TaskTreeApp extends React.Component {
         }, this.storeUserSettings)
     }
 
+    deleteTask(taskId, taskListId) {
+        return new Promise((res) => {
+            this.setState(
+                immer.produce(draftState => {
+                    const listToUpdate = draftState.taskLists[taskListId];
+                    delete listToUpdate.tasks[taskId];
+                    for (const maybeRelatedTask of Object.values(listToUpdate.tasks)) {
+                        maybeRelatedTask.dependingTasks.removeIf(tid => tid === taskId);
+                        maybeRelatedTask.prerequisites.removeIf(tid => tid === taskId);
+                    }
+                }),
+                async () => {
+                    const success = await sendTaskDeletion(taskId, taskListId);
+                    if (success) {
+                        await this.writeUnsyncedLists;
+                    }
+                    res(success);
+                }
+            );
+        });
+    }
+
     async setTasksSortingKey(sortingKey) {
         this.setState({
             tasksSortingKey: sortingKey
@@ -382,6 +405,7 @@ class TaskTreeApp extends React.Component {
                     removeFilterTag: this.removeFilterTag,
                     createWithTitle: this.state.createWithTitle,
                     resetCreateWithTitle: this.resetCreateWithTitle,
+                    deleteTask: this.deleteTask,
                 })
             ];
         }

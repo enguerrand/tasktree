@@ -128,6 +128,10 @@ async function sendTask(task, taskList, prevTask) {
     return sendJson(API_URL_LISTS + '/' + taskList.id + '/' + task.id, 'put', json);
 }
 
+async function sendTaskDeletion(taskId, taskListId) {
+    return sendJson(API_URL_LISTS + '/' + taskListId + '/' + taskId, 'delete', {});
+}
+
 function isNull(obj) {
     return obj === undefined || obj === null;
 }

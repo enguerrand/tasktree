@@ -440,6 +440,7 @@ class TaskEditView extends React.Component {
     // props.activeListIds
     // props.allLists
     // props.editTask(task, taskList)
+    // props.deleteTask(task, taskList)
     constructor(props) {
         super(props);
         let taskId = this.props.taskId;
@@ -521,7 +522,7 @@ class TaskEditView extends React.Component {
         this.goToRelatedTask = this.goToRelatedTask.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.getCurrentDueInput = this.getCurrentDueInput.bind(this);
-
+        this.handleDeletion = this.handleDeletion.bind(this);
         this.dateInputRef = React.createRef();
     }
 
@@ -663,7 +664,7 @@ class TaskEditView extends React.Component {
         const goToTask = () => {
             this.setState({
                 currentModalProps: null
-            }, () => this.props.editTask(wantedTask, wantedList))
+            }, () => this.props.editTask(wantedTask, wantedList));
         }
         if (
             this.isUnChanged()
@@ -677,7 +678,7 @@ class TaskEditView extends React.Component {
                     saveButtonLabel: S["label.discard.and.continue"],
                     onSubmit: goToTask,
                 }
-            })
+            });
         }
     }
 
@@ -803,6 +804,39 @@ class TaskEditView extends React.Component {
             return 0;
         })
         return allTasks;
+    }
+
+    handleDeletion() {
+        const listId = this.props.parentList?.id;
+        if (!isNull(listId)) {
+
+            const doDelete = async () => {
+                const success = await this.props.deleteTask(this.props.taskId, listId);
+                if (success) {
+                    this.setState({
+                        currentModalProps: null,
+                    }, this.props.onCancel);
+                } else {
+                    this.setState({
+                        currentModalProps: {
+                            title: S["delete.task.title"],
+                            message: S["delete.task.failed.message"],
+                            saveButtonLabel: S["label.delete"],
+                            onSubmit: doDelete,
+                        }
+                    });
+                }
+            }
+
+            this.setState({
+                currentModalProps: {
+                    title: S["delete.task.title"],
+                    message: S["delete.task.message"],
+                    saveButtonLabel: S["label.delete"],
+                    onSubmit: doDelete
+                }
+            });
+        }
     }
 
     render() {
@@ -1033,6 +1067,17 @@ class TaskEditView extends React.Component {
             )
         );
 
+        if (!isNull(this.state.parentListId) && !isNull(this.props.task)) {
+            formGroups.push(
+                div({className:"form-group row", key: "delete-action"},
+                    label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.danger.zone"]),
+                    div({key: "delete-button", className: "col-12 col-form-button"},
+                        button({className: "btn btn-danger col-2 col-md-1 ml-1 mr-1", type: "button", onClick: this.handleDeletion}, S["tasks.form.delete"])
+                    )
+                )
+            );
+        }
+
         const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
 
         let currentModal;
@@ -1130,6 +1175,7 @@ class TasksView extends React.Component {
     // props.removeFilterTag(tag)
     // props.createWithTitle
     // props.resetCreateWithTitle
+    // props.deleteTask(task, taskList)
     constructor(props) {
         super(props);
         this.state = {
@@ -1346,6 +1392,7 @@ class TasksView extends React.Component {
                     activeListIds: this.props.activeListIds,
                     allLists: this.props.taskLists,
                     editTask: this.editTask,
+                    deleteTask: this.props.deleteTask,
                 }
             );
         } else {
