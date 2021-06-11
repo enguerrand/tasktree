@@ -496,9 +496,9 @@ class TaskEditView extends React.Component {
             dependingTasks: initialDependingTasks,
             parentListId: parentListId,
             completed: completed,
-            listChoiceModalVisible: false,
             prereqChoiceModalVisible: false,
             dependingChoiceModalVisible: false,
+            currentRadioListProps: null,
             currentModalProps: null,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
@@ -838,9 +838,28 @@ class TaskEditView extends React.Component {
                             className: "btn btn-secondary",
                             id: "list-input",
                             onClick: () => {
-                                this.setState({
-                                    listChoiceModalVisible: true
-                                });
+                                this.setState((prevState, prevProps) => {
+                                        const availableOptions = Object.values(prevProps.allLists).map(function (l) {
+                                            return {
+                                                id: l.id,
+                                                label: l.title
+                                            }
+                                        })
+                                        return {
+                                            currentRadioListProps: {
+                                                title: S["tasks.form.list.title"],
+                                                currentSelection: prevState.parentListId,
+                                                options: availableOptions,
+                                                selectionHandler: selection => {
+                                                    this.setState({
+                                                        currentRadioListProps: null,
+                                                        parentListId: selection
+                                                    });
+                                                },
+                                            },
+                                        };
+                                    }
+                                );
                             }
                         }, buttonTitle)
                     )
@@ -996,7 +1015,7 @@ class TaskEditView extends React.Component {
                     saveButtonLabel: this.state.currentModalProps.saveButtonLabel,
                     onCancel: () => this.setState({
                         currentModalProps: null,
-                        listChoiceModalVisible: false,
+                        currentRadioListProps: null,
                         prereqChoiceModalVisible: false,
                         dependingChoiceModalVisible: false,
                     }),
@@ -1006,66 +1025,67 @@ class TaskEditView extends React.Component {
                     p({}, this.state.currentModalProps.message)
                 )
             );
-        } else if (this.state.listChoiceModalVisible || this.state.prereqChoiceModalVisible || this.state.dependingChoiceModalVisible) {
+        } else if (!isNull(this.state.currentRadioListProps)) {
+            currentModal = e(
+                ModalDialog,
+                {
+                    key: "modal",
+                    title: this.state.currentRadioListProps.title,
+                    onCancel: () => this.setState({
+                        currentRadioListProps: null
+                    }),
+                },
+                e(
+                    RadioList,
+                    {
+                        currentSelection: this.state.currentRadioListProps.currentSelection,
+                        availableOptions: this.state.currentRadioListProps.options,
+                        handleSelection: this.state.currentRadioListProps.selectionHandler
+                    }
+                )
+            );
+        } else if (this.state.prereqChoiceModalVisible || this.state.dependingChoiceModalVisible) {
             let availableOptions;
             let title;
             let currentSelection;
             let selectionHandler;
-            if (this.state.listChoiceModalVisible) {
-                title = S["tasks.form.list.title"];
-                currentSelection = this.state.parentListId;
-                availableOptions = [];
-                for (const taskList of Object.values(this.props.allLists)) {
-                    availableOptions.push({
-                        id: taskList.id,
-                        label: taskList.title
-                    });
-                }
-                selectionHandler = selection => {
-                    this.setState({
-                        listChoiceModalVisible: false,
-                        parentListId: selection
-                    });
-                };
-            } else {
-                title = S["tasks.form.task.title"];
-                let exceptions;
-                if (this.state.prereqChoiceModalVisible) {
-                    exceptions = this.state.prerequisites;
-                } else if (this.state.dependingChoiceModalVisible) {
-                    exceptions = this.state.dependingTasks;
-                }
-                availableOptions = this.getAllTaskOptions(exceptions);
-                currentSelection = null;
-                selectionHandler = selection => {
-                    this.setState(prev => {
-                        let nextPrereq = Object.assign([], prev.prerequisites);
-                        let nextDepending = Object.assign([], prev.dependingTasks);
-                        if (prev.prereqChoiceModalVisible) {
-                            nextPrereq.push(selection);
-                        } else if (prev.dependingChoiceModalVisible) {
-                            nextDepending.push(selection);
-                        } else {
-                            console.error("unexpected: don't know if choosing dependency or depending tasks");
-                            return prev;
-                        }
-                        return {
-                            listChoiceModalVisible: false,
-                            prereqChoiceModalVisible: false,
-                            dependingChoiceModalVisible: false,
-                            prerequisites: nextPrereq,
-                            dependingTasks: nextDepending,
-                        }
-                    });
-                };
+            title = S["tasks.form.task.title"];
+            let exceptions;
+            if (this.state.prereqChoiceModalVisible) {
+                exceptions = this.state.prerequisites;
+            } else if (this.state.dependingChoiceModalVisible) {
+                exceptions = this.state.dependingTasks;
             }
+            availableOptions = this.getAllTaskOptions(exceptions);
+            currentSelection = null;
+            selectionHandler = selection => {
+                this.setState(prev => {
+                    let nextPrereq = Object.assign([], prev.prerequisites);
+                    let nextDepending = Object.assign([], prev.dependingTasks);
+                    if (prev.prereqChoiceModalVisible) {
+                        nextPrereq.push(selection);
+                    } else if (prev.dependingChoiceModalVisible) {
+                        nextDepending.push(selection);
+                    } else {
+                        console.error("unexpected: don't know if choosing dependency or depending tasks");
+                        return prev;
+                    }
+                    return {
+                        currentRadioListProps: null,
+                        prereqChoiceModalVisible: false,
+                        dependingChoiceModalVisible: false,
+                        prerequisites: nextPrereq,
+                        dependingTasks: nextDepending,
+                    }
+                });
+            };
             currentModal = e(
                 ModalDialog,
                 {
                     key: "modal",
                     title: title,
                     onCancel: () => this.setState({
-                        listChoiceModalVisible: false,
+                        currentRadioListProps: null,
                         prereqChoiceModalVisible: false,
                         dependingChoiceModalVisible: false,
                     }),
