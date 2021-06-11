@@ -496,8 +496,6 @@ class TaskEditView extends React.Component {
             dependingTasks: initialDependingTasks,
             parentListId: parentListId,
             completed: completed,
-            prereqChoiceModalVisible: false,
-            dependingChoiceModalVisible: false,
             currentRadioListProps: null,
             currentModalProps: null,
         }
@@ -721,14 +719,46 @@ class TaskEditView extends React.Component {
     }
 
     handleAddPrerequisite() {
-        this.setState({
-            prereqChoiceModalVisible: true,
+        this.setState(prevState => {
+            return {
+                currentRadioListProps: {
+                    title: S["tasks.form.task.title"],
+                        currentSelection: null,
+                        options: this.getAllTaskOptions(prevState.prerequisites),
+                        selectionHandler: selection => {
+                        this.setState(prev => {
+                            const nextPrereq = Object.assign([], prev.prerequisites);
+                            nextPrereq.push(selection);
+                            return {
+                                currentRadioListProps: null,
+                                prerequisites: nextPrereq,
+                            }
+                        });
+                    },
+                }
+            };
         });
     }
 
     handleAddDepending() {
-        this.setState({
-            dependingChoiceModalVisible: true,
+        this.setState(prevState => {
+            return {
+                currentRadioListProps: {
+                    title: S["tasks.form.task.title"],
+                    currentSelection: null,
+                    options: this.getAllTaskOptions(prevState.dependingTasks),
+                    selectionHandler: selection => {
+                        this.setState(prev => {
+                            const nextDepending = Object.assign([], prev.dependingTasks);
+                            nextDepending.push(selection);
+                            return {
+                                currentRadioListProps: null,
+                                dependingTasks: nextDepending,
+                            }
+                        });
+                    },
+                }
+            }
         });
     }
     
@@ -1016,8 +1046,6 @@ class TaskEditView extends React.Component {
                     onCancel: () => this.setState({
                         currentModalProps: null,
                         currentRadioListProps: null,
-                        prereqChoiceModalVisible: false,
-                        dependingChoiceModalVisible: false,
                     }),
                     onSubmit: this.state.currentModalProps.onSubmit
                 },
@@ -1041,61 +1069,6 @@ class TaskEditView extends React.Component {
                         currentSelection: this.state.currentRadioListProps.currentSelection,
                         availableOptions: this.state.currentRadioListProps.options,
                         handleSelection: this.state.currentRadioListProps.selectionHandler
-                    }
-                )
-            );
-        } else if (this.state.prereqChoiceModalVisible || this.state.dependingChoiceModalVisible) {
-            let availableOptions;
-            let title;
-            let currentSelection;
-            let selectionHandler;
-            title = S["tasks.form.task.title"];
-            let exceptions;
-            if (this.state.prereqChoiceModalVisible) {
-                exceptions = this.state.prerequisites;
-            } else if (this.state.dependingChoiceModalVisible) {
-                exceptions = this.state.dependingTasks;
-            }
-            availableOptions = this.getAllTaskOptions(exceptions);
-            currentSelection = null;
-            selectionHandler = selection => {
-                this.setState(prev => {
-                    let nextPrereq = Object.assign([], prev.prerequisites);
-                    let nextDepending = Object.assign([], prev.dependingTasks);
-                    if (prev.prereqChoiceModalVisible) {
-                        nextPrereq.push(selection);
-                    } else if (prev.dependingChoiceModalVisible) {
-                        nextDepending.push(selection);
-                    } else {
-                        console.error("unexpected: don't know if choosing dependency or depending tasks");
-                        return prev;
-                    }
-                    return {
-                        currentRadioListProps: null,
-                        prereqChoiceModalVisible: false,
-                        dependingChoiceModalVisible: false,
-                        prerequisites: nextPrereq,
-                        dependingTasks: nextDepending,
-                    }
-                });
-            };
-            currentModal = e(
-                ModalDialog,
-                {
-                    key: "modal",
-                    title: title,
-                    onCancel: () => this.setState({
-                        currentRadioListProps: null,
-                        prereqChoiceModalVisible: false,
-                        dependingChoiceModalVisible: false,
-                    }),
-                },
-                e(
-                    RadioList,
-                    {
-                        currentSelection: currentSelection,
-                        availableOptions: availableOptions,
-                        handleSelection: selectionHandler
                     }
                 )
             );
