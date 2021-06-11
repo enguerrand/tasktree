@@ -378,39 +378,29 @@ class TestPersistence(TestCase):
         self.assertFalse(self.task_due_at_ten.id in [t.id for t in task1.depending_tasks])
         self.assertFalse(task1.id in [t.id for t in self.task_due_at_ten.prerequisites])
 
-    def test_move_task_to_list(self):
+    def test_remove_task(self):
         list_1 = self.persistence.get_task_list(self.user_a.id, 1)
-        shared_list = self.persistence.get_task_list(self.user_a.id, 3)
         task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
         self.assertTrue(task1 in list_1.tasks)
-        self.assertFalse(task1 in shared_list.tasks)
-        self.persistence.move_task_to_list(self.user_a.id, task1.id, list_1.id, shared_list.id)
+        self.persistence.remove_task(self.user_a.id, task1.id)
         self.assertFalse(task1 in list_1.tasks)
-        self.assertTrue(task1 in shared_list.tasks)
 
-    def test_move_task_from_list_not_containing_task(self):
+    def test_remove_task_no_permission(self):
         list_1 = self.persistence.get_task_list(self.user_a.id, 1)
-        shared_list = self.persistence.get_task_list(self.user_a.id, 3)
         task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
-        self.assertFalse(task1 in shared_list.tasks)  # check test setup
+        self.assertTrue(task1 in list_1.tasks)  # check test setup
         self.assertRaises(
             NoResultFound,
-            lambda: self.persistence.move_task_to_list(self.user_a.id, task1.id, shared_list.id, list_1.id),
+            lambda: self.persistence.remove_task(self.user_b.id, task1.id),
         )
         self.assertTrue(task1 in list_1.tasks)
-        self.assertFalse(task1 in shared_list.tasks)
 
-    def test_move_task_no_list_permission(self):
-        list_1 = self.persistence.get_task_list(self.user_a.id, 1)
-        shared_list = self.persistence.get_task_list(self.user_a.id, 3)
+    def test_relation_ships_of_removed_task(self):
         task1 = self.persistence.get_task(self.user_a.id, TASK_ID_1)
-        self.assertFalse(task1 in shared_list.tasks)  # check test setup
-        self.assertRaises(
-            NoResultFound,
-            lambda: self.persistence.move_task_to_list(self.user_b.id, task1.id, list_1.id, shared_list.id),
-        )
-        self.assertTrue(task1 in list_1.tasks)
-        self.assertFalse(task1 in shared_list.tasks)
+        self.persistence.add_dependency(self.user_a.id, TASK_ID_1, self.task_due_at_ten.id)
+        self.assertEquals(1, len(task1.depending_tasks))
+        self.persistence.remove_task(self.user_a.id, self.task_due_at_ten.id)
+        self.assertEquals(0, len(task1.depending_tasks))
 
     def test_get_user_settings(self):
         settings = json.loads(self.user_a.settings)

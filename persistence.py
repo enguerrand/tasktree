@@ -239,14 +239,10 @@ class Persistence:
         ]
         return dict(task_ids_with_conflict)
 
-    def move_task_to_list(self, requesting_user_id: int, task_id: int, from_task_list_id: int, to_task_list_id: int):
-        task_to_move = self.get_task(requesting_user_id, task_id)
-        src_list = self.get_task_list(requesting_user_id, from_task_list_id)
-        dst_list = self.get_task_list(requesting_user_id, to_task_list_id)
-        if task_to_move not in src_list.tasks:
-            raise NoResultFound()
-        src_list.tasks.remove(task_to_move)
-        dst_list.tasks.append(task_to_move)
+    def remove_task(self, requesting_user_id: int, task_id: int):
+        task_to_remove = self.get_task(requesting_user_id, task_id)
+        self.session.delete(task_to_remove)
+        self.session.commit()
 
     def update_task(
         self,
