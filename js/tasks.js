@@ -427,7 +427,6 @@ class TaskRelationShipSection extends React.Component {
             )
         )
     }
-
 }
 
 class TaskEditView extends React.Component {

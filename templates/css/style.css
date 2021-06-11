@@ -222,13 +222,13 @@ button.clear-text-input > i{
     background: rgba(0,0,0,0.7);
 }
 
-.related-tasks-list {
+.related-tasks-list, .related-users-list {
     margin-bottom: 0;
     list-style: none;
     padding: 0;
 }
 
-.related-tasks-list > li {
+.related-tasks-list > li, .related-users-list > li {
     margin: 3px 0;
 }
 

@@ -12,6 +12,7 @@ class TaskTreeApp extends React.Component {
             currentCategory: CATEGORY_ID_TASKS,
             tasksSortingKey: SORT_KEY_DEFAULT,
             showCompletedTasks: false,
+            allUsers: [],
             filterTags: [],
         };
         this.createListId = this.createListId.bind(this);
@@ -134,10 +135,12 @@ class TaskTreeApp extends React.Component {
                                     title: remoteList.title,
                                     synced: true,
                                     tasks: tasks,
+                                    users: remoteList.users,
                                     remoteTasks: remoteTasks
                                 };
                             } else {
                                 current.remoteTasks = remoteTasks;
+                                current.users = remoteList.users;
                             }
                         }
                         const remoteIds = lists.map(t => t.id);
@@ -406,6 +409,7 @@ class TaskTreeApp extends React.Component {
                 }),
                 e(MainView, {
                     key: "main-view",
+                    loggedInUser: this.state.loggedInUser,
                     category: this.state.currentCategory,
                     taskLists: this.state.taskLists,
                     activeListIds: this.state.activeListIds,

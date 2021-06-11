@@ -1,5 +1,49 @@
+class UsersSection extends React.Component {
+    // props.loggedInUser
+    // props.taskList
+    // props.currentUsers
+    // props.handleAdd()
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const users = [];
+        for (const username of this.props.currentUsers){
+            if (username === this.props.loggedInUser) {
+                continue;
+            }
+            users.push(li({
+                    key: username,
+                    className: "row",
+                },
+                div({className: "text-light bg-secondary form-control col-9 col-md-8 col-lg-7", key: "username"},
+                    username
+                )
+            ));
+        }
+
+        return div({className:"form-group row"},
+            label({key: "label", className: "col-12 col-form-label text-light"}, S["lists.form.users"]),
+            div({key: "users-list", className: "col-12"},
+                ul({key: "users-list", className: "related-users-list"},
+                    users
+                ),
+                button({
+                        key: "add-button",
+                        type: "button",
+                        className: "btn btn-primary col-2 col-md-1 ",
+                        onClick: this.props.handleAdd,
+                    },
+                    "+"
+                )
+            )
+        )
+    }
+}
 
 class ListEditView extends React.Component {
+    // props.loggedInUser
     // props.taskList
     // props.editingDone(listAfterEdit)
     // props.onCancel
@@ -10,24 +54,29 @@ class ListEditView extends React.Component {
         let listId;
         let header;
         let initialTitle;
+        let users;
         if (isNull(this.props.taskList)) {
             listId = this.props.createListId(),
             header = S["lists.form.title.create"];
             initialTitle = "";
+            users = [this.props.loggedInUser];
         } else {
             listId = this.props.taskList.id;
             header = S["lists.form.title.edit"];
             initialTitle = this.props.taskList.title;
+            users = this.props.taskList.users;
         }
         this.state = {
             listId: listId,
             header: header,
             title: initialTitle,
+            users: users,
             currentModalProps: null,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleDeletion = this.handleDeletion.bind(this);
+        this.handleShareWithUser = this.handleShareWithUser.bind(this);
     }
 
     handleTitleChange(event) {
@@ -39,7 +88,9 @@ class ListEditView extends React.Component {
         const listAfterEdit = {
             id: this.state.listId,
             title: this.state.title,
-            synced: false
+            users: this.state.users,
+            synced: false,
+            currentShareUserInput: null,
         }
         if (isNull(this.props.taskList)) {
             listAfterEdit.tasks = {};
@@ -84,6 +135,12 @@ class ListEditView extends React.Component {
         }
     }
 
+    handleShareWithUser() {
+        this.setState({
+            currentShareUserInput: ""
+        });
+    }
+
     render() {
         const formGroups = [];
 
@@ -114,6 +171,20 @@ class ListEditView extends React.Component {
             )
         );
 
+        formGroups.push(
+            e(
+                UsersSection,
+                {
+                    key: "users-input",
+                    loggedInUser: this.props.loggedInUser,
+                    title: S["lists.form.users"],
+                    taskList: this.props.taskList,
+                    currentUsers: this.state.users,
+                    handleAdd:  this.handleShareWithUser,
+                }
+            )
+        );
+
         if (!isNull(this.props.taskList)) {
             formGroups.push(
                 div({className:"form-group row", key: "delete-action"},
@@ -126,24 +197,76 @@ class ListEditView extends React.Component {
         }
 
         let currentModal;
-        if (isNull(this.state.currentModalProps)) {
-            currentModal = null;
-        } else {
+        if (!isNull(this.state.currentModalProps)) {
             currentModal = e(
-                    ModalDialog,
-                    {
-                        key: "modal",
-                        title: this.state.currentModalProps.title,
-                        saveButtonLabel: this.state.currentModalProps.saveButtonLabel,
-                        onCancel: () => this.setState({
-                            currentModalProps: null,
-                        }),
-                        onSubmit: this.state.currentModalProps.onSubmit
-                    },
-                    div({},
-                        p({}, this.state.currentModalProps.message)
-                    )
+                ModalDialog,
+                {
+                    key: "modal",
+                    title: this.state.currentModalProps.title,
+                    saveButtonLabel: this.state.currentModalProps.saveButtonLabel,
+                    onCancel: () => this.setState({
+                        currentModalProps: null,
+                    }),
+                    onSubmit: this.state.currentModalProps.onSubmit
+                },
+                div({},
+                    p({}, this.state.currentModalProps.message)
+                )
             );
+        } else if (!isNull(this.state.currentShareUserInput)) {
+            currentModal = e(
+                ModalDialog,
+                {
+                    key: "modal",
+                    title: S["lists.share"],
+                    saveButtonLabel: S["label.share"],
+                    onCancel: () => this.setState({
+                        currentShareUserInput: null,
+                    }),
+                    onSubmit: () => {
+                        this.setState(prevState => {
+                            const nextUsers = Object.assign([], prevState.users);
+                            const userToShareWith = prevState.currentShareUserInput;
+                            if (!isNull(userToShareWith) && !nextUsers.includes(userToShareWith)) {
+                                nextUsers.push(userToShareWith);
+                            }
+                            return {
+                                users: nextUsers,
+                                currentShareUserInput: null
+                            }
+                        });
+                    }
+                },
+                div({className:"form-group row", key: "user-input"},
+                    label({key: "label", className: "col-6 col-form-label text-light"}, S["label.user"]),
+                    div({key: "input", className: "col-12"},
+                        div({className: "clearable-input-wrapper"},
+                            input({
+                                id: "user-input",
+                                key: "user-input",
+                                type: "text",
+                                className: "form-control",
+                                placeholder: S["lists.form.share.hint"],
+                                autoComplete: "off",
+                                value: this.state.currentShareUserInput,
+                                onChange: event => this.setState({currentShareUserInput: event.target.value}),
+                            }),
+                            e(
+                                InputClearButton,
+                                {
+                                    key: "clear-button",
+                                    onClick: () => this.setState({currentShareUserInput: ""})
+                                }
+                            )
+                        )
+                    ),
+                    div({key: "warning", className: "col-12 mt-3"},
+                        p({className: "text-danger"}, S["lists.form.share.warning"])
+                    )
+                )
+            )
+        } else {
+            currentModal = null;
         }
         return [
             div(
@@ -176,6 +299,7 @@ class ListEditView extends React.Component {
 }
 
 class ListsView extends React.Component {
+    // prop.loggedInUser
     // prop.taskLists
     // prop.activeListIds
     // prop.setListActive(id, active)
@@ -265,6 +389,7 @@ class ListsView extends React.Component {
             return e(
                 ListEditView,
                 {
+                    loggedInUser: this.props.loggedInUser,
                     taskList: listToSet,
                     editingDone: async (listAfterEdit) => {
                         await this.props.onListUpdatedLocally(listAfterEdit);

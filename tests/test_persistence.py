@@ -47,10 +47,11 @@ class TestPersistence(TestCase):
             self.user_a.id, {"settingKey1": "settingVal1", "settingKey2": "settingVal2"}
         )
         self.user_b = self.persistence.get_user_by_name(USER_B_NAME)
-        self.persistence.create_or_replace_task_list(TASK_LIST_1_ID, TASK_LIST_1_TITLE, self.user_a.id)
-        self.persistence.create_or_replace_task_list(TASK_LIST_2_ID, TASK_LIST_2_TITLE, self.user_b.id)
-        self.persistence.create_or_replace_task_list(TASK_LIST_3_ID, TASK_LIST_3_TITLE, self.user_b.id)
-        self.persistence.share_task_list_with(3, self.user_a.id, self.user_b.id)
+        self.persistence.create_or_replace_task_list(TASK_LIST_1_ID, TASK_LIST_1_TITLE, self.user_a.id, [])
+        self.persistence.create_or_replace_task_list(TASK_LIST_2_ID, TASK_LIST_2_TITLE, self.user_b.id, [])
+        self.persistence.create_or_replace_task_list(
+            TASK_LIST_3_ID, TASK_LIST_3_TITLE, self.user_b.id, [self.user_a.username]
+        )
         self.persistence.create_task(
             1, TASK_ID_1, 1, TASK_1_TITLE, description=TASK_1_DESCRIPTION, tags=(TASK_1_TAG_1, TASK_1_TAG_2)
         )
@@ -99,7 +100,12 @@ class TestPersistence(TestCase):
 
     def test_no_insert_task_list_for_non_existant_user(self):
         self.assertRaises(
-            NoResultFound, lambda: self.persistence.create_or_replace_task_list(432, "foo", NON_EXISTANT_USER_ID)
+            NoResultFound, lambda: self.persistence.create_or_replace_task_list(432, "foo", NON_EXISTANT_USER_ID, [])
+        )
+
+    def test_no_insert_task_list_with_non_existant_additional_user(self):
+        self.assertRaises(
+            NoResultFound, lambda: self.persistence.create_or_replace_task_list(432, "foo", self.user_a.id, ["someone"])
         )
 
     def test_get_task_list(self):
@@ -122,14 +128,26 @@ class TestPersistence(TestCase):
 
     def test_change_task_list_title_success(self):
         next_title = "something"
-        self.persistence.create_or_replace_task_list(3, next_title, self.user_a.id)
+        task_list_3 = self.persistence.get_task_list(self.user_a.id, 3)
+        self.persistence.create_or_replace_task_list(
+            3, next_title, self.user_a.id, [user.username for user in task_list_3.users]
+        )
         self.assertEqual(next_title, self.persistence.get_task_lists(self.user_b.id)[1].title)
 
-    def test_change_task_list_title_no_permission(self):
+    def test_share_task_list(self):
+        self.assertRaises(
+            NoResultFound,
+            lambda: self.persistence.get_task_list(self.user_a.id, 2)
+        )  # verify test setup
+        task_list_2 = self.persistence.get_task_list(self.user_b.id, 2)
+        self.persistence.create_or_replace_task_list(2, task_list_2.title, self.user_b.id, [self.user_a.username])
+        self.assertEquals(task_list_2.id, self.persistence.get_task_list(self.user_a.id, 2).id)
+
+    def test_change_task_list_no_permission(self):
         next_title = "something"
         self.assertRaises(
             PermissionError,
-            lambda: self.persistence.create_or_replace_task_list(2, next_title, self.user_a.id),
+            lambda: self.persistence.create_or_replace_task_list(2, next_title, self.user_a.id, []),
         )
         self.assertEqual(TASK_LIST_2_TITLE, self.persistence.get_task_lists(self.user_b.id)[0].title)
 

@@ -99,7 +99,8 @@ async function sendSettings(settingsJson) {
 // todo: detect permission error and create new random id?
 async function sendTaskList(taskList) {
     return sendJson(API_URL_LISTS + '/' + taskList.id, 'put', {
-        'title': taskList.title
+        'title': taskList.title,
+        'users': taskList.users,
     });
 }
 

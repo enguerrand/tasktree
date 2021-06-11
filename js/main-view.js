@@ -1,4 +1,5 @@
 class MainView extends React.Component {
+    // props.loggedInUser
     // props.taskLists
     // props.activeListIds
     // props.setListActive(id, active)
@@ -48,6 +49,7 @@ class MainView extends React.Component {
             return e(
                 ListsView,
                 {
+                    loggedInUser: this.props.loggedInUser,
                     taskLists: this.props.taskLists,
                     activeListIds: this.props.activeListIds,
                     setListActive: this.props.setListActive,

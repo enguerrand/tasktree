@@ -161,26 +161,29 @@ class Persistence:
         user.settings = json.dumps(settings)
         self.session.commit()
 
-    def create_or_replace_task_list(self, id: int, title: str, requesting_user_id: int):
+    def create_or_replace_task_list(self, id: int, title: str, requesting_user_id: int, additional_user_names: List[str]):
         existing_list = self.session.query(TaskList).join(TaskList.users).filter(TaskList.id == id).one_or_none()
         if existing_list is None:
             user = self.session.query(User).filter(User.id == requesting_user_id).one()
-            task_list = TaskList(id=id, title=title, users=[user])
+            users = [user]
+            for additional_user_name in additional_user_names:
+                additional_user = self.get_user_by_name(additional_user_name)
+                if additional_user not in users:
+                    users.append(additional_user)
+            task_list = TaskList(id=id, title=title, users=users)
             self.session.add(task_list)
         elif requesting_user_id in [user.id for user in existing_list.users]:
             existing_list.title = title
+            current_usernames = [user.username for user in existing_list.users]
+            for additional_user_name in additional_user_names:
+                if additional_user_name not in current_usernames:
+                    existing_list.users.append(self.get_user_by_name(additional_user_name))
         else:
             raise PermissionError()
         self.session.commit()
 
     def get_task_lists(self, requesting_user_id: int) -> List[TaskList]:
         return self.session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id).all()
-
-    def share_task_list_with(self, task_list_id: int, user_to_add_id: int, requesting_user_id: int):
-        user_to_add = self.session.query(User).filter(User.id == user_to_add_id).one()
-        task_list = self.get_task_list(requesting_user_id, task_list_id)
-        task_list.users.append(user_to_add)
-        self.session.commit()
 
     def query_task_lists(self, requesting_user_id: int):
         return self.session.query(TaskList).join(TaskList.users).filter(User.id == requesting_user_id)

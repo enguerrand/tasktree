@@ -27,9 +27,10 @@ class ListView:
         self.id = task_list.id
         self.title = task_list.title
         self.tasks = [TaskView(task, conflicts.get(task.id)).as_dict() for task in task_list.tasks]
+        self.users = [user.username for user in task_list.users]
 
     def as_dict(self):
-        return {"id": self.id, "title": self.title, "tasks": self.tasks}
+        return {"id": self.id, "title": self.title, "tasks": self.tasks, "users": self.users}
 
 
 class TaskView:
@@ -98,7 +99,8 @@ class DataView:
 
     def create_or_replace_list(self, task_list_id: int, json_request):
         title = json_request["title"]
-        self.persistence.create_or_replace_task_list(task_list_id, title, self.viewing_user.id)
+        users = json_request["users"]
+        self.persistence.create_or_replace_task_list(task_list_id, title, self.viewing_user.id, users)
 
     def remove_list(self, task_list_id: int):
         self.persistence.remove_task_list(self.viewing_user.id, task_list_id)
