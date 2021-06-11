@@ -32,7 +32,7 @@ class UsersSection extends React.Component {
                 button({
                         key: "add-button",
                         type: "button",
-                        className: "btn btn-primary col-2 col-md-1 ",
+                        className: "btn btn-primary col-4 col-sm-3 col-md-2 col-lg-1",
                         onClick: this.props.handleAdd,
                     },
                     "+"
@@ -190,7 +190,7 @@ class ListEditView extends React.Component {
                 div({className:"form-group row", key: "delete-action"},
                     label({key: "label", className: "col-12 col-form-label text-light"}, S["danger.zone"]),
                     div({key: "delete-button", className: "col-12 col-form-button"},
-                        button({className: "btn btn-danger col-2 col-md-1 ml-1 mr-1", type: "button", onClick: this.handleDeletion}, S["tasks.form.delete"])
+                        button({className: "btn btn-danger col-4 col-sm-3 col-md-2 col-lg-1", type: "button", onClick: this.handleDeletion}, S["tasks.form.delete"])
                     )
                 )
             );
@@ -371,7 +371,7 @@ class ListsView extends React.Component {
                 listsTable,
                 button({
                     key: "addButton",
-                    className: "btn btn-primary",
+                    className: "btn btn-primary col-4 col-sm-3 col-md-2 col-lg-1",
                     onClick:  this.addList
                 }, "+")
             )
