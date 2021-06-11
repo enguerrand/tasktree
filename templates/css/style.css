@@ -232,6 +232,10 @@ button.clear-text-input > i{
     margin: 3px 0;
 }
 
+.related-tasks-list > li > div {
+    cursor: pointer;
+}
+
 .task-detail-info > .date-connector {
     padding: 0 15px;
 }
