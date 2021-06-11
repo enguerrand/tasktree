@@ -1070,7 +1070,7 @@ class TaskEditView extends React.Component {
         if (!isNull(this.state.parentListId) && !isNull(this.props.task)) {
             formGroups.push(
                 div({className:"form-group row", key: "delete-action"},
-                    label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.danger.zone"]),
+                    label({key: "label", className: "col-12 col-form-label text-light"}, S["danger.zone"]),
                     div({key: "delete-button", className: "col-12 col-form-button"},
                         button({className: "btn btn-danger col-2 col-md-1 ml-1 mr-1", type: "button", onClick: this.handleDeletion}, S["tasks.form.delete"])
                     )

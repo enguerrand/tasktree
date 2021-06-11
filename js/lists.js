@@ -4,6 +4,7 @@ class ListEditView extends React.Component {
     // props.editingDone(listAfterEdit)
     // props.onCancel
     // props.createListId
+    // props.deleteList(listId)
     constructor(props) {
         super(props);
         let listId;
@@ -21,10 +22,12 @@ class ListEditView extends React.Component {
         this.state = {
             listId: listId,
             header: header,
-            title: initialTitle
+            title: initialTitle,
+            currentModalProps: null,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleDeletion = this.handleDeletion.bind(this);
     }
 
     handleTitleChange(event) {
@@ -49,7 +52,99 @@ class ListEditView extends React.Component {
         this.props.editingDone(listAfterEdit);
     }
 
+    handleDeletion() {
+        const listId = this.props.taskList?.id;
+        if (!isNull(listId)) {
+            const doDelete = async () => {
+                const success = await this.props.deleteList(listId);
+                if (success) {
+                    this.setState({
+                        currentModalProps: null,
+                    }, this.props.onCancel);
+                } else {
+                    this.setState({
+                        currentModalProps: {
+                            title: S["delete.list.title"],
+                            message: S["delete.list.failed.message"],
+                            saveButtonLabel: S["label.delete"],
+                            onSubmit: doDelete,
+                        }
+                    });
+                }
+            }
+
+            this.setState({
+                currentModalProps: {
+                    title: S["delete.list.title"],
+                    message: S["delete.list.message"],
+                    saveButtonLabel: S["label.delete"],
+                    onSubmit: doDelete
+                }
+            });
+        }
+    }
+
     render() {
+        const formGroups = [];
+
+        formGroups.push(
+            div({className:"form-group row", key: "titleInput"},
+                label({key: "label", htmlFor: "title-input", className: "col-6 col-form-label text-light"}, S["label.title"]),
+                div({key: "input", className: "col-12"},
+                    div({className: "clearable-input-wrapper"},
+                        input({
+                            id: "title-input",
+                            key: "title-input",
+                            type: "text",
+                            className: "form-control",
+                            placeholder: S["label.title"],
+                            autoComplete: "off",
+                            value: this.state.title,
+                            onChange: this.handleTitleChange,
+                        }),
+                        e(
+                            InputClearButton,
+                            {
+                                key: "clear-button",
+                                onClick: () => this.setState({title: ""})
+                            }
+                        )
+                    )
+                )
+            )
+        );
+
+        if (!isNull(this.props.taskList)) {
+            formGroups.push(
+                div({className:"form-group row", key: "delete-action"},
+                    label({key: "label", className: "col-12 col-form-label text-light"}, S["danger.zone"]),
+                    div({key: "delete-button", className: "col-12 col-form-button"},
+                        button({className: "btn btn-danger col-2 col-md-1 ml-1 mr-1", type: "button", onClick: this.handleDeletion}, S["tasks.form.delete"])
+                    )
+                )
+            );
+        }
+
+        let currentModal;
+        if (isNull(this.state.currentModalProps)) {
+            currentModal = null;
+        } else {
+            currentModal = e(
+                    ModalDialog,
+                    {
+                        key: "modal",
+                        title: this.state.currentModalProps.title,
+                        saveButtonLabel: this.state.currentModalProps.saveButtonLabel,
+                        onCancel: () => this.setState({
+                            currentModalProps: null,
+                        }),
+                        onSubmit: this.state.currentModalProps.onSubmit
+                    },
+                    div({},
+                        p({}, this.state.currentModalProps.message)
+                    )
+            );
+        }
         return [
             div(
                 {className: "row", key: "form"},
@@ -59,26 +154,7 @@ class ListEditView extends React.Component {
                         h2({className: "h3 mb-3 fw-normal text-light"},
                             this.state.header
                         ),
-                        div({className:"form-floating"},
-                            input({
-                                type: "text",
-                                key: "input",
-                                className: "form-control",
-                                id: "title-input",
-                                placeholder: S["label.title"],
-                                autoComplete: "off",
-                                value: this.state.title,
-                                onChange: this.handleTitleChange
-                            }),
-                            e(
-                                InputClearButton,
-                                {
-                                    key: "clear-button",
-                                    onClick: () => this.setState({title: ""})
-                                }
-                            ),
-                            label({htmlFor: "title-input", className: "text-light"}, S["label.title"])
-                        )
+                        formGroups
                     )
                 )
             ),
@@ -93,7 +169,8 @@ class ListEditView extends React.Component {
                         S["label.save"]
                     )
                 )
-            )
+            ),
+            currentModal
         ];
     }
 }
@@ -104,6 +181,7 @@ class ListsView extends React.Component {
     // prop.setListActive(id, active)
     // prop.onListUpdatedLocally(taskList)
     // props.createListId
+    // props.deleteList(listId)
     constructor(props) {
         super(props);
         this.state = {
@@ -195,7 +273,8 @@ class ListsView extends React.Component {
                     onCancel: () => {
                         this.setState({ editingList: null, createNew: false });
                     },
-                    createListId: this.props.createListId
+                    createListId: this.props.createListId,
+                    deleteList: this.props.deleteList
                 }
             );
         } else {

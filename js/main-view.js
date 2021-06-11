@@ -16,7 +16,8 @@ class MainView extends React.Component {
     // props.removeFilterTag(tag)
     // props.createWithTitle
     // props.resetCreateWithTitle
-    // props.deleteTask(task, taskList)
+    // props.deleteTask(taskId, taskListId)
+    // props.deleteList(taskListId)
     constructor(props) {
         super(props);
         this.state = {};
@@ -52,6 +53,7 @@ class MainView extends React.Component {
                     setListActive: this.props.setListActive,
                     onListUpdatedLocally: this.props.onListUpdatedLocally,
                     createListId: this.props.createListId,
+                    deleteList: this.props.deleteList,
                 }
             );
         } else {

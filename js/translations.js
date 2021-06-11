@@ -1,4 +1,8 @@
 const TRANSL_EN_US = {
+    "danger.zone": "Danger zone",
+    "delete.list.title": "Delete List",
+    "delete.list.message": "Do you want to permanently delete this list and all related tasks? This operation cannot be undone!",
+    "delete.list.failed.message": "List deletion failed. Try again?",
     "delete.task.title": "Delete Task",
     "delete.task.message": "Do you want to permanently delete this task? This operation cannot be undone!",
     "delete.task.failed.message": "Task deletion failed. Try again?",
@@ -13,7 +17,6 @@ const TRANSL_EN_US = {
     "lists.table.header.active": "ACTIVE",
     "lists.table.header.title": "TITLE",
     "radio.list.filter.hint": "Type to filter...",
-    "tasks.form.danger.zone": "Danger zone",
     "tasks.form.delete": "Delete",
     "tasks.form.due": "Due by",
     "tasks.form.depending": "This task blocks:",
@@ -45,6 +48,10 @@ const TRANSL_EN_US = {
     "nav.item.tasks": "TASKS",
 };
 const TRANSL_DE_DE = {
+    "danger.zone": "Gefahrenzone",
+    "delete.list.title": "Liste löschen",
+    "delete.list.message": "Sollen diese Liste und alle ihre Aufgaben entgültig gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden!",
+    "delete.list.failed.message": "Löschen der Liste fehlgeschlagen. Noch mal versuchen?",
     "delete.task.title": "Aufgabe löschen",
     "delete.task.message": "Soll diese Aufgabe entgültig gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden!",
     "delete.task.failed.message": "Löschen der Aufgabe fehlgeschlagen. Noch mal versuchen?",
@@ -59,7 +66,6 @@ const TRANSL_DE_DE = {
     "lists.table.header.active": "AKTIV",
     "lists.table.header.title": "TITEL",
     "radio.list.filter.hint": "Tippe zum Filtern...",
-    "tasks.form.danger.zone": "Gefahrenzone",
     "tasks.form.delete": "Löschen",
     "tasks.form.description": "Beschreibung",
     "tasks.form.due": "Fällig am",

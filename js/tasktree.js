@@ -29,6 +29,7 @@ class TaskTreeApp extends React.Component {
         this.beforeUnload = this.beforeUnload.bind(this);
         this.setListActive = this.setListActive.bind(this);
         this.deleteTask = this.deleteTask.bind(this);
+        this.deleteList = this.deleteList.bind(this);
         this.setTasksSortingKey = this.setTasksSortingKey.bind(this);
         this.toggleShowCompletedTasks = this.toggleShowCompletedTasks.bind(this);
         this.addFilterTag = this.addFilterTag.bind(this);
@@ -264,6 +265,23 @@ class TaskTreeApp extends React.Component {
         });
     }
 
+    deleteList(taskListId) {
+        return new Promise((res) => {
+            this.setState(
+                immer.produce(draftState => {
+                    delete draftState.taskLists[taskListId];
+                }),
+                async () => {
+                    const success = await sendTaskListDeletion(taskListId);
+                    if (success) {
+                        await this.writeUnsyncedLists;
+                    }
+                    res(success);
+                }
+            );
+        });
+    }
+
     async setTasksSortingKey(sortingKey) {
         this.setState({
             tasksSortingKey: sortingKey
@@ -406,6 +424,7 @@ class TaskTreeApp extends React.Component {
                     createWithTitle: this.state.createWithTitle,
                     resetCreateWithTitle: this.resetCreateWithTitle,
                     deleteTask: this.deleteTask,
+                    deleteList: this.deleteList,
                 })
             ];
         }

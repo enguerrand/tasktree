@@ -132,6 +132,10 @@ async function sendTaskDeletion(taskId, taskListId) {
     return sendJson(API_URL_LISTS + '/' + taskListId + '/' + taskId, 'delete', {});
 }
 
+async function sendTaskListDeletion(taskListId) {
+    return sendJson(API_URL_LISTS + '/' + taskListId, 'delete', {});
+}
+
 function isNull(obj) {
     return obj === undefined || obj === null;
 }
