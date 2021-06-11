@@ -110,6 +110,15 @@ def write_task(task_list_id: int, task_id: int):
     return success()
 
 
+@app.route(API_BASE_LISTS + "<int:task_list_id>/<int:task_id>", methods=["DELETE"])
+@login_required
+def delete_task(task_list_id: int, task_id: int):
+    # we don't really need the task list id but it makes the api more consistent
+    data_view = DataView(persistence, current_user)
+    data_view.remove_task(task_id)
+    return success()
+
+
 @app.route(API_BASE_LISTS + "<int:task_list_id>/")
 @login_required
 def get_task_list(task_list_id: int):

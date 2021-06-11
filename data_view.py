@@ -164,6 +164,9 @@ class DataView:
                 if remove_dep_candidate not in next_depending_tasks:
                     self.persistence.remove_dependency(requesting_user_id, task_id, remove_dep_candidate)
 
+    def remove_task(self, task_id: int):
+        self.persistence.remove_task(self.viewing_user.id, task_id)
+
 
 def nullable_date_to_timestamp(nullable_date):
     if nullable_date is None:
