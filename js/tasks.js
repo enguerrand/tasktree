@@ -499,7 +499,7 @@ class TaskEditView extends React.Component {
             listChoiceModalVisible: false,
             prereqChoiceModalVisible: false,
             dependingChoiceModalVisible: false,
-            wantedNextTask: null,
+            currentModalProps: null,
         }
         this.handleTitleChange = this.handleTitleChange.bind(this);
         this.pullRemoteTitle = this.pullRemoteTitle.bind(this);
@@ -654,17 +654,31 @@ class TaskEditView extends React.Component {
     }
 
     goToRelatedTask(taskId){
+        const wantedList = this.props.allLists[this.state.parentListId];
+        if (isNull(wantedList)) {
+            return;
+        }
+        const wantedTask = wantedList.tasks[taskId];
+        if (isNull(wantedTask)) {
+            return;
+        }
+        const goToTask = () => {
+            this.setState({
+                currentModalProps: null
+            }, () => this.props.editTask(wantedTask, wantedList))
+        }
         if (
             this.isUnChanged()
         ) {
-            const wantedList = this.props.allLists[this.state.parentListId];
-            const wantedTask = wantedList?.tasks[taskId];
-            if (!isNull(wantedList) && !isNull(wantedTask)) {
-                this.props.editTask(deepCopy(wantedTask), wantedList);
-            }
+            goToTask();
         } else {
             this.setState({
-                wantedNextTask: taskId
+                currentModalProps: {
+                    title: S["unsaved.changes.title"],
+                    message: S["unsaved.changes"],
+                    saveButtonLabel: S["label.discard.and.continue"],
+                    onSubmit: goToTask,
+                }
             })
         }
     }
@@ -973,35 +987,25 @@ class TaskEditView extends React.Component {
         const saveDisabled = isNull(currentlySelectedList) || this.state.showRemoteTitle || this.state.showRemoteDescription;
 
         let currentModal;
-        if (!isNull(this.state.wantedNextTask) && !isNull(this.state.parentListId)) {
-            const wantedList = this.props.allLists[this.state.parentListId];
-            const wantedTask = wantedList?.tasks[this.state.wantedNextTask];
-            if (isNull(wantedList) || isNull(wantedTask)) {
-                currentModal = null;
-            } else {
-                currentModal = e(
-                    ModalDialog,
-                    {
-                        key: "modal",
-                        title: S["unsaved.changes.title"],
-                        saveButtonLabel: S["label.discard.and.continue"],
-                        onCancel: () => this.setState({
-                            wantedNextTask: null,
-                            listChoiceModalVisible: false,
-                            prereqChoiceModalVisible: false,
-                            dependingChoiceModalVisible: false,
-                        }),
-                        onSubmit: () => {
-                            this.setState({
-                                wantedNextTask: null
-                            }, () => this.props.editTask(wantedTask, wantedList))
-                        }
-                    },
-                    div({},
-                        p({}, S["unsaved.changes"])
-                    )
-                );
-            }
+        if (!isNull(this.state.currentModalProps)) {
+            currentModal = e(
+                ModalDialog,
+                {
+                    key: "modal",
+                    title: this.state.currentModalProps.title,
+                    saveButtonLabel: this.state.currentModalProps.saveButtonLabel,
+                    onCancel: () => this.setState({
+                        currentModalProps: null,
+                        listChoiceModalVisible: false,
+                        prereqChoiceModalVisible: false,
+                        dependingChoiceModalVisible: false,
+                    }),
+                    onSubmit: this.state.currentModalProps.onSubmit
+                },
+                div({},
+                    p({}, this.state.currentModalProps.message)
+                )
+            );
         } else if (this.state.listChoiceModalVisible || this.state.prereqChoiceModalVisible || this.state.dependingChoiceModalVisible) {
             let availableOptions;
             let title;
