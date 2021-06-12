@@ -1022,7 +1022,7 @@ class TaskEditView extends React.Component {
                 label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.due"]),
                 div({className: "col-12", key: "input"},
                     div({className: "clearable-input-wrapper"},
-                        input({type: "date", className: "form-control", defaultValue: this.deriveInitialDue(), ref: this.dateInputRef}),
+                        input({type: "datetime-local", className: "form-control", defaultValue: this.deriveInitialDue(), ref: this.dateInputRef}),
                         e(
                             InputClearButton,
                             {
@@ -1318,7 +1318,7 @@ class TasksView extends React.Component {
                         }
 
                         dates.push(span({key: "date-connector", className: "date-connector"}, i({className: "mdi mdi-arrow-right"})));
-                        dates.push(span({key: "due-date", className: dueClass}, formatDate(task.due)));
+                        dates.push(span({key: "due-date", className: dueClass}, formatDateTime(task.due)));
                     }
 
                     rows.push(
