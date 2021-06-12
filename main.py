@@ -128,13 +128,6 @@ def delete_task(task_list_id: int, task_id: int):
     return success()
 
 
-@app.route(API_BASE_LISTS + "<int:task_list_id>/")
-@login_required
-def get_task_list(task_list_id: int):
-    data_view = DataView(persistence, current_user)
-    return jsonify(data_view.get_task_list(task_list_id))
-
-
 @app.route(API_BASE_ICS + "<int:task_list_id>.ics")
 @login_required
 def get_task_list_ics(task_list_id: int):

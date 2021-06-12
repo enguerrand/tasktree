@@ -86,11 +86,6 @@ class DataView:
     def store_settings(self, settings):
         self.persistence.store_user_settings(self.viewing_user.id, settings)
 
-    def get_task_list(self, task_list_id: int) -> ListView:
-        self.persistence.get_task_conflicts()
-        task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
-        return ListView(task_list).as_dict()
-
     def get_escaped_calendar(self, task_list_id: int) -> VCalendar:
         task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
         events = []
