@@ -626,16 +626,7 @@ class TaskEditView extends React.Component {
     }
 
     deriveInitialDue() {
-        let due = this.props.task?.due;
-        if (isNull(due)) {
-            return undefined;
-        } else {
-            try {
-                return new Date(fromUtcTimeStamp(due)).toISOString().substring(0, 10);
-            } catch (e) {
-                return undefined;
-            }
-        }
+        return formatForHtmlInput(this.props.task?.due);
     }
 
     clearDueDate() {

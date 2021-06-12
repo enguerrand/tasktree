@@ -179,6 +179,32 @@ function formatDateTime(timestampUtc) {
     return new Date(dateUtc.getTime() - dateUtc.getTimezoneOffset()*60*1000).toLocaleString(LOCALE);
 }
 
+function formatForHtmlInput(utcDate) {
+    if (isNull(utcDate)) {
+        return undefined;
+    }
+    try {
+        const dueDate = new Date(fromUtcTimeStamp(utcDate));
+        const year = dueDate.getFullYear();
+        const month = padDateField(dueDate.getMonth() + 1);
+        const day = padDateField(dueDate.getDate());
+        const hours = padDateField(dueDate.getHours());
+        const minutes = padDateField(dueDate.getMinutes());
+
+        return year + "-" + month + "-" + day + "T" + hours + ":" + minutes;
+    } catch (e) {
+        return undefined;
+    }
+}
+
+function padDateField(value) {
+    if (value > 10) {
+        return value;
+    } else {
+        return "0" + value;
+    }
+}
+
 function findUrls(input) {
     const re = /https?:\/\/[^\s$.?#].[^\s]*/g;
     const urls = [];
