@@ -240,8 +240,9 @@ class TasksListSubmenu extends React.Component {
 }
 
 class CreateTaskInput extends React.Component {
-    // props.openEditView(initialTitle)
+    // props.openEditView(usingProperties)
     // props.trySmartSubmitUsingProps(propsToUse)
+    // props.guessParentList
     // props.inputCallBack(currentInput)
     // props.currentFilterTags
     constructor(props) {
@@ -306,9 +307,11 @@ class CreateTaskInput extends React.Component {
                 disabled: this.state.currentInput === 0,
                 onClick:  (event) => {
                     event.preventDefault();
+                    const parentList = this.props.guessParentList()
                     const usingProperties = {
                         "title": this.state.currentInput,
                         "tags": this.props.currentFilterTags,
+                        "parentListId": parentList?.id,
                     };
                     this.props.inputCallBack("");
                     this.setState({
@@ -478,7 +481,7 @@ class TaskEditView extends React.Component {
         } else if (Object.keys(props.allLists).length === 1) {
             parentListId = Object.keys(props.allLists)[0];
         } else {
-            parentListId = null;
+            parentListId = requestedInitialProperties["parentListId"] || null;
         }
         this.state = {
             taskId: taskId,
@@ -1193,6 +1196,7 @@ class TasksView extends React.Component {
         this.toggleTaskComplete = this.toggleTaskComplete.bind(this);
         this.onTaskEdited = this.onTaskEdited.bind(this);
         this.trySmartSubmitUsingProps = this.trySmartSubmitUsingProps.bind(this);
+        this.guessParentList = this.guessParentList.bind(this);
     }
 
     addTask(taskLists, usingProperties) {
@@ -1220,14 +1224,7 @@ class TasksView extends React.Component {
     }
 
     async trySmartSubmitUsingProps(propsToUse) {
-        let parentList;
-        if (Object.keys(this.props.taskLists).length === 1) {
-            parentList = this.props.taskLists[Object.keys(this.props.taskLists)[0]];
-        } else if (this.props.activeListIds.length === 1) {
-            parentList = this.props.taskLists[this.props.activeListIds[0]];
-        } else {
-            parentList = null;
-        }
+        const parentList = this.guessParentList();
         if (isNull(parentList)) {
             return this.addTask(this.props.taskLists, propsToUse);
         } else {
@@ -1246,6 +1243,16 @@ class TasksView extends React.Component {
         }
     }
 
+    guessParentList() {
+        if (Object.keys(this.props.taskLists).length === 1) {
+            return this.props.taskLists[Object.keys(this.props.taskLists)[0]];
+        } else if (this.props.activeListIds.length === 1) {
+            return this.props.taskLists[this.props.activeListIds[0]];
+        } else {
+            return null;
+        }
+    }
+
     async onTaskEdited(taskAfterEdit, parentList) {
         await this.props.resetCreateWithTitle();
         await this.props.onTaskUpdatedLocally(taskAfterEdit, parentList);
@@ -1260,6 +1267,7 @@ class TasksView extends React.Component {
                     e(
                         CreateTaskInput,
                         {
+                            guessParentList: this.guessParentList,
                             trySmartSubmitUsingProps: this.trySmartSubmitUsingProps,
                             openEditView: (usingProperties) => {
                                 return this.addTask(this.props.taskLists, usingProperties);
