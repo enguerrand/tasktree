@@ -1276,13 +1276,13 @@ class TasksView extends React.Component {
                 continue;
             }
             let tasks = taskList.tasks;
-            const currentFilter = this.state.currentFilterString;
+            const currentFilter = this.state.currentFilterString.toLowerCase();
             tasksLoop:
                 for (const [taskId, task] of Object.entries(tasks)) {
                     if (task.completed && !this.props.showCompletedTasks) {
                         continue;
                     }
-                    if (currentFilter.length > 0 && !task.title.includes(currentFilter)) {
+                    if (currentFilter.length > 0 && !task.title.toLowerCase().includes(currentFilter)) {
                         continue;
                     }
                     for (const filterTag of this.props.filterTags) {
