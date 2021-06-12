@@ -192,8 +192,11 @@ class ListEditView extends React.Component {
                         key: "links",
                         className: "col-12 url-section"
                     },
-                    div({},
+                    div({key: "ics"},
                         a({href: API_URL_ICS + "/" + this.state.listId + ".ics"}, S["lists.form.ics"])
+                    ),
+                    div({key: "webcal"},
+                        a({href: API_URL_WEBCAL + "/" + this.state.listId}, S["lists.form.webcal"])
                     )
                 )
             )
