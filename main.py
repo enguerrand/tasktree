@@ -17,6 +17,7 @@ API_BASE_URL = "/api/"
 API_BASE_USERS = API_BASE_URL + "users/"
 API_BASE_LISTS = API_BASE_URL + "lists/"
 API_BASE_ICS = API_BASE_URL + "ics/"
+API_BASE_WEBCAL = API_BASE_URL + "webcal/"
 
 persistence = Persistence(DB_URL_PROD)
 app = Flask(__name__)
@@ -138,6 +139,27 @@ def get_task_list_ics(task_list_id: int):
         render_template("vcalendar.ics", task_list_id=task_list_id, v_calendar=v_calendar),
         mimetype='text/calendar'
     )
+
+
+@app.route(API_BASE_WEBCAL + "<int:task_list_id>")
+def get_task_list_ics_with_auth(task_list_id: int):
+    auth = request.authorization
+    if auth is not None:
+        try:
+            username = auth["username"]
+            password = auth["password"]
+            authenticated_user = persistence.get_authenticated_user_by_name(username, password)
+            if authenticated_user is not None:
+                me = UserView(authenticated_user)
+                data_view = DataView(persistence, me)
+                v_calendar = data_view.get_escaped_calendar(task_list_id)
+                return Response(
+                    render_template("vcalendar.ics", task_list_id=task_list_id, v_calendar=v_calendar),
+                    mimetype='text/calendar'
+                )
+        except KeyError:
+            pass
+    abort(401)
 
 
 @app.route(API_BASE_USERS)
