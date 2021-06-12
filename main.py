@@ -16,6 +16,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 API_BASE_URL = "/api/"
 API_BASE_USERS = API_BASE_URL + "users/"
 API_BASE_LISTS = API_BASE_URL + "lists/"
+API_BASE_ICS = API_BASE_URL + "ics/"
 
 persistence = Persistence(DB_URL_PROD)
 app = Flask(__name__)
@@ -132,6 +133,18 @@ def delete_task(task_list_id: int, task_id: int):
 def get_task_list(task_list_id: int):
     data_view = DataView(persistence, current_user)
     return jsonify(data_view.get_task_list(task_list_id))
+
+
+@app.route(API_BASE_ICS + "<int:task_list_id>.ics")
+@login_required
+def get_task_list_ics(task_list_id: int):
+    data_view = DataView(persistence, current_user)
+    v_calendar = data_view.get_escaped_calendar(task_list_id)
+
+    return Response(
+        render_template("vcalendar.ics", task_list_id=task_list_id, v_calendar=v_calendar),
+        mimetype='text/calendar'
+    )
 
 
 @app.route(API_BASE_USERS)

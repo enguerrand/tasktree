@@ -1,0 +1,20 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:{{v_calendar.prod_id}}
+X-WR-CALNAME:{{v_calendar.name}}
+X-WR-TIMEZONE:Europe/London
+{% for event in v_calendar.events %}BEGIN:VEVENT
+UID:{{event.uid}}
+DTSTAMP:{{event.dtstamp}}
+SUMMARY:{{event.summary}}
+DTSTART:{{event.dtstart}}
+DTEND:{{event.dtend}}
+DESCRIPTION:{{event.description}}
+LOCATION:
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-P0M
+DESCRIPTION:{{event.description}}
+END:VALARM
+END:VEVENT
+{% endfor %}END:VCALENDAR

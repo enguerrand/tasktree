@@ -5,6 +5,7 @@ from typing import List
 
 from flask_login import UserMixin
 
+from ics import CalendarEvent, VCalendar
 from persistence import Persistence, Task, TaskConflict, TaskList, User
 
 
@@ -89,6 +90,14 @@ class DataView:
         self.persistence.get_task_conflicts()
         task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
         return ListView(task_list).as_dict()
+
+    def get_escaped_calendar(self, task_list_id: int) -> VCalendar:
+        task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
+        events = []
+        for t in task_list.tasks:
+            if not t.completed:
+                events.append(CalendarEvent(t))
+        return VCalendar("tasktree-"+str(task_list_id), task_list.title, events)
 
     def get_lists(self) -> List[ListView]:
         conflicts = self.persistence.get_task_conflicts_as_map(self.viewing_user.id)

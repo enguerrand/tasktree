@@ -2,6 +2,7 @@ const BASE_URL = window.location.protocol + "//" + window.location.host;
 const API_URL = BASE_URL + '/api';
 const API_URL_USERS = API_URL + '/users';
 const API_URL_LISTS = API_URL + '/lists';
+const API_URL_ICS = API_URL + '/ics';
 const API_URL_CSRF = API_URL + '/csrf';
 const CATEGORY_ID_LISTS = "lists";
 const CATEGORY_ID_TASKS = "tasks";

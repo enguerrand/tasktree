@@ -185,6 +185,21 @@ class ListEditView extends React.Component {
             )
         );
 
+        formGroups.push(
+            div({className:"form-group row", key: "ics"},
+                label({key: "label", className: "col-12 col-form-label text-light"}, S["label.calendar"]),
+                div({
+                        key: "links",
+                        className: "col-12 url-section"
+                    },
+                    div({},
+                        a({href: API_URL_ICS + "/" + this.state.listId + ".ics"}, S["lists.form.ics"])
+                    )
+                )
+            )
+        );
+
+
         if (!isNull(this.props.taskList)) {
             formGroups.push(
                 div({className:"form-group row", key: "delete-action"},
