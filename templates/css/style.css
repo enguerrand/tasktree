@@ -8,6 +8,11 @@ body {
     margin-top: 2em;
 }
 
+table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
 table td.center, table th.center{
     text-align: center;
 }
@@ -125,6 +130,7 @@ table td.right, table th.right{
 
 .url-section > div {
     padding: 10px 0;
+    word-break: break-word;
 }
 
 .online-indicator {
