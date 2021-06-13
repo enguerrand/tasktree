@@ -240,6 +240,7 @@ class TasksListSubmenu extends React.Component {
 }
 
 class CreateTaskInput extends React.Component {
+    // props.createTaskId()
     // props.openEditView(usingProperties)
     // props.trySmartSubmitUsingProps(propsToUse)
     // props.guessParentList
@@ -273,6 +274,7 @@ class CreateTaskInput extends React.Component {
             this.setState({
                 currentInput: ""
             }, () => this.props.trySmartSubmitUsingProps({
+                "id": this.props.createTaskId(),
                 "title": titleToUse,
                 "tags": this.props.currentFilterTags,
             }));
@@ -309,6 +311,7 @@ class CreateTaskInput extends React.Component {
                     event.preventDefault();
                     const parentList = this.props.guessParentList()
                     const usingProperties = {
+                        "id": this.props.createTaskId(),
                         "title": this.state.currentInput,
                         "tags": this.props.currentFilterTags,
                         "parentListId": parentList?.id,
@@ -433,7 +436,6 @@ class TaskRelationShipSection extends React.Component {
 }
 
 class TaskEditView extends React.Component {
-    // props.taskId
     // props.task
     // props.requestedInitialProperties
     // props.editingDone(taskAfterEdit, parentList)
@@ -455,8 +457,10 @@ class TaskEditView extends React.Component {
         let initialPrerequisites;
         let initialDependingTasks;
         let completed;
-        const requestedInitialProperties = this.props.requestedInitialProperties || {};
+        let requestedInitialProperties;
         if (isNull(this.props.task)) {
+            requestedInitialProperties = this.props.requestedInitialProperties;
+            taskId = this.props.requestedInitialProperties["id"];
             header = S["tasks.form.title.create"];
             initialTitle = requestedInitialProperties["title"] || "";
             initialDescription = "";
@@ -465,6 +469,8 @@ class TaskEditView extends React.Component {
             initialDependingTasks = [];
             completed = false;
         } else {
+            requestedInitialProperties = {};
+            taskId = this.props.task.id;
             header = S["tasks.form.title.edit"];
             initialTitle = this.props.task.title;
             initialDescription = this.props.task.description;
@@ -1177,6 +1183,7 @@ class TasksView extends React.Component {
             currentFilterString: "",
             requestedInitialProperties: !isNull(this.props.createWithTitle)
                 ? {
+                    "id": props.createTaskId(),
                     "title": props.createWithTitle,
                     "tags": []
                 } : undefined
@@ -1258,6 +1265,7 @@ class TasksView extends React.Component {
                     e(
                         CreateTaskInput,
                         {
+                            createTaskId: this.props.createTaskId,
                             guessParentList: this.guessParentList,
                             trySmartSubmitUsingProps: this.trySmartSubmitUsingProps,
                             openEditView: (usingProperties) => {
@@ -1372,12 +1380,11 @@ class TasksView extends React.Component {
             }
         }
         if (!isNull(this.state.requestedInitialProperties) || !isNull(this.state.editingTask)) {
-            let taskId = this.state.editingTask?.id || this.props.createTaskId();
+            let key = this.state.editingTask?.id || this.state.requestedInitialProperties["id"];
             return e(
                 TaskEditView,
                 {
-                    taskId: taskId,
-                    key: taskId,
+                    key: key,
                     task: this.state.editingTask,
                     requestedInitialProperties: this.state.requestedInitialProperties,
                     parentList: this.state.editingList,
