@@ -343,38 +343,6 @@ class Persistence:
         return next_completed
 
 
-# FIXME remove test code
-def test_setup(p: Persistence):
-    if os.path.exists(DB_LOCATION):
-        os.remove(DB_LOCATION)
-    p.create()
-    p.create_user("edr", "foobar")
-    p.create_user("sdr", "foobar")
-    u = p.get_user_by_name("edr")
-    s = p.get_user_by_name("sdr")
-    p.create_or_replace_task_list(1, "First list", u.id)
-    p.create_or_replace_task_list(2, "Second list", u.id)
-    p.share_task_list_with(1, s.id, u.id)
-    task_id = 1
-    for tl in p.get_task_lists(u.id):
-        for i in (1, 2, 3, 4):
-            p.create_task(
-                u.id,
-                task_id,
-                tl.id,
-                f"task {i} in list " + tl.title,
-                description=f"Description of task {i} in list " + tl.title,
-            )
-            task_id = task_id + 1
-        for task in tl.tasks:
-            if task.id % 2 == 0:
-                p.add_tag(u.id, task.id, "even")
-            else:
-                p.add_tag(u.id, task.id, "uneven")
-            if task.id % 3 == 0:
-                p.add_tag(u.id, task.id, "multiple of 3")
-
-
 def clean():
     if os.path.exists(DB_LOCATION):
         os.remove(DB_LOCATION)
@@ -432,6 +400,6 @@ if __name__ == "__main__":
             die(f"Argument missing: need username!")
         username = sys.argv[2]
         passwd(persistence, username)
-    elif cmd == CMD_TEST_SETUP:  # FIXME: remove test code
-        test_setup(persistence)
+    else:
+        die(f"Unknown command: {cmd}")
 
