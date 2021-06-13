@@ -90,7 +90,7 @@ class DataView:
         task_list = self.persistence.get_task_list(self.viewing_user.id, task_list_id)
         events = []
         for t in task_list.tasks:
-            if not t.completed:
+            if not t.completed and t.due is not None:
                 events.append(CalendarEvent(t))
         return VCalendar("tasktree-"+str(task_list_id), task_list.title, events)
 
