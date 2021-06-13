@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 
@@ -13,6 +14,7 @@ class CalendarEvent:
 
 class VCalendar:
     def __init__(self, prod_id: str, name: str, events: List[CalendarEvent]):
+        self.prod_id = prod_id
         self.name = escape_human_readable_text(name)
         self.events = events
 
@@ -23,10 +25,10 @@ def format_date_time(date_time):
     return date_time.strftime("%Y%m%dT%H%M%SZ")
 
 
-def escape_human_readable_text(input: str):
-    return input.replace('"', 'DQUOTE')\
-        .replace(',', '\\,')\
-        .replace(':', '":"')\
-        .replace('\\', '\\\\')\
-        .replace('\n', '\\n')
-
+def escape_human_readable_text(text: str):
+    return text.replace(r'\N', '\n') \
+        .replace('\\', '\\\\') \
+        .replace(';', r'\;') \
+        .replace(',', r'\,') \
+        .replace('\r\n', r'\n') \
+        .replace('\n', r'\n')
