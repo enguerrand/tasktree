@@ -188,10 +188,6 @@ table td.right, table th.right{
     font-size: 0.9rem;
 }
 
-.task-input-row {
-    display: flex;
-}
-
 .task-input-row > input {
     flex-grow: 1.0;
 }
@@ -241,6 +237,14 @@ table td.right, table th.right{
 
 .clearable-input-wrapper {
     display: flex;
+}
+
+.clearable-input-wrapper > input {
+    padding-right: 45px;
+}
+
+.clearable-input-wrapper > input.date-input {
+    padding-right: 5px;
 }
 
 button.clear-text-input {
