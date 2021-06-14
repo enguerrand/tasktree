@@ -282,7 +282,7 @@ class CreateTaskInput extends React.Component {
     }
 
     render() {
-        return div({className: "task-input-row"},
+        return div({className: "task-input-row col-12 mb-3"},
             input({
                 key: "input",
                 className: "form-control",
@@ -1259,25 +1259,6 @@ class TasksView extends React.Component {
 
     renderTasksTable() {
         let rows = [];
-        rows.push(
-            tr({key: "add-task", "data-sort-key-value": Number.NEGATIVE_INFINITY},
-                td({colSpan: 2},
-                    e(
-                        CreateTaskInput,
-                        {
-                            createTaskId: this.props.createTaskId,
-                            guessParentList: this.guessParentList,
-                            trySmartSubmitUsingProps: this.trySmartSubmitUsingProps,
-                            openEditView: (usingProperties) => {
-                                return this.addTask(this.props.taskLists, usingProperties);
-                            },
-                            currentFilterTags: this.props.filterTags,
-                            inputCallBack: text => this.setState({currentFilterString: text}),
-                        }
-                    )
-                ),
-            )
-        );
         for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
             if (!this.props.activeListIds.includes(taskListId)) {
                 continue;
@@ -1298,7 +1279,7 @@ class TasksView extends React.Component {
                         }
                     }
                     const actionButtonColorType = task.completed ? "secondary" : "primary";
-                    const titleColorClass = hasConflicts(task) ? "text-danger" : "";
+                    const titleColorClass = "task-title-section" + (hasConflicts(task) ? " text-danger" : "");
 
                     const sortKeyValue = extractSortKey(this.props.sortingKey, task) || 0;
 
@@ -1321,12 +1302,11 @@ class TasksView extends React.Component {
                     }
 
                     rows.push(
-                        tr({key: taskId, "data-sort-key-value": sortKeyValue},
-                            // th({key: "id", scope: "row", className: "align-middle"}, taskId),
-                            td(
+                        div({key: taskId, "data-sort-key-value": sortKeyValue, className: "task-entry text-light"},
+                            div(
                                 {
                                     key: "title",
-                                    className: "align-middle tasks-table-main-cell",
+                                    className: "text-left tasks-list-main-cell text-light",
                                     onClick: (event) => {
                                         event.preventDefault();
                                         this.editTask(task, taskList);
@@ -1337,8 +1317,8 @@ class TasksView extends React.Component {
                                     dates
                                 )
                             ),
-                            td(
-                                {key: "action", className: "right align-middle"},
+                            div(
+                                {key: "action", className: "task-entry-action"},
                                 button({
                                     className: "btn btn-" + actionButtonColorType,
                                     onClick: (event) => this.toggleTaskComplete(event, task, taskList)
@@ -1349,21 +1329,31 @@ class TasksView extends React.Component {
                 }
         }
         rows.sort((r1, r2) => r1.props["data-sort-key-value"] - r2.props["data-sort-key-value"]);
-        const tasksTable = table({className: "table table-striped table-dark", key: "table"},
-            thead({key: "head"},
-                tr(null,
-                    // th({key: "id", scope: "col", className: "align-middle"}, "ID"),
-                    th({key: "title", scope: "col", className: "align-middle"}, S["tasks.table.header.title"]),
-                    th({key: "action", scope: "col", className: "right align-middle"}, S["tasks.table.header.action"])
+        return [
+            div({key: "add-task", className: "row"},
+                e(
+                    CreateTaskInput,
+                    {
+                        createTaskId: this.props.createTaskId,
+                        guessParentList: this.guessParentList,
+                        trySmartSubmitUsingProps: this.trySmartSubmitUsingProps,
+                        openEditView: (usingProperties) => {
+                            return this.addTask(this.props.taskLists, usingProperties);
+                        },
+                        currentFilterTags: this.props.filterTags,
+                        inputCallBack: text => this.setState({currentFilterString: text}),
+                    }
                 )
             ),
-            tbody({key: "body"}, rows)
-        )
-        return div({ className: "row", key: "tasks-table" },
-            div({ className: "col-12" },
-                tasksTable
-            )
-        );
+            div({key: "header", className: "row tasks-list-header"},
+                div({key: "title", className: "col-6 text-left text-light bg-dark"}, S["tasks.table.header.title"]),
+                div({key: "action", className: "col-6 text-right text-light bg-dark"}, S["tasks.table.header.action"])
+            ),
+            div({key: "body", className: "row m-0"},
+                div({className: "col-12 tasks-list pl-0 pr-0"},
+                    rows
+                )
+        )];
     }
 
     render() {
