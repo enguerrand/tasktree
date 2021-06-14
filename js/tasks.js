@@ -447,7 +447,7 @@ class TaskEditView extends React.Component {
     // props.deleteTask(task, taskList)
     constructor(props) {
         super(props);
-        let taskId = this.props.taskId;
+        let taskId;
         let header;
         let initialTitle;
         let remoteTitle;
@@ -810,7 +810,7 @@ class TaskEditView extends React.Component {
         if (!isNull(listId)) {
 
             const doDelete = async () => {
-                const success = await this.props.deleteTask(this.props.taskId, listId);
+                const success = await this.props.deleteTask(this.state.taskId, listId);
                 if (success) {
                     this.setState({
                         currentModalProps: null,
