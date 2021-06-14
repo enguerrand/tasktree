@@ -86,6 +86,8 @@ class TagInput extends React.Component {
         )
 
         const tagOptions = [];
+        const allTags = this.props.allTags;
+        allTags.sort();
         for (const opt of this.props.allTags) {
             if (this.props.currentTags.includes(opt)) {
                 continue;
