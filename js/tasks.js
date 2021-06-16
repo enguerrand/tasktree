@@ -930,6 +930,17 @@ class TaskEditView extends React.Component {
                     )
                 )
             );
+        } else {
+            formGroups.push(
+                div({className:"form-group row", key: "listChoice"},
+                    label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.list"]),
+                    div({className: "col-12", key: "list-input"},
+                        div({className: "text-light bg-secondary form-control"},
+                            this.props.parentList?.title
+                        )
+                    )
+                )
+            );
         }
 
         formGroups.push(
