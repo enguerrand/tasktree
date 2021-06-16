@@ -242,6 +242,7 @@ class TasksListSubmenu extends React.Component {
 }
 
 class CreateTaskInput extends React.Component {
+    // props.initialInput
     // props.createTaskId()
     // props.openEditView(usingProperties)
     // props.trySmartSubmitUsingProps(propsToUse)
@@ -251,7 +252,7 @@ class CreateTaskInput extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentInput: ""
+            currentInput: props.initialInput
         }
         this.handleTextInput = this.handleTextInput.bind(this);
         this.interceptEnter = this.interceptEnter.bind(this);
@@ -1348,6 +1349,7 @@ class TasksView extends React.Component {
                 e(
                     CreateTaskInput,
                     {
+                        initialInput: this.state.currentFilterString,
                         createTaskId: this.props.createTaskId,
                         guessParentList: this.guessParentList,
                         trySmartSubmitUsingProps: this.trySmartSubmitUsingProps,
