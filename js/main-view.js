@@ -19,6 +19,8 @@ class MainView extends React.Component {
     // props.resetCreateWithTitle
     // props.deleteTask(taskId, taskListId)
     // props.deleteList(taskListId)
+    // props.defaultListId
+    // props.setDefaultListId(listId)
     constructor(props) {
         super(props);
         this.state = {};
@@ -43,6 +45,7 @@ class MainView extends React.Component {
                     createWithTitle: this.props.createWithTitle,
                     resetCreateWithTitle: this.props.resetCreateWithTitle,
                     deleteTask: this.props.deleteTask,
+                    defaultListId: this.props.defaultListId,
                 }
             );
         } else if (this.props.category === CATEGORY_ID_LISTS) {
@@ -56,6 +59,8 @@ class MainView extends React.Component {
                     onListUpdatedLocally: this.props.onListUpdatedLocally,
                     createListId: this.props.createListId,
                     deleteList: this.props.deleteList,
+                    defaultListId: this.props.defaultListId,
+                    setDefaultListId: this.props.setDefaultListId,
                 }
             );
         } else {

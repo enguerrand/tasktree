@@ -324,6 +324,8 @@ class ListsView extends React.Component {
     // prop.onListUpdatedLocally(taskList)
     // props.createListId
     // props.deleteList(listId)
+    // props.defaultListId
+    // props.setDefaultListId(listId)
     constructor(props) {
         super(props);
         this.state = {
@@ -361,11 +363,25 @@ class ListsView extends React.Component {
                 },
                 i({className: "mdi mdi-" + (listActive ? "check" : "checkbox-blank-outline")})
             );
+            const currentDefault = taskList.id === this.props.defaultListId;
+            const setDefaultButton = button({
+                    className: "btn btn-secondary",
+                    onClick: (event) => {
+                        if (!currentDefault) {
+                            this.props.setDefaultListId(taskList.id);
+                        }
+                    }},
+                i({className: "mdi mdi-" + (currentDefault ? "tray-alert" : "tray")})
+            );
             rows.push(
                 tr({key: taskListId},
                     // th({key: "id", scope: "row", className: "align-middle"}, taskListId),
                     td({key: "active", className: "align-middle"}, activationToggle),
                     td({key: "title", className: "align-middle" + (listActive ? "" : " text-secondary")}, taskList.title),
+                    td(
+                        {key: "default", className: "right align-middle"},
+                        setDefaultButton
+                    ),
                     td(
                         {key: "action", className: "right align-middle"},
                         button({className: "btn btn-primary", onClick: (event) => this.editList(event, taskList)}, i({className: "mdi mdi-pencil-outline"}))
@@ -379,6 +395,7 @@ class ListsView extends React.Component {
                     // th({key: "id", scope: "col", className: "align-middle"}, "ID"),
                     th({key: "active", scope: "col", className: "align-middle"}, S["lists.table.header.active"]),
                     th({key: "title", scope: "col", className: "align-middle"}, S["lists.table.header.title"]),
+                    th({key: "default", scope: "col", className: "right align-middle"}, S["lists.table.header.default"]),
                     th({key: "action", scope: "col", className: "right align-middle"}, S["lists.table.header.action"])
                 )
             ),

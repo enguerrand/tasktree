@@ -1177,6 +1177,7 @@ class TasksView extends React.Component {
     // props.createWithTitle
     // props.resetCreateWithTitle
     // props.deleteTask(task, taskList)
+    // props.defaultListId
     constructor(props) {
         super(props);
         this.state = {
@@ -1249,7 +1250,7 @@ class TasksView extends React.Component {
         } else if (this.props.activeListIds.length === 1) {
             return this.props.taskLists[this.props.activeListIds[0]];
         } else {
-            return null;
+            return this.props.taskLists[this.props.defaultListId] || null;
         }
     }
 

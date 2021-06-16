@@ -14,6 +14,7 @@ class TaskTreeApp extends React.Component {
             showCompletedTasks: false,
             allUsers: [],
             filterTags: [],
+            defaultListId: null,
         };
         this.createListId = this.createListId.bind(this);
         this.createTaskId = this.createTaskId.bind(this);
@@ -36,6 +37,7 @@ class TaskTreeApp extends React.Component {
         this.addFilterTag = this.addFilterTag.bind(this);
         this.removeFilterTag = this.removeFilterTag.bind(this);
         this.resetCreateWithTitle = this.resetCreateWithTitle.bind(this);
+        this.setDefaultListId = this.setDefaultListId.bind(this);
     }
 
     // TODO generate truly unique ids
@@ -236,6 +238,12 @@ class TaskTreeApp extends React.Component {
         }, this.storeUserSettings)
     }
 
+    async setDefaultListId(listId) {
+        this.setState({
+            defaultListId: listId
+        }, this.storeUserSettings);
+    }
+
     async removeFilterTag(tag) {
         this.setState(prevState => {
             const nextFilterTags = Object.assign([], prevState.filterTags);
@@ -303,6 +311,7 @@ class TaskTreeApp extends React.Component {
             tasksSortingKey: this.state.tasksSortingKey,
             showCompletedTasks: this.state.showCompletedTasks,
             filterTags: this.state.filterTags,
+            defaultListId: this.state.defaultListId,
         };
         const success = await sendSettings(settings);
         this.setState({
@@ -322,6 +331,7 @@ class TaskTreeApp extends React.Component {
                         tasksSortingKey: currentUser.settings?.tasksSortingKey || SORT_KEY_DEFAULT,
                         showCompletedTasks: currentUser.settings?.showCompletedTasks || false,
                         filterTags: currentUser.settings?.filterTags || [],
+                        defaultListId: currentUser.settings?.defaultListId,
                     }, this.fetchLists);
                 }
             },
@@ -429,6 +439,8 @@ class TaskTreeApp extends React.Component {
                     resetCreateWithTitle: this.resetCreateWithTitle,
                     deleteTask: this.deleteTask,
                     deleteList: this.deleteList,
+                    defaultListId: this.state.defaultListId,
+                    setDefaultListId: this.setDefaultListId,
                 })
             ];
         }
