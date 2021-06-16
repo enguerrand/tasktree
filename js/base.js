@@ -139,6 +139,13 @@ async function sendTaskListDeletion(taskListId) {
     return sendJson(API_URL_LISTS + '/' + taskListId, 'delete', {});
 }
 
+function cleanupUrl() {
+    if (window.location.href === BASE_URL || window.location.href === BASE_URL + "/"){
+        return;
+    }
+    window.history.pushState({}, document.title, BASE_URL);
+}
+
 function isNull(obj) {
     return obj === undefined || obj === null;
 }

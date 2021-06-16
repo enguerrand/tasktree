@@ -1393,10 +1393,11 @@ class TasksView extends React.Component {
                     requestedInitialProperties: this.state.requestedInitialProperties,
                     parentList: this.state.editingList,
                     editingDone: async (taskAfterEdit, parentList) => {
+                        cleanupUrl();
                         await this.onTaskEdited(taskAfterEdit, parentList);
                     },
                     onCancel: () => {
-                        this.setState({ editingTask: null, editingList: null, requestedInitialProperties: null });
+                        this.setState({ editingTask: null, editingList: null, requestedInitialProperties: null }, cleanupUrl);
                     },
                     activeListIds: this.props.activeListIds,
                     allLists: this.props.taskLists,
