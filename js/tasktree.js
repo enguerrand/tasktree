@@ -36,7 +36,7 @@ class TaskTreeApp extends React.Component {
         this.toggleShowCompletedTasks = this.toggleShowCompletedTasks.bind(this);
         this.addFilterTag = this.addFilterTag.bind(this);
         this.removeFilterTag = this.removeFilterTag.bind(this);
-        this.resetCreateWithTitle = this.resetCreateWithTitle.bind(this);
+        this.resetCreateWith = this.resetCreateWith.bind(this);
         this.setDefaultListId = this.setDefaultListId.bind(this);
     }
 
@@ -358,7 +358,8 @@ class TaskTreeApp extends React.Component {
         const createWithTitle = queryParams.get(QUERY_PARAM_CREATE);
         if (!isNull(createWithTitle) && createWithTitle.length > 0) {
             this.setState({
-                createWithTitle: createWithTitle
+                createWithTitle: createWithTitle,
+                createWithDescription: queryParams.get(QUERY_PARAM_DESCRIPTION) || "",
             });
         }
         this.fetchUserSettings();
@@ -394,9 +395,9 @@ class TaskTreeApp extends React.Component {
         }
     }
 
-    resetCreateWithTitle() {
+    resetCreateWith() {
         return new Promise((res) => {
-            this.setState({createWithTitle: null},
+            this.setState({createWithTitle: null, createWithDescription: null},
                 () => res()
             );
         });
@@ -436,7 +437,8 @@ class TaskTreeApp extends React.Component {
                     addFilterTag: this.addFilterTag,
                     removeFilterTag: this.removeFilterTag,
                     createWithTitle: this.state.createWithTitle,
-                    resetCreateWithTitle: this.resetCreateWithTitle,
+                    createWithDescription: this.state.createWithDescription,
+                    resetCreateWith: this.resetCreateWith,
                     deleteTask: this.deleteTask,
                     deleteList: this.deleteList,
                     defaultListId: this.state.defaultListId,

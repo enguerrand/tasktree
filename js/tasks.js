@@ -466,7 +466,7 @@ class TaskEditView extends React.Component {
             taskId = this.props.requestedInitialProperties["id"];
             header = S["tasks.form.title.create"];
             initialTitle = requestedInitialProperties["title"] || "";
-            initialDescription = "";
+            initialDescription = requestedInitialProperties["description"] || "";
             initialTags = requestedInitialProperties["tags"] || [];
             initialPrerequisites = [];
             initialDependingTasks = [];
@@ -1187,7 +1187,8 @@ class TasksView extends React.Component {
     // props.addFilterTag(tag)
     // props.removeFilterTag(tag)
     // props.createWithTitle
-    // props.resetCreateWithTitle
+    // props.createWithDescription
+    // props.resetCreateWith
     // props.deleteTask(task, taskList)
     // props.defaultListId
     constructor(props) {
@@ -1200,6 +1201,7 @@ class TasksView extends React.Component {
                 ? {
                     "id": props.createTaskId(),
                     "title": props.createWithTitle,
+                    "description": props.createWithDescription,
                     "tags": []
                 } : undefined
         }
@@ -1267,7 +1269,7 @@ class TasksView extends React.Component {
     }
 
     async onTaskEdited(taskAfterEdit, parentList) {
-        await this.props.resetCreateWithTitle();
+        await this.props.resetCreateWith();
         await this.props.onTaskUpdatedLocally(taskAfterEdit, parentList);
         this.setState({editingTask: null, editingList: null, requestedInitialProperties: null});
     }

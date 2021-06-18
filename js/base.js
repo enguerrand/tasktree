@@ -16,6 +16,7 @@ const SORT_KEY_DUE = "due";
 const SORT_KEY_DEPENDENCIES = "dependencies";
 const SORT_KEY_DEFAULT = SORT_KEY_NEWEST;
 const QUERY_PARAM_CREATE = "create";
+const QUERY_PARAM_DESCRIPTION = "description";
 let csrf_token = document.head.querySelector("[name=csrf-token][content]").content;
 
 

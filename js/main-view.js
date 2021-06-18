@@ -16,7 +16,8 @@ class MainView extends React.Component {
     // props.addFilterTag(tag)
     // props.removeFilterTag(tag)
     // props.createWithTitle
-    // props.resetCreateWithTitle
+    // props.createWithDescription
+    // props.resetCreateWith
     // props.deleteTask(taskId, taskListId)
     // props.deleteList(taskListId)
     // props.defaultListId
@@ -43,7 +44,8 @@ class MainView extends React.Component {
                     addFilterTag: this.props.addFilterTag,
                     removeFilterTag: this.props.removeFilterTag,
                     createWithTitle: this.props.createWithTitle,
-                    resetCreateWithTitle: this.props.resetCreateWithTitle,
+                    createWithDescription: this.props.createWithDescription,
+                    resetCreateWith: this.props.resetCreateWith,
                     deleteTask: this.props.deleteTask,
                     defaultListId: this.props.defaultListId,
                 }
