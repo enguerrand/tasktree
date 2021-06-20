@@ -38,6 +38,7 @@ class TaskTreeApp extends React.Component {
         this.removeFilterTag = this.removeFilterTag.bind(this);
         this.resetCreateWith = this.resetCreateWith.bind(this);
         this.setDefaultListId = this.setDefaultListId.bind(this);
+        this.renderMainView = this.renderMainView.bind(this);
     }
 
     // TODO generate truly unique ids
@@ -403,6 +404,51 @@ class TaskTreeApp extends React.Component {
         });
     }
 
+    renderMainView() {
+        if (this.state.currentCategory === CATEGORY_ID_TASKS || !isNull(this.props.createWithTitle)) {
+            return e(
+                TasksView,
+                {
+                    key: "tasksview",
+                    taskLists: this.state.taskLists,
+                    activeListIds: this.state.activeListIds,
+                    onTaskUpdatedLocally: this.onTaskUpdatedLocally,
+                    createTaskId: this.createTaskId,
+                    sortingKey: this.state.tasksSortingKey,
+                    setCurrentSortKey: this.setTasksSortingKey,
+                    showCompletedTasks: this.state.showCompletedTasks,
+                    toggleShowCompletedTasks: this.toggleShowCompletedTasks,
+                    filterTags: this.state.filterTags,
+                    addFilterTag: this.addFilterTag,
+                    removeFilterTag: this.removeFilterTag,
+                    createWithTitle: this.state.createWithTitle,
+                    createWithDescription: this.state.createWithDescription,
+                    resetCreateWith: this.resetCreateWith,
+                    deleteTask: this.deleteTask,
+                    defaultListId: this.state.defaultListId,
+                }
+            );
+        } else if (this.state.currentCategory === CATEGORY_ID_LISTS) {
+            return e(
+                ListsView,
+                {
+                    key: "listsview",
+                    loggedInUser: this.state.loggedInUser,
+                    taskLists: this.state.taskLists,
+                    activeListIds: this.state.activeListIds,
+                    setListActive: this.setListActive,
+                    onListUpdatedLocally: this.onListUpdatedLocally,
+                    createListId: this.createListId,
+                    deleteList: this.deleteList,
+                    defaultListId: this.state.defaultListId,
+                    setDefaultListId: this.setDefaultListId,
+                }
+            );
+        } else {
+            return div(null, "Unexpected category: " + this.state.currentCategory);
+        }
+    }
+
     render() {
         if (this.state.loggedInUser === null) {
             return e(LoginForm, {onServerReply: this.onLoginReply, errorMessage: this.state.authorizationError});
@@ -418,32 +464,7 @@ class TaskTreeApp extends React.Component {
                         currentCategory: cat
                     })
                 }),
-                e(MainView, {
-                    key: "main-view",
-                    loggedInUser: this.state.loggedInUser,
-                    category: this.state.currentCategory,
-                    taskLists: this.state.taskLists,
-                    activeListIds: this.state.activeListIds,
-                    setListActive: this.setListActive,
-                    onListUpdatedLocally: this.onListUpdatedLocally,
-                    onTaskUpdatedLocally: this.onTaskUpdatedLocally,
-                    createListId: this.createListId,
-                    createTaskId: this.createTaskId,
-                    tasksSortingKey: this.state.tasksSortingKey,
-                    setCurrentSortKey: this.setTasksSortingKey,
-                    showCompletedTasks: this.state.showCompletedTasks,
-                    toggleShowCompletedTasks: this.toggleShowCompletedTasks,
-                    filterTags: this.state.filterTags,
-                    addFilterTag: this.addFilterTag,
-                    removeFilterTag: this.removeFilterTag,
-                    createWithTitle: this.state.createWithTitle,
-                    createWithDescription: this.state.createWithDescription,
-                    resetCreateWith: this.resetCreateWith,
-                    deleteTask: this.deleteTask,
-                    deleteList: this.deleteList,
-                    defaultListId: this.state.defaultListId,
-                    setDefaultListId: this.setDefaultListId,
-                })
+                this.renderMainView()
             ];
         }
     }
