@@ -1186,8 +1186,7 @@ class TasksView extends React.Component {
     // props.filterTags
     // props.addFilterTag(tag)
     // props.removeFilterTag(tag)
-    // props.createWithTitle
-    // props.createWithDescription
+    // props.createWith
     // props.resetCreateWith
     // props.deleteTask(task, taskList)
     // props.defaultListId
@@ -1197,13 +1196,7 @@ class TasksView extends React.Component {
             editingTask: null,
             editingList: null,
             currentFilterString: "",
-            requestedInitialProperties: !isNull(this.props.createWithTitle)
-                ? {
-                    "id": props.createTaskId(),
-                    "title": props.createWithTitle,
-                    "description": props.createWithDescription,
-                    "tags": []
-                } : undefined
+            requestedInitialProperties: this.props.createWith || undefined
         }
         this.renderTasksTable = this.renderTasksTable.bind(this);
         this.addTask = this.addTask.bind(this);

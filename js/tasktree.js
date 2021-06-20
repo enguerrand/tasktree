@@ -358,9 +358,14 @@ class TaskTreeApp extends React.Component {
         const queryParams = new URLSearchParams(window.location.search);
         const createWithTitle = queryParams.get(QUERY_PARAM_CREATE);
         if (!isNull(createWithTitle) && createWithTitle.length > 0) {
+            const initialTag = queryParams.get(QUERY_PARAM_TAG);
             this.setState({
-                createWithTitle: createWithTitle,
-                createWithDescription: queryParams.get(QUERY_PARAM_DESCRIPTION) || "",
+                createWith: {
+                    id: this.createTaskId(),
+                    title: createWithTitle,
+                    description: queryParams.get(QUERY_PARAM_DESCRIPTION) || "",
+                    tags: isNull(initialTag) ? [] : [initialTag],
+                }
             });
         }
         this.fetchUserSettings();
@@ -398,14 +403,14 @@ class TaskTreeApp extends React.Component {
 
     resetCreateWith() {
         return new Promise((res) => {
-            this.setState({createWithTitle: null, createWithDescription: null},
+            this.setState({createWith: null},
                 () => res()
             );
         });
     }
 
     renderMainView() {
-        if (this.state.currentCategory === CATEGORY_ID_TASKS || !isNull(this.props.createWithTitle)) {
+        if (this.state.currentCategory === CATEGORY_ID_TASKS || !isNull(this.props.createWith)) {
             return e(
                 TasksView,
                 {
@@ -421,8 +426,7 @@ class TaskTreeApp extends React.Component {
                     filterTags: this.state.filterTags,
                     addFilterTag: this.addFilterTag,
                     removeFilterTag: this.removeFilterTag,
-                    createWithTitle: this.state.createWithTitle,
-                    createWithDescription: this.state.createWithDescription,
+                    createWith: this.state.createWith,
                     resetCreateWith: this.resetCreateWith,
                     deleteTask: this.deleteTask,
                     defaultListId: this.state.defaultListId,
