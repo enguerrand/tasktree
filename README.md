@@ -26,5 +26,7 @@ python3 persistence.py setup
 python3 persistence.py adduser myusername 
 chown -R tasktree:tasktree /var/tasktree/
 chmod 600 /var/tasktree/tasktree.db
-# setup wsgi with webserver
+# setup wsgi with webserver. 
+# Note that you will need to enable BasicAuth for the webcal functionality to work. 
+# (apache: "WSGIPassAuthorization On")
 ```
