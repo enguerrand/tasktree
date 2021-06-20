@@ -1004,6 +1004,9 @@ class TaskEditView extends React.Component {
         const parentList = this.props.allLists[this.state.parentListId];
         if (!isNull(parentList)) {
             for (const [taskId, task] of Object.entries(parentList.tasks)) {
+                if (task.completed) {
+                    continue;
+                }
                 for (const tag of task.tags) {
                     if (!allTags.includes(tag)) {
                         allTags.push(tag);
@@ -1372,6 +1375,9 @@ class TasksView extends React.Component {
         for (const [taskListId, taskList] of Object.entries(this.props.taskLists)) {
             if (this.props.activeListIds.includes(taskListId)) {
                 for (const [taskId, task] of Object.entries(taskList.tasks)) {
+                    if (task.completed) {
+                        continue;
+                    }
                     for (const tag of task.tags) {
                         if (!allTags.includes(tag)) {
                             allTags.push(tag);
