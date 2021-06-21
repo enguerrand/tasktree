@@ -159,8 +159,8 @@ class SortInput extends React.Component {
     render() {
         return (
             div({className: "tasks-table-submenu-form row"},
-                label({key: "label", className: "text-light col-12 col-sm-4 pl-0"}, S["tasks.table.sort"]),
-                div({key: "buttons", className: "btn-group col-12 col-sm-8", role: "group"},
+                label({key: "label", className: "text-light col-12 col-sm-4 col-md-5 col-lg-6 col-xl-7 pl-0"}, S["tasks.table.sort"]),
+                div({key: "buttons", className: "btn-group col-12 col-sm-8 col-md-7 col-lg-6 col-xl-5", role: "group"},
                     e(SortInputButton, {sortKey: SORT_KEY_NEWEST, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
                     e(SortInputButton, {sortKey: SORT_KEY_OLDEST, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
                     e(SortInputButton, {sortKey: SORT_KEY_DUE, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
