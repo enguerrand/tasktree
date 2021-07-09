@@ -7,6 +7,7 @@ const API_URL_WEBCAL = API_URL + '/webcal';
 const API_URL_CSRF = API_URL + '/csrf';
 const CATEGORY_ID_LISTS = "lists";
 const CATEGORY_ID_TASKS = "tasks";
+const MIN_AUTO_FULL_SYNC_INTERVAL_MS = 1000 * 60 * 5;
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_AUTHORIZED = 401;
 const LOCALE = navigator.language
@@ -19,7 +20,6 @@ const QUERY_PARAM_CREATE = "create";
 const QUERY_PARAM_DESCRIPTION = "description";
 const QUERY_PARAM_TAG = "tag";
 let csrf_token = document.head.querySelector("[name=csrf-token][content]").content;
-
 
 class JsonResult {
     constructor(success, payload) {

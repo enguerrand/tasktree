@@ -16,6 +16,7 @@ class TaskTreeApp extends React.Component {
             filterTags: [],
             defaultListId: null,
         };
+        this.lastFullSyncTs = new Date().getTime();
         this.createListId = this.createListId.bind(this);
         this.createTaskId = this.createTaskId.bind(this);
         this.storeUserSettings = this.storeUserSettings.bind(this);
@@ -24,6 +25,7 @@ class TaskTreeApp extends React.Component {
         this.writeUnsyncedLists = this.writeUnsyncedLists.bind(this);
         this.writeUnsyncedTasks = this.writeUnsyncedTasks.bind(this);
         this.writeAll = this.writeAll.bind(this);
+        this.writeAllIfNeeded = this.writeAllIfNeeded.bind(this);
         this.fetchLists = this.fetchLists.bind(this);
         this.onListUpdatedLocally = this.onListUpdatedLocally.bind(this);
         this.onTaskUpdatedLocally = this.onTaskUpdatedLocally.bind(this);
@@ -201,8 +203,20 @@ class TaskTreeApp extends React.Component {
     }
 
     async writeAll() {
+        this.lastFullSyncTs = new Date().getTime();
         this.writeUnsyncedLists();
         this.storeUserSettings();
+    }
+
+    async writeAllIfNeeded() {
+        const lastSync = this.lastFullSyncTs;
+        const now = new Date().getTime();
+        if (now > lastSync + MIN_AUTO_FULL_SYNC_INTERVAL_MS) {
+            console.log("Last write is more than " + MIN_AUTO_FULL_SYNC_INTERVAL_MS + " ms ago - syncing.")
+            await this.writeAll();
+        } else {
+            console.log("Last write is not more than " + MIN_AUTO_FULL_SYNC_INTERVAL_MS + " ms ago - not syncing.")
+        }
     }
 
     async setListActive(listId, active) {
@@ -353,7 +367,7 @@ class TaskTreeApp extends React.Component {
     async componentDidMount() {
         window.addEventListener('online', this.updateOnlineStatus);
         window.addEventListener('offline', this.updateOnlineStatus);
-        window.addEventListener('focus', this.writeAll);
+        window.addEventListener('focus', this.writeAllIfNeeded);
         window.addEventListener("beforeunload", this.beforeUnload);
         const queryParams = new URLSearchParams(window.location.search);
         const createWithTitle = queryParams.get(QUERY_PARAM_CREATE);
@@ -374,7 +388,7 @@ class TaskTreeApp extends React.Component {
     async componentWillUnmount() {
         window.removeEventListener('online', this.updateOnlineStatus);
         window.removeEventListener('offline', this.updateOnlineStatus);
-        window.removeEventListener('focus', this.writeAll);
+        window.removeEventListener('focus', this.writeAllIfNeeded);
         window.removeEventListener("beforeunload", this.beforeUnload);
     }
 
