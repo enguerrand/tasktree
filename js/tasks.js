@@ -456,6 +456,7 @@ class TaskEditView extends React.Component {
         let remoteTitle;
         let initialDescription;
         let remoteDescription;
+        let initialDue;
         let initialTags;
         let initialPrerequisites;
         let initialDependingTasks;
@@ -467,6 +468,7 @@ class TaskEditView extends React.Component {
             header = S["tasks.form.title.create"];
             initialTitle = requestedInitialProperties["title"] || "";
             initialDescription = requestedInitialProperties["description"] || "";
+            initialDue = "";
             initialTags = requestedInitialProperties["tags"] || [];
             initialPrerequisites = [];
             initialDependingTasks = [];
@@ -479,6 +481,7 @@ class TaskEditView extends React.Component {
             initialDescription = this.props.task.description;
             remoteTitle = this.props.task.conflictingTitle;
             remoteDescription = this.props.task.conflictingDescription;
+            initialDue = formatForHtmlInput(this.props.task.due);
             initialTags = this.props.task.tags;
             initialPrerequisites = this.props.task.prerequisites;
             initialDependingTasks = this.props.task.dependingTasks;
@@ -503,6 +506,7 @@ class TaskEditView extends React.Component {
             description: initialDescription,
             remoteDescription: remoteDescription,
             showRemoteDescription: false,
+            due: initialDue,
             tags: initialTags,
             prerequisites: initialPrerequisites,
             dependingTasks: initialDependingTasks,
@@ -520,6 +524,7 @@ class TaskEditView extends React.Component {
         this.pullRemoteDescription = this.pullRemoteDescription.bind(this);
         this.pushLocalDescription = this.pushLocalDescription.bind(this);
         this.toggleShowRemoteDescription = this.toggleShowRemoteDescription.bind(this);
+        this.handleDueChange = this.handleDueChange.bind(this);
         this.addTag = this.addTag.bind(this);
         this.removeTag = this.removeTag.bind(this);
         this.handleAddPrerequisite = this.handleAddPrerequisite.bind(this);
@@ -527,14 +532,12 @@ class TaskEditView extends React.Component {
         this.removePrerequisite = this.removePrerequisite.bind(this);
         this.removeDepending = this.removeDepending.bind(this);
         this.getAllTaskOptions = this.getAllTaskOptions.bind(this);
-        this.deriveInitialDue = this.deriveInitialDue.bind(this);
+        this.formValueToDate = this.formValueToDate.bind(this);
         this.clearDueDate = this.clearDueDate.bind(this);
         this.isUnChanged = this.isUnChanged.bind(this);
         this.goToRelatedTask = this.goToRelatedTask.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
-        this.getCurrentDueInput = this.getCurrentDueInput.bind(this);
         this.handleDeletion = this.handleDeletion.bind(this);
-        this.dateInputRef = React.createRef();
     }
 
     handleTitleChange(event) {
@@ -608,6 +611,12 @@ class TaskEditView extends React.Component {
         });
     }
 
+    handleDueChange(e) {
+        this.setState({
+            due: e.target.value
+        });
+    }
+
     addTag(tag) {
         this.setState(
             prevState => {
@@ -634,12 +643,15 @@ class TaskEditView extends React.Component {
         );
     }
 
-    deriveInitialDue() {
-        return formatForHtmlInput(this.props.task?.due);
+    formValueToDate(formValue) {
+        const dueDate = new Date(formValue);
+        return isValidDate(dueDate) ? toUtcTimeStamp(dueDate) : null;
     }
 
     clearDueDate() {
-        this.dateInputRef.current.value = "";
+        this.setState({
+            due: ""
+        });
     }
 
     isUnChanged() {
@@ -647,7 +659,7 @@ class TaskEditView extends React.Component {
         return this.state.taskId === prevTask.id
             && this.state.title === prevTask.title
             && this.state.description === prevTask.description
-            && this.getCurrentDueInput() === prevTask.due
+            && this.state.due === prevTask.due
             && this.state.tags.equals(prevTask.tags)
             && this.state.prerequisites.equals(prevTask.prerequisites)
             && this.state.dependingTasks.equals(prevTask.dependingTasks)
@@ -694,7 +706,7 @@ class TaskEditView extends React.Component {
         } else {
             created = nowUtc();
         }
-        const due = this.getCurrentDueInput();
+        const due = this.formValueToDate(this.state.due);
         const taskAfterEdit = {
             id: this.state.taskId,
             title: this.state.title,
@@ -714,11 +726,6 @@ class TaskEditView extends React.Component {
             taskAfterEdit.synced = success;
             this.props.editingDone(taskAfterEdit, parentList);
         }
-    }
-
-    getCurrentDueInput() {
-        const dueDate = new Date(this.dateInputRef.current.value);
-        return isValidDate(dueDate) ? toUtcTimeStamp(dueDate) : null;
     }
 
     handleAddPrerequisite() {
@@ -1036,7 +1043,12 @@ class TaskEditView extends React.Component {
                 label({key: "label", className: "col-12 col-form-label text-light"}, S["tasks.form.due"]),
                 div({className: "col-12", key: "input"},
                     div({className: "clearable-input-wrapper"},
-                        input({type: "datetime-local", className: "form-control date-input", defaultValue: this.deriveInitialDue(), ref: this.dateInputRef}),
+                        input({
+                            type: "datetime-local",
+                            className: "form-control date-input",
+                            value: this.state.due,
+                            onChange: this.handleDueChange
+                        }),
                         e(
                             InputClearButton,
                             {
