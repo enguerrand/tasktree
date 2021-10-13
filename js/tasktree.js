@@ -101,7 +101,8 @@ class TaskTreeApp extends React.Component {
     }
 
     async fetchLists() {
-        const result = await getJson(API_URL_LISTS);
+        const includeCompleted = this.state.showCompletedTasks ? '1' : '0';
+        const result = await getJson(API_URL_LISTS + `?includeCompleted=${includeCompleted}` );
         result.handle(
             lists => {
                 this.setState(
@@ -238,7 +239,7 @@ class TaskTreeApp extends React.Component {
             return {
                 showCompletedTasks: !prevState.showCompletedTasks
             }
-        }, this.storeUserSettings);
+        }, this.writeAll);
     }
 
     async addFilterTag(tag) {

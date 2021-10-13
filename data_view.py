@@ -24,10 +24,11 @@ class UserView(UserMixin):
 
 
 class ListView:
-    def __init__(self, task_list: TaskList, conflicts):
+    def __init__(self, task_list: TaskList, conflicts, include_completed_tasks: int):
         self.id = task_list.id
         self.title = task_list.title
-        self.tasks = [TaskView(task, conflicts.get(task.id)).as_dict() for task in task_list.tasks]
+        tasks_after_filter = filter(lambda t: include_completed_tasks or not t.completed, task_list.tasks)
+        self.tasks = [TaskView(task, conflicts.get(task.id)).as_dict() for task in tasks_after_filter]
         self.users = [user.username for user in task_list.users]
 
     def as_dict(self):
@@ -92,12 +93,12 @@ class DataView:
         for t in task_list.tasks:
             if not t.completed and t.due is not None:
                 events.append(CalendarEvent(t))
-        return VCalendar("tasktree-"+str(task_list_id), task_list.title, events)
+        return VCalendar("tasktree-" + str(task_list_id), task_list.title, events)
 
-    def get_lists(self) -> List[ListView]:
+    def get_lists(self, include_completed_tasks: bool) -> List[ListView]:
         conflicts = self.persistence.get_task_conflicts_as_map(self.viewing_user.id)
         return [
-            ListView(task_list, conflicts).as_dict()
+            ListView(task_list, conflicts, include_completed_tasks).as_dict()
             for task_list in self.persistence.get_task_lists(self.viewing_user.id)
         ]
 
@@ -133,7 +134,7 @@ class DataView:
                 next_task["completed"],
                 prereq_task_ids=tuple(next_prerequisites),
                 depending_task_ids=tuple(next_depending_tasks),
-                tags=tuple(next_tags)
+                tags=tuple(next_tags),
             )
         else:
             self.persistence.update_task(
@@ -146,7 +147,7 @@ class DataView:
                 self.date_from_timestamp(next_task["due"]),
                 next_task["description"],
                 next_task["completed"],
-                requesting_user_id
+                requesting_user_id,
             )
 
             prev_tags = prev_task["tags"]

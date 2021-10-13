@@ -92,8 +92,9 @@ def store_user_settings():
 @app.route(API_BASE_LISTS)
 @login_required
 def get_lists():
+    include_completed_tasks = request.args.get("includeCompleted", '0') == '1'
     data_view = DataView(persistence, current_user)
-    return jsonify(data_view.get_lists())
+    return jsonify(data_view.get_lists(include_completed_tasks))
 
 
 @app.route(API_BASE_LISTS + "<int:task_list_id>", methods=["DELETE"])
