@@ -15,6 +15,7 @@ const SORT_KEY_NEWEST = "newest";
 const SORT_KEY_OLDEST = "oldest";
 const SORT_KEY_DUE = "due";
 const SORT_KEY_DEPENDENCIES = "dependencies";
+const SORT_KEY_TITLE = "title";
 const SORT_KEY_DEFAULT = SORT_KEY_NEWEST;
 const QUERY_PARAM_CREATE = "create";
 const QUERY_PARAM_DESCRIPTION = "description";

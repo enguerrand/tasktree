@@ -10,6 +10,9 @@ function extractSortKey(sortKey, task) {
         case SORT_KEY_OLDEST: {
             return task.created;
         }
+        case SORT_KEY_TITLE: {
+            return task.title;
+        }
         case SORT_KEY_DEPENDENCIES: {
             // TODO
             return task.id;
@@ -164,6 +167,7 @@ class SortInput extends React.Component {
                     e(SortInputButton, {sortKey: SORT_KEY_NEWEST, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
                     e(SortInputButton, {sortKey: SORT_KEY_OLDEST, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
                     e(SortInputButton, {sortKey: SORT_KEY_DUE, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
+                    e(SortInputButton, {sortKey: SORT_KEY_TITLE, currentKey: this.props.currentKey, setCurrentSortKey: this.props.setCurrentSortKey}),
                 )
             )
         );
