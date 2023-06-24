@@ -1357,7 +1357,7 @@ class TasksView extends React.Component {
                     );
                 }
         }
-        rows.sort((r1, r2) => r1.props["data-sort-key-value"] - r2.props["data-sort-key-value"]);
+        rows.sort((r1, r2) => r1.props["data-sort-key-value"].localeCompare(r2.props["data-sort-key-value"], "en", { numeric: true }));
         return [
             div({key: "add-task", className: "row"},
                 e(
