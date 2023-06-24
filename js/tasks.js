@@ -1357,7 +1357,11 @@ class TasksView extends React.Component {
                     );
                 }
         }
-        rows.sort((r1, r2) => r1.props["data-sort-key-value"].localeCompare(r2.props["data-sort-key-value"], "en", { numeric: true }));
+        if (this.props.sortingKey === SORT_KEY_TITLE) {
+            rows.sort((r1, r2) => r1.props["data-sort-key-value"].localeCompare(r2.props["data-sort-key-value"], "en", { numeric: true }));
+        } else {
+            rows.sort((r1, r2) => r1.props["data-sort-key-value"] - r2.props["data-sort-key-value"]);
+        }
         return [
             div({key: "add-task", className: "row"},
                 e(
