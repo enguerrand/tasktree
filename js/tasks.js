@@ -65,6 +65,10 @@ class TagInput extends React.Component {
     }
 
     render() {
+        // should be user configurable, but I have a pretty strong opinion on this one :)
+        const tagOptionsToHighlight = [
+            "todo"
+        ]
         const inlineElements = [];
         for (const tag of this.props.currentTags) {
             inlineElements.push(
@@ -96,8 +100,12 @@ class TagInput extends React.Component {
                 continue;
             }
             if (opt.includes(this.state.currentInput)) {
+                let tagClass = "btn-secondary"
+                if (tagOptionsToHighlight.includes(opt)) {
+                    tagClass = "btn-primary"
+                }
                 tagOptions.push(
-                    div({className: "btn btn-secondary btn-tag", key: opt, onClick: () => this.selectOption(opt)},
+                    div({className: "btn btn-tag " + tagClass, key: opt, onClick: () => this.selectOption(opt)},
                         opt,
                         i({className: "mdi mdi-plus-circle"})
                     )
