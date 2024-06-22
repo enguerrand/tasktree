@@ -402,10 +402,7 @@ class TaskRelationShipSection extends React.Component {
                     relationShips.push(
                         li({
                             key: relatedTaskId,
-                            className: "row",
-                            onClick: () => {
-                                this.props.goToRelatedTask(relatedTaskId);
-                            }
+                            className: "row"
                         },
                         div({
                             key: "task",
