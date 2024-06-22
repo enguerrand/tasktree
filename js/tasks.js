@@ -399,16 +399,21 @@ class TaskRelationShipSection extends React.Component {
             for (const relatedTaskId of this.props.relatedTaskIds){
                 const relatedTask = this.props.parentList.tasks[relatedTaskId];
                 if (!isNull(relatedTask)) {
-                    relationShips.push(li({
+                    relationShips.push(
+                        li({
                             key: relatedTaskId,
                             className: "row",
                             onClick: () => {
                                 this.props.goToRelatedTask(relatedTaskId);
                             }
                         },
-                        div({className: classesTaskBox, key: "task"},
-                            relatedTask.title
-                        ),
+                        div({
+                            key: "task",
+                            className: classesTaskBox,
+                            onClick: () => {
+                                this.props.goToRelatedTask(relatedTaskId);
+                            }
+                        }, relatedTask.title),
                         button({
                                 key: "remove",
                                 type: "button",
